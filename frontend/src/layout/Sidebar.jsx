@@ -3,10 +3,63 @@ import { NavLink } from "react-router-dom";
 import user_img from "../assets/images/user.png";
 
 function Sidebar({ user }) {
-  const [isDropdownExpanded, setIsDropdownExpanded] = useState(false);
+  const [isBlogDropdownExpanded, setIsBlogDropdownExpanded] = useState(false);
+  const [isEventDropdownExpanded, setIsEventDropdownExpanded] = useState(false);
+  const [isWebinarDropdownExpanded, setIsWebinarDropdownExpanded] =
+    useState(false);
+  const [isNewsDropdownExpanded, setIsNewsDropdownExpanded] = useState(false);
+  const [isProductDropdownExpanded, setIsProductDropdownExpanded] =
+    useState(false);
+  const [isServiceDropdownExpanded, setIsServiceDropdownExpanded] =
+    useState(false);
 
-  const toggleDropdown = () => {
-    setIsDropdownExpanded(!isDropdownExpanded);
+  const toggleBlogDropdown = () => {
+    setIsBlogDropdownExpanded(!isBlogDropdownExpanded);
+    setIsEventDropdownExpanded(false);
+    setIsWebinarDropdownExpanded(false);
+    setIsNewsDropdownExpanded(false);
+    setIsProductDropdownExpanded(false);
+    isServiceDropdownExpanded(false);
+  };
+  const toggleEventDropdown = () => {
+    setIsEventDropdownExpanded(!isEventDropdownExpanded);
+    setIsBlogDropdownExpanded(false);
+    setIsWebinarDropdownExpanded(false);
+    setIsNewsDropdownExpanded(false);
+    setIsProductDropdownExpanded(false);
+    isServiceDropdownExpanded(false);
+  };
+  const toggleWebinarDropdown = () => {
+    setIsWebinarDropdownExpanded(!isWebinarDropdownExpanded);
+    setIsEventDropdownExpanded(false);
+    setIsBlogDropdownExpanded(false);
+    setIsNewsDropdownExpanded(false);
+    setIsProductDropdownExpanded(false);
+    isServiceDropdownExpanded(false);
+  };
+  const toggleNewsDropdown = () => {
+    setIsNewsDropdownExpanded(!isNewsDropdownExpanded);
+    setIsEventDropdownExpanded(false);
+    setIsBlogDropdownExpanded(false);
+    setIsWebinarDropdownExpanded(false);
+    setIsProductDropdownExpanded(false);
+    isServiceDropdownExpanded(false);
+  };
+  const toggleProductDropdown = () => {
+    setIsProductDropdownExpanded(!isProductDropdownExpanded);
+    setIsEventDropdownExpanded(false);
+    setIsBlogDropdownExpanded(false);
+    setIsWebinarDropdownExpanded(false);
+    setIsNewsDropdownExpanded(false);
+    isServiceDropdownExpanded(false);
+  };
+  const toggleServiceDropdown = () => {
+    setIsServiceDropdownExpanded(!isServiceDropdownExpanded);
+    setIsEventDropdownExpanded(false);
+    setIsBlogDropdownExpanded(false);
+    setIsWebinarDropdownExpanded(false);
+    setIsNewsDropdownExpanded(false);
+    setIsProductDropdownExpanded(false);
   };
 
   return (
@@ -32,10 +85,23 @@ function Sidebar({ user }) {
               isActive ? "nav-link active" : "nav-link text-white"
             }
           >
-            <i className="fa-solid fa-gauge-high me-2"></i>
+            <i className="fa-solid fa-gauge-high me-3"></i>
             Dashboard
           </NavLink>
         </li>
+
+        <li>
+          <NavLink
+            to="/users"
+            className={({ isActive }) =>
+              isActive ? "nav-link active" : "nav-link text-white"
+            }
+          >
+            <i className="fa-solid fa-user me-3"></i>
+            Users
+          </NavLink>
+        </li>
+
         <li>
           <NavLink
             to="/orders"
@@ -43,88 +109,231 @@ function Sidebar({ user }) {
               isActive ? "nav-link active" : "nav-link text-white"
             }
           >
-            <svg className="bi me-2" width="16" height="16">
-              <use xlinkHref="#table"></use>
-            </svg>
+            <i className="fa-solid fa-box-open me-3"></i>
             Orders
           </NavLink>
         </li>
-        <li>
-          <NavLink
-            to="/products"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link text-white"
-            }
-          >
-            <svg className="bi me-2" width="16" height="16">
-              <use xlinkHref="#grid"></use>
-            </svg>
-            Products
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/customers"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link text-white"
-            }
-          >
-            <svg className="bi me-2" width="16" height="16">
-              <use xlinkHref="#people-circle"></use>
-            </svg>
-            Customers
-          </NavLink>
-        </li>
 
-        {/* Expandable Dropdown Section */}
         <li className="nav-item">
           <a
             href="#"
-            onClick={toggleDropdown}
+            onClick={toggleProductDropdown}
             className="nav-link text-white d-flex justify-content-between align-items-center"
           >
             <span>
-              <i className="fa-solid fa-cogs me-2"></i>
-              More Options
+              <i className="fa-solid fa-newspaper me-3"></i>
+              Products
             </span>
             <i
               className={`fa-solid ${
-                isDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
+                isProductDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
               }`}
             ></i>
           </a>
-          {isDropdownExpanded && (
+          {isProductDropdownExpanded && (
             <ul className="nav flex-column ms-3">
               <li>
                 <NavLink to="/reports" className="nav-link text-white">
-                  Reports
+                  Add Category
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/analytics" className="nav-link text-white">
-                  Analytics
+                  Add Product
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/support" className="nav-link text-white">
-                  Support
+                  View Products
                 </NavLink>
               </li>
             </ul>
           )}
         </li>
-        <li>
-          <NavLink
-            to="/customers"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link text-white"
-            }
+
+        <li className="nav-item">
+          <a
+            href="#"
+            onClick={toggleServiceDropdown}
+            className="nav-link text-white d-flex justify-content-between align-items-center"
           >
-            <svg className="bi me-2" width="16" height="16">
-              <use xlinkHref="#people-circle"></use>
-            </svg>
-            Customers
-          </NavLink>
+            <span>
+              <i className="fa-solid fa-cogs me-3"></i>
+              Services
+            </span>
+            <i
+              className={`fa-solid ${
+                isServiceDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
+              }`}
+            ></i>
+          </a>
+          {isServiceDropdownExpanded && (
+            <ul className="nav flex-column ms-3">
+              <li>
+                <NavLink to="/reports" className="nav-link text-white">
+                  Add Category
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/analytics" className="nav-link text-white">
+                  Add Service
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/support" className="nav-link text-white">
+                  View Services
+                </NavLink>
+              </li>
+            </ul>
+          )}
+        </li>
+
+        <li className="nav-item">
+          <a
+            href="#"
+            onClick={toggleBlogDropdown}
+            className="nav-link text-white d-flex justify-content-between align-items-center"
+          >
+            <span>
+              <i className="fa-solid fa-note-sticky me-3"></i>
+              Blogs
+            </span>
+            <i
+              className={`fa-solid ${
+                isBlogDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
+              }`}
+            ></i>
+          </a>
+          {isBlogDropdownExpanded && (
+            <ul className="nav flex-column ms-3">
+              <li>
+                <NavLink to="/reports" className="nav-link text-white">
+                  Add Category
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/analytics" className="nav-link text-white">
+                  Add Blogs
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/support" className="nav-link text-white">
+                  View Blogs
+                </NavLink>
+              </li>
+            </ul>
+          )}
+        </li>
+
+        <li className="nav-item">
+          <a
+            href="#"
+            onClick={toggleEventDropdown}
+            className="nav-link text-white d-flex justify-content-between align-items-center"
+          >
+            <span>
+              <i className="fa-solid fa-calendar-days me-3"></i>
+              Events
+            </span>
+            <i
+              className={`fa-solid ${
+                isEventDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
+              }`}
+            ></i>
+          </a>
+          {isEventDropdownExpanded && (
+            <ul className="nav flex-column ms-3">
+              <li>
+                <NavLink to="/reports" className="nav-link text-white">
+                  Add Category
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/analytics" className="nav-link text-white">
+                  Add Event
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/support" className="nav-link text-white">
+                  View Events
+                </NavLink>
+              </li>
+            </ul>
+          )}
+        </li>
+
+        <li className="nav-item">
+          <a
+            href="#"
+            onClick={toggleWebinarDropdown}
+            className="nav-link text-white d-flex justify-content-between align-items-center"
+          >
+            <span>
+              <i className="fa-solid fa-laptop me-3"></i>
+              Webinar
+            </span>
+            <i
+              className={`fa-solid ${
+                isWebinarDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
+              }`}
+            ></i>
+          </a>
+          {isWebinarDropdownExpanded && (
+            <ul className="nav flex-column ms-3">
+              <li>
+                <NavLink to="/reports" className="nav-link text-white">
+                  Add Category
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/analytics" className="nav-link text-white">
+                  Add Webinar
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/support" className="nav-link text-white">
+                  View Webinars
+                </NavLink>
+              </li>
+            </ul>
+          )}
+        </li>
+
+        <li className="nav-item">
+          <a
+            href="#"
+            onClick={toggleNewsDropdown}
+            className="nav-link text-white d-flex justify-content-between align-items-center"
+          >
+            <span>
+              <i className="fa-solid fa-newspaper me-3"></i>
+              News
+            </span>
+            <i
+              className={`fa-solid ${
+                isNewsDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
+              }`}
+            ></i>
+          </a>
+          {isNewsDropdownExpanded && (
+            <ul className="nav flex-column ms-3">
+              <li>
+                <NavLink to="/reports" className="nav-link text-white">
+                  Add Category
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/analytics" className="nav-link text-white">
+                  Add News
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/support" className="nav-link text-white">
+                  View News
+                </NavLink>
+              </li>
+            </ul>
+          )}
         </li>
       </ul>
       <hr />
@@ -141,7 +350,7 @@ function Sidebar({ user }) {
             alt=""
             width="32"
             height="32"
-            className="rounded-circle me-2"
+            className="rounded-circle me-3"
           />
           <strong>{user ? user.first_name : "Loading..."}</strong>
         </a>

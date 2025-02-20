@@ -28,7 +28,7 @@ def get_user_data(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
-    users = User.objects.all().values("id", "username", "email", "first_name", "last_name")
+    users = User.objects.all().values("id", "username", "email", "first_name", "last_name", "is_staff", "date_joined")
     return Response(list(users))
 
 class CreateUserView(generics.CreateAPIView):
