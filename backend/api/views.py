@@ -22,13 +22,14 @@ def get_user_data(request):
         "first_name": user.first_name,
         "last_name": user.last_name,
         "email": user.email,
+        "is_staff": user.is_staff,
     }
     return Response(user_data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
-    users = User.objects.all().values("id", "username", "email", "first_name", "last_name", "is_staff", "date_joined")
+    users = User.objects.all().values("id", "username", "email", "first_name", "last_name", "is_staff", "date_joined", "is_active","last_login")
     return Response(list(users))
 
 class CreateUserView(generics.CreateAPIView):
@@ -56,6 +57,28 @@ class CreateUserView(generics.CreateAPIView):
                 return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users
+def DeactivateUser(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.is_active = False  # Set is_active to False (0)
+        user.save(update_fields=["is_active"])
+        return Response({"message": "User deactivated successfully!"}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "User not found!"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users
+def ActivateUser(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.is_active = True  # Set is_active to False (0)
+        user.save(update_fields=["is_active"])
+        return Response({"message": "User activated successfully!"}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "User not found!"}, status=status.HTTP_404_NOT_FOUND)
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

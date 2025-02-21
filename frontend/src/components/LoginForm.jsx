@@ -22,7 +22,18 @@ function Form({ route, method }) {
       if (method === "login") {
         localStorage.setItem(ACCESS_TOKEN, res.data.access);
         localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+
+        const userRes = await api.get("/api/user/", {
+          headers: { Authorization: `Bearer ${res.data.access}` },
+        });
+
+        const user = userRes.data;
+        if (!user.is_staff) {
+          alert("Only admins are allowed to log in.");
+          localStorage.clear(); // Clear tokens if user is not admin
+          setLoading(false);
+          return;
+        }
         navigate("/");
       } else {
         navigate("/login");

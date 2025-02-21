@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../api";
@@ -38,70 +39,102 @@ function AllUsers() {
     second: "2-digit",
   };
 
+  const fetchUserData = async () => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      console.error("No token found!");
+      setIsLoadingUser(false);
+      return;
+    }
+
+    try {
+      // Fetch user details independently
+      const userResponse = api.get("/api/user/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Fetch all users independently
+      const allUsersResponse = api.get("/api/all-users/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Wait for both requests to complete independently
+      const [userData, allUsersData] = await Promise.all([
+        userResponse,
+        allUsersResponse,
+      ]);
+
+      // Update state
+      setUser(userData.data);
+      setAllUsers(allUsersData.data);
+      setFilteredData(allUsersData.data);
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        console.warn("Access token expired, attempting to refresh...");
+        await handleTokenRefresh();
+      } else {
+        console.error("Failed to fetch data:", error);
+      }
+    } finally {
+      setIsLoadingUser(false);
+    }
+  };
+
+  const handleTokenRefresh = async () => {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+    if (!refreshToken) {
+      console.error("No refresh token found, logging out...");
+      window.location.href = "/login";
+      return;
+    }
+
+    try {
+      const response = await api.post("/api/token/refresh/", {
+        refresh: refreshToken,
+      });
+
+      const newAccessToken = response.data.access;
+      localStorage.setItem(ACCESS_TOKEN, newAccessToken);
+      console.log("Token refreshed successfully");
+
+      await fetchUserData(); // Retry fetching user data
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      window.location.href = "/login";
+    }
+  };
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem(ACCESS_TOKEN);
-      if (!token) {
-        console.error("No token found!");
-        setIsLoadingUser(false);
-        return;
-      }
-
-      try {
-        const response = await api.get("/api/user/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUser(response.data);
-
-        const allUsersResponse = await api.get("/api/all-users/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setAllUsers(allUsersResponse.data);
-        setFilteredData(allUsersResponse.data);
-      } catch (error) {
-        // Check if the error is due to token expiration
-        if (error.response && error.response.status === 401) {
-          console.warn("Access token expired, attempting to refresh...");
-          await handleTokenRefresh();
-        } else {
-          console.error("Failed to fetch user data:", error);
-        }
-      } finally {
-        setIsLoadingUser(false);
-      }
-    };
-
-    const handleTokenRefresh = async () => {
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN);
-      if (!refreshToken) {
-        console.error("No refresh token found, logging out...");
-        window.location.href = "/login"; // Redirect to login
-        return;
-      }
-
-      try {
-        const response = await api.post("/api/token/refresh/", {
-          refresh: refreshToken,
-        });
-
-        const newAccessToken = response.data.access;
-        localStorage.setItem(ACCESS_TOKEN, newAccessToken); // Update the access token
-        console.log("Token refreshed successfully");
-
-        // Retry fetching user data with the new token
-        await fetchUserData();
-      } catch (error) {
-        console.error("Failed to refresh token:", error);
-        window.location.href = "/login"; // Redirect if refresh fails
-      }
-    };
-
     fetchUserData();
+
+    const interval = setInterval(() => {
+      fetchUserData();
+    }, 60000);
+
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
+
+  const handleDelete = async (userId) => {
+    try {
+      const response = await api.patch(`api/users/${userId}/delete`); // Use api instance
+      alert("User deactivated successfully!");
+      fetchUserData();
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      alert("Failed to deactivate user!");
+    }
+  };
+
+  const handleActivate = async (userId) => {
+    try {
+      const response = await api.patch(`api/users/${userId}/activate`); // Use api instance
+      alert("User activated successfully!");
+      fetchUserData();
+    } catch (error) {
+      console.error("Error activating user:", error);
+      alert("Failed to activate user!");
+    }
+  };
 
   if (isLoadingUser) {
     return (
@@ -145,7 +178,10 @@ function AllUsers() {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Status</th>
                 <th>Date Joined</th>
+                <th>Last Login</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -157,12 +193,46 @@ function AllUsers() {
                     <td>{item.email}</td>
                     <td>{item.is_staff ? "Admin" : "User"}</td>
                     <td>
+                      {item.is_active ? (
+                        <span className="badge text-bg-success">Active</span>
+                      ) : (
+                        <span className="badge text-bg-danger">Inactive</span>
+                      )}
+                    </td>
+                    <td>
                       {item.date_joined
                         ? new Date(item.date_joined).toLocaleDateString(
                             undefined,
                             date_format
                           )
                         : "N/A"}
+                    </td>
+                    <td>
+                      {item.last_login
+                        ? new Date(item.last_login).toLocaleDateString(
+                            undefined,
+                            date_format
+                          )
+                        : "N/A"}
+                    </td>
+                    <td>
+                      {item.is_active ? (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(item.id)}
+                          title="Delete User"
+                        >
+                          Deactivate User
+                        </button>
+                      ) : (
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handleActivate(item.id)}
+                          title="Delete User"
+                        >
+                          Activate User
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Address, ContactDetails,ContactForm, ClientCompany, AboutUs, BlogCategory, Blog, BlogComment,EventCategory, Event, WebinarCategory, Webinar, NewsCategory, News, NewsComment, ProductCategory, Products, ServiceCategory, Service
 from django.core.exceptions import ValidationError
-from datetime import datetime
+from django.utils import timezone
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Update the last_login field
         user = self.user
-        user.last_login = datetime.now()
-        user.save()
+        user.last_login = timezone.now()
+        user.save(update_fields=["last_login"])
 
         return data
