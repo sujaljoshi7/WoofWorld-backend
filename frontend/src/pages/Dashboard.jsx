@@ -3,6 +3,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
 import SearchBar from "../layout/SearchBar";
+import useUser from "../hooks/useUser";
 import planet_earth from "../assets/images/planet-earth.png";
 import user_img from "../assets/images/user.png";
 import blog_img from "../assets/images/blog.png";
@@ -74,7 +75,7 @@ function Dashboard() {
         });
         setUser(response.data);
 
-        const allUsersResponse = await api.get("/api/all-users/", {
+        const allUsersResponse = await api.get("/api/user/all-users/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -139,8 +140,13 @@ function Dashboard() {
 
   return (
     <div className="d-flex">
-      <Sidebar user={user} />
-      <div className="d-flex flex-column flex-grow-1  ms-5 me-5">
+      <div className="sidebar">
+        <Sidebar user={user} />
+      </div>
+      <div
+        className="main-content flex-grow-1 ms-2"
+        style={{ marginLeft: "280px", padding: "20px" }}
+      >
         <SearchBar />
         <div className="d-flex justify-content-between align-items-center mt-5">
           <h1 className="fw-semibold">Hello, {user.first_name}</h1>

@@ -1,8 +1,13 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import user_img from "../assets/images/user.png";
 
 function Sidebar({ user }) {
+  const location = useLocation();
+  const [expandedDropdown, setExpandedDropdown] = useState(null);
+  const toggleDropdown = (menu) => {
+    setExpandedDropdown(expandedDropdown === menu ? null : menu);
+  };
   const [isBlogDropdownExpanded, setIsBlogDropdownExpanded] = useState(false);
   const [isEventDropdownExpanded, setIsEventDropdownExpanded] = useState(false);
   const [isWebinarDropdownExpanded, setIsWebinarDropdownExpanded] =
@@ -19,7 +24,7 @@ function Sidebar({ user }) {
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
-    isServiceDropdownExpanded(false);
+    setIsServiceDropdownExpanded(false);
   };
   const toggleEventDropdown = () => {
     setIsEventDropdownExpanded(!isEventDropdownExpanded);
@@ -27,7 +32,7 @@ function Sidebar({ user }) {
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
-    isServiceDropdownExpanded(false);
+    setIsServiceDropdownExpanded(false);
   };
   const toggleWebinarDropdown = () => {
     setIsWebinarDropdownExpanded(!isWebinarDropdownExpanded);
@@ -35,7 +40,7 @@ function Sidebar({ user }) {
     setIsBlogDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
-    isServiceDropdownExpanded(false);
+    setIsServiceDropdownExpanded(false);
   };
   const toggleNewsDropdown = () => {
     setIsNewsDropdownExpanded(!isNewsDropdownExpanded);
@@ -43,7 +48,7 @@ function Sidebar({ user }) {
     setIsBlogDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
-    isServiceDropdownExpanded(false);
+    setIsServiceDropdownExpanded(false);
   };
   const toggleProductDropdown = () => {
     setIsProductDropdownExpanded(!isProductDropdownExpanded);
@@ -51,7 +56,7 @@ function Sidebar({ user }) {
     setIsBlogDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
-    isServiceDropdownExpanded(false);
+    setIsServiceDropdownExpanded(false);
   };
   const toggleServiceDropdown = () => {
     setIsServiceDropdownExpanded(!isServiceDropdownExpanded);
@@ -62,20 +67,78 @@ function Sidebar({ user }) {
     setIsProductDropdownExpanded(false);
   };
 
+  useEffect(() => {
+    if (location.pathname.startsWith("/products"))
+      setExpandedDropdown("Products");
+    else if (location.pathname.startsWith("/services"))
+      setExpandedDropdown("Services");
+    else if (location.pathname.startsWith("/blogs"))
+      setExpandedDropdown("Blogs");
+    else if (location.pathname.startsWith("/events"))
+      setExpandedDropdown("Events");
+    else if (location.pathname.startsWith("/webinars"))
+      setExpandedDropdown("Webinars");
+    else if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
+
+    // Keep parent dropdown expanded when inside category
+    if (location.pathname.includes("/category")) {
+      if (location.pathname.startsWith("/products"))
+        setExpandedDropdown("Products");
+      if (location.pathname.startsWith("/services"))
+        setExpandedDropdown("Services");
+      if (location.pathname.startsWith("/blogs")) setExpandedDropdown("Blogs");
+      if (location.pathname.startsWith("/events"))
+        setExpandedDropdown("Events");
+      if (location.pathname.startsWith("/webinars"))
+        setExpandedDropdown("Webinars");
+      if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
+    }
+  }, [location.pathname]);
+
+  const menuItems = [
+    {
+      name: "Products",
+      icon: "fa-box-open",
+      subItems: ["Add Category", "Add Product", "View Products"],
+    },
+    {
+      name: "Services",
+      icon: "fa-cogs",
+      subItems: ["Add Category", "Add Service", "View Services"],
+    },
+    {
+      name: "Blogs",
+      icon: "fa-note-sticky",
+      subItems: ["Add Category", "Add Blog", "View Blogs"],
+    },
+    {
+      name: "Events",
+      icon: "fa-calendar-days",
+      subItems: ["Category", "Events"],
+    },
+    {
+      name: "Webinars",
+      icon: "fa-laptop",
+      subItems: ["Add Category", "Add Webinar", "View Webinars"],
+    },
+    {
+      name: "News",
+      icon: "fa-newspaper",
+      subItems: ["Add Category", "Add News", "View News"],
+    },
+  ];
+
   return (
     <div
       className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark"
       style={{ width: "280px", height: "100vh" }}
     >
-      <a
-        href="/"
-        className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
+      <NavLink
+        to="/"
+        className="d-flex align-items-center mb-3 text-white text-decoration-none"
       >
-        <svg className="bi me-2" width="40" height="32">
-          <use xlinkHref="#bootstrap"></use>
-        </svg>
         <span className="fs-4">TechFlow CMS</span>
-      </a>
+      </NavLink>
       <hr />
       <ul className="nav nav-pills flex-column mb-auto">
         <li className="nav-item">
@@ -85,11 +148,9 @@ function Sidebar({ user }) {
               isActive ? "nav-link active" : "nav-link text-white"
             }
           >
-            <i className="fa-solid fa-gauge-high me-3"></i>
-            Dashboard
+            <i className="fa-solid fa-gauge-high me-3"></i> Dashboard
           </NavLink>
         </li>
-
         <li>
           <NavLink
             to="/users"
@@ -97,11 +158,9 @@ function Sidebar({ user }) {
               isActive ? "nav-link active" : "nav-link text-white"
             }
           >
-            <i className="fa-solid fa-user me-3"></i>
-            Users
+            <i className="fa-solid fa-user me-3"></i> Users
           </NavLink>
         </li>
-
         <li>
           <NavLink
             to="/orders"
@@ -109,241 +168,58 @@ function Sidebar({ user }) {
               isActive ? "nav-link active" : "nav-link text-white"
             }
           >
-            <i className="fa-solid fa-box-open me-3"></i>
-            Orders
+            <i className="fa-solid fa-box-open me-3"></i> Orders
           </NavLink>
         </li>
 
-        <li className="nav-item">
-          <a
-            href="#"
-            onClick={toggleProductDropdown}
-            className="nav-link text-white d-flex justify-content-between align-items-center"
-          >
-            <span>
-              <i className="fa-solid fa-newspaper me-3"></i>
-              Products
-            </span>
-            <i
-              className={`fa-solid ${
-                isProductDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
-              }`}
-            ></i>
-          </a>
-          {isProductDropdownExpanded && (
-            <ul className="nav flex-column ms-3">
-              <li>
-                <NavLink to="/reports" className="nav-link text-white">
-                  Add Category
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/analytics" className="nav-link text-white">
-                  Add Product
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/support" className="nav-link text-white">
-                  View Products
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </li>
-
-        <li className="nav-item">
-          <a
-            href="#"
-            onClick={toggleServiceDropdown}
-            className="nav-link text-white d-flex justify-content-between align-items-center"
-          >
-            <span>
-              <i className="fa-solid fa-cogs me-3"></i>
-              Services
-            </span>
-            <i
-              className={`fa-solid ${
-                isServiceDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
-              }`}
-            ></i>
-          </a>
-          {isServiceDropdownExpanded && (
-            <ul className="nav flex-column ms-3">
-              <li>
-                <NavLink to="/reports" className="nav-link text-white">
-                  Add Category
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/analytics" className="nav-link text-white">
-                  Add Service
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/support" className="nav-link text-white">
-                  View Services
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </li>
-
-        <li className="nav-item">
-          <a
-            href="#"
-            onClick={toggleBlogDropdown}
-            className="nav-link text-white d-flex justify-content-between align-items-center"
-          >
-            <span>
-              <i className="fa-solid fa-note-sticky me-3"></i>
-              Blogs
-            </span>
-            <i
-              className={`fa-solid ${
-                isBlogDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
-              }`}
-            ></i>
-          </a>
-          {isBlogDropdownExpanded && (
-            <ul className="nav flex-column ms-3">
-              <li>
-                <NavLink to="/reports" className="nav-link text-white">
-                  Add Category
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/analytics" className="nav-link text-white">
-                  Add Blogs
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/support" className="nav-link text-white">
-                  View Blogs
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </li>
-
-        <li className="nav-item">
-          <a
-            href="#"
-            onClick={toggleEventDropdown}
-            className="nav-link text-white d-flex justify-content-between align-items-center"
-          >
-            <span>
-              <i className="fa-solid fa-calendar-days me-3"></i>
-              Events
-            </span>
-            <i
-              className={`fa-solid ${
-                isEventDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
-              }`}
-            ></i>
-          </a>
-          {isEventDropdownExpanded && (
-            <ul className="nav flex-column ms-3">
-              <li>
-                <NavLink to="/reports" className="nav-link text-white">
-                  Add Category
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/analytics" className="nav-link text-white">
-                  Add Event
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/support" className="nav-link text-white">
-                  View Events
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </li>
-
-        <li className="nav-item">
-          <a
-            href="#"
-            onClick={toggleWebinarDropdown}
-            className="nav-link text-white d-flex justify-content-between align-items-center"
-          >
-            <span>
-              <i className="fa-solid fa-laptop me-3"></i>
-              Webinar
-            </span>
-            <i
-              className={`fa-solid ${
-                isWebinarDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
-              }`}
-            ></i>
-          </a>
-          {isWebinarDropdownExpanded && (
-            <ul className="nav flex-column ms-3">
-              <li>
-                <NavLink to="/reports" className="nav-link text-white">
-                  Add Category
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/analytics" className="nav-link text-white">
-                  Add Webinar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/support" className="nav-link text-white">
-                  View Webinars
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </li>
-
-        <li className="nav-item">
-          <a
-            href="#"
-            onClick={toggleNewsDropdown}
-            className="nav-link text-white d-flex justify-content-between align-items-center"
-          >
-            <span>
-              <i className="fa-solid fa-newspaper me-3"></i>
-              News
-            </span>
-            <i
-              className={`fa-solid ${
-                isNewsDropdownExpanded ? "fa-chevron-up" : "fa-chevron-down"
-              }`}
-            ></i>
-          </a>
-          {isNewsDropdownExpanded && (
-            <ul className="nav flex-column ms-3">
-              <li>
-                <NavLink to="/reports" className="nav-link text-white">
-                  Add Category
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/analytics" className="nav-link text-white">
-                  Add News
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/support" className="nav-link text-white">
-                  View News
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </li>
+        {menuItems.map((menu) => (
+          <li key={menu.name} className="nav-item">
+            <a
+              href="#"
+              onClick={() => toggleDropdown(menu.name)}
+              className="nav-link text-white d-flex justify-content-between align-items-center"
+            >
+              <span>
+                <i className={`fa-solid ${menu.icon} me-3`}></i> {menu.name}
+              </span>
+              <i
+                className={`fa-solid ${
+                  expandedDropdown === menu.name
+                    ? "fa-chevron-up"
+                    : "fa-chevron-down"
+                }`}
+              ></i>
+            </a>
+            {expandedDropdown === menu.name && (
+              <ul className="nav flex-column ms-3">
+                {menu.subItems.map((sub, index) => (
+                  <li key={index}>
+                    <NavLink
+                      to={`/${menu.name.toLowerCase().replace(" ", "")}${
+                        sub === "Events"
+                          ? ""
+                          : "/" + sub.toLowerCase().replace(" ", "")
+                      }`}
+                      className={({ isActive }) =>
+                        isActive ? "nav-link active" : "nav-link text-white"
+                      }
+                      end // <-- This ensures exact matching
+                    >
+                      {sub}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
       </ul>
       <hr />
-      <div className="dropdown">
+      <div className="dropdown pb-3">
         <a
           href="#"
           className="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-          id="dropdownUser1"
           data-bs-toggle="dropdown"
-          aria-expanded="false"
         >
           <img
             src={user_img}
@@ -354,10 +230,7 @@ function Sidebar({ user }) {
           />
           <strong>{user ? user.first_name : "Loading..."}</strong>
         </a>
-        <ul
-          className="dropdown-menu dropdown-menu-dark text-small shadow"
-          aria-labelledby="dropdownUser1"
-        >
+        <ul className="dropdown-menu dropdown-menu-dark text-small shadow">
           <li>
             <a className="dropdown-item" href="#">
               New project...

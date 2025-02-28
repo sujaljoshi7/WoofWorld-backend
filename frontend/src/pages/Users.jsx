@@ -4,8 +4,10 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
 import SearchBar from "../layout/SearchBar";
+import { useNavigate } from "react-router-dom";
 
 function AllUsers() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,7 +56,7 @@ function AllUsers() {
       });
 
       // Fetch all users independently
-      const allUsersResponse = api.get("/api/all-users/", {
+      const allUsersResponse = api.get("/api/user/all-users/", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -116,7 +118,7 @@ function AllUsers() {
 
   const handleDelete = async (userId) => {
     try {
-      const response = await api.patch(`api/users/${userId}/delete`); // Use api instance
+      const response = await api.patch(`api/user/${userId}/delete`); // Use api instance
       alert("User deactivated successfully!");
       fetchUserData();
     } catch (error) {
@@ -127,13 +129,17 @@ function AllUsers() {
 
   const handleActivate = async (userId) => {
     try {
-      const response = await api.patch(`api/users/${userId}/activate`); // Use api instance
+      const response = await api.patch(`api/user/${userId}/activate`); // Use api instance
       alert("User activated successfully!");
       fetchUserData();
     } catch (error) {
       console.error("Error activating user:", error);
       alert("Failed to activate user!");
     }
+  };
+
+  const handleRowClick = (userId) => {
+    navigate(`/view-user/${userId}`);
   };
 
   if (isLoadingUser) {
@@ -153,8 +159,13 @@ function AllUsers() {
 
   return (
     <div className="d-flex">
-      <Sidebar user={user} />
-      <div className="d-flex flex-column flex-grow-1  ms-5 me-5">
+      <div className="sidebar">
+        <Sidebar user={user} />
+      </div>
+      <div
+        className="main-content flex-grow-1 ms-2"
+        style={{ marginLeft: "280px", padding: "20px" }}
+      >
         <SearchBar />
         <div className="container mt-4">
           <h2>Table with Search</h2>
@@ -171,7 +182,7 @@ function AllUsers() {
               onChange={handleSearch}
             />
           </div>
-          <table className="table table-striped table-bordered table-dark">
+          <table className="table table-striped table-bordered table-dark table-hover">
             <thead>
               <tr>
                 <th>ID</th>
@@ -179,7 +190,6 @@ function AllUsers() {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th>Date Joined</th>
                 <th>Last Login</th>
                 <th>Action</th>
               </tr>
@@ -187,10 +197,31 @@ function AllUsers() {
             <tbody>
               {filteredData.length > 0 ? (
                 filteredData.map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    onClick={() => handleRowClick(item.id)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>{item.id}</td>
-                    <td>{`${item.first_name} ${item.last_name}`}</td>
-                    <td>{item.email}</td>
+                    <td
+                      style={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "150px",
+                        verticalAlign: "middle",
+                      }}
+                    >{`${item.first_name} ${item.last_name}`}</td>
+                    <td
+                      style={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        maxWidth: "150px",
+                      }}
+                    >
+                      {item.email}
+                    </td>
                     <td>{item.is_staff ? "Admin" : "User"}</td>
                     <td>
                       {item.is_active ? (
@@ -200,14 +231,6 @@ function AllUsers() {
                       )}
                     </td>
                     <td>
-                      {item.date_joined
-                        ? new Date(item.date_joined).toLocaleDateString(
-                            undefined,
-                            date_format
-                          )
-                        : "N/A"}
-                    </td>
-                    <td>
                       {item.last_login
                         ? new Date(item.last_login).toLocaleDateString(
                             undefined,
@@ -215,7 +238,7 @@ function AllUsers() {
                           )
                         : "N/A"}
                     </td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       {item.is_active ? (
                         <button
                           className="btn btn-danger btn-sm"

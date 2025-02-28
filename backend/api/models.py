@@ -69,26 +69,6 @@ class BlogComment(models.Model):
     comment = models.CharField(max_length=100)
     status = models.CharField(max_length=2)
 
-class EventCategory(models.Model):
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class Event(models.Model):
-    event_category_id = models.ForeignKey(EventCategory, on_delete=models.CASCADE, related_name='event')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='userevent')
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    date = models.CharField(max_length=12)
-    time = models.CharField(max_length=12)
-    location = models.CharField(max_length=100)
-    price = models.IntegerField()
-    image = models.CharField(max_length=255)
-    duration = models.CharField(max_length=100)
-    contact_name = models.CharField(max_length=100)
-    contact_number = models.IntegerField()
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
 
 class WebinarCategory(models.Model):
     name = models.CharField(max_length=100)

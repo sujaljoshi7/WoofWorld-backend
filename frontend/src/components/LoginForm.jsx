@@ -39,7 +39,8 @@ function Form({ route, method }) {
         navigate("/login");
       }
     } catch (error) {
-      alert(error);
+      console.log("Error Details:", error.response.data);
+      alert(error.response?.data?.detail || "Something went wrong");
     } finally {
       setLoading(false);
     }

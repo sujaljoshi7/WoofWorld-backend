@@ -1,0 +1,46 @@
+/* Sidebar Styling */
+.sidebar {
+    width: 280px; /* Fixed width */
+    height: 100vh; /* Full viewport height */
+    position: sticky; /* Sticks to the top */
+    top: 0; /* Sticks to the top */
+    overflow-y: auto; /* Enables scrolling */
+    background-color: #212529; /* Dark theme */
+    color: white;
+    overflow-x: hidden;
+  }
+  
+  /* Prevents the entire page from scrolling when scrolling the sidebar */
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  /* Main Content Styling */
+  .main-content {
+    flex-grow: 1;
+    overflow-y: auto; /* Allows scrolling of main content */
+    height: 100vh; /* Ensures content fills height */
+  }
+
+  .main-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .main-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  .main-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
