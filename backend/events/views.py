@@ -6,6 +6,9 @@ from .models import Category, Event
 from .serializers import EventCategorySerializer, EventSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
+from django.shortcuts import get_object_or_404
+
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -22,19 +25,36 @@ def event_category(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'PATCH'])
 @permission_classes([IsAuthenticated])
-def event(request):
+def event(request, **kwargs):
     if request.method == 'GET':
         events = Event.objects.select_related("created_by").all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == 'POST':
-        serializer = EventSerializer(data=request.data)
+        data = request.data.copy()
+        data['created_by'] = request.user.id
+        serializer = EventSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    if request.method == 'PATCH':
+        id = kwargs.get("id")
+        data = request.data.copy()
+        data['created_by'] = request.user.id
+        try:
+            event = Event.objects.get(id=id)
+        except Event.DoesNotExist:
+            return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = EventSerializer(event, data=request.data, partial=True)  # Use partial=True for PATCH
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PATCH'])
@@ -82,3 +102,10 @@ def deactivate_event(request, event_id):
         return Response({"message": "Event deactivated successfully!"}, status=status.HTTP_200_OK)
     except Category.DoesNotExist:
         return Response({"error": "Event not found!"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_specific_event_data(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    serializer = EventSerializer(event)  # Use your serializer directly
+    return Response(serializer.data, status=status.HTTP_200_OK)

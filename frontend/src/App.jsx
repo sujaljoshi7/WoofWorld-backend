@@ -11,6 +11,9 @@ import AddEventCategory from "./pages/events/AddEventCategory";
 import ViewEventCategories from "./pages/events/ViewCategories";
 import ViewEvents from "./pages/events/Events";
 import AddEvent from "./pages/events/AddEvent";
+import EventDetails from "./pages/events/ViewEvent";
+import EditEvent from "./pages/events/EditEvent";
+import BlogForm from "./pages/blogs/AddBlog";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -71,10 +74,19 @@ function App() {
         />
 
         <Route
-          path="/events/add"
+          path="/events/add/"
           element={
             <ProtectedRoute>
               <AddEvent />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/events/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditEvent />
             </ProtectedRoute>
           }
         />
@@ -93,6 +105,24 @@ function App() {
           element={
             <ProtectedRoute>
               <AddEventCategory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/events/:id"
+          element={
+            <ProtectedRoute>
+              <EventDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/blogs/add"
+          element={
+            <ProtectedRoute>
+              <BlogForm />
             </ProtectedRoute>
           }
         />

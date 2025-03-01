@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Category, Event
 from django.utils import timezone
+from user.serializers import UserSerializer
+from django.contrib.auth.models import User
 
 
 class EventCategorySerializer(serializers.ModelSerializer):
@@ -15,10 +17,17 @@ class EventCategorySerializer(serializers.ModelSerializer):
         return value
 
 class EventSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only = True)
+
     class Meta:
         model = Event
         fields  = '__all__'
     
+    def create(self, validated_data):
+        request = self.context.get("request")
+        validated_data["created_by"] = request.user
+        return super().create(validated_data)
+
     def get_created_by(self, obj):
         return {
             "id": obj.created_by.id,

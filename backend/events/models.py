@@ -21,5 +21,5 @@ class Event(models.Model):
     duration = models.CharField(max_length=100)
     contact_name = models.CharField(max_length=100)
     contact_number = models.BigIntegerField()
-    status = models.BooleanField(default=True)
+    status = models.IntegerField()
     created_at = models.DateTimeField(default=now, editable=False)

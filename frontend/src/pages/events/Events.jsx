@@ -14,7 +14,7 @@ function ViewEvents() {
 
   const { user, isLoading } = useUser();
   const [allEventCategories, setAllEventCategories] = useState([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
@@ -43,6 +43,7 @@ function ViewEvents() {
   };
 
   const fetchEventCategories = async () => {
+    setIsLoadingEvents(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
@@ -62,7 +63,7 @@ function ViewEvents() {
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
-      setIsLoadingCategories(false);
+      setIsLoadingEvents(false);
     }
   };
 
@@ -108,8 +109,8 @@ function ViewEvents() {
     }
   };
 
-  const handleRowClick = (userId) => {
-    navigate(`/view-user/${userId}`);
+  const handleRowClick = (event_id) => {
+    navigate(`/events/${event_id}`);
   };
 
   if (isLoading) {
@@ -205,7 +206,13 @@ function ViewEvents() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
+              {isLoading || isLoadingEvents ? (
+                <tr>
+                  <td colSpan="7" className="text-center">
+                    Loading Events
+                  </td>
+                </tr>
+              ) : filteredData.length > 0 ? (
                 filteredData.map((item) => (
                   <tr
                     key={item.id}
@@ -236,7 +243,9 @@ function ViewEvents() {
                           )
                         : "N/A"}
                     </td>
-                    <td>{item.created_by}</td>
+                    <td>
+                      {item.created_by.first_name} {item.created_by.last_name}
+                    </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       {item.status ? (
                         <button
@@ -260,7 +269,7 @@ function ViewEvents() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center">
+                  <td colSpan="7" className="text-center">
                     No data found
                   </td>
                 </tr>
