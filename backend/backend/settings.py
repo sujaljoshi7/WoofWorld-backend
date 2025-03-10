@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     'api',
     'user',
     'events',
+    'blogs',
+    'webinars',
     'rest_framework',
     'corsheaders',
 ]

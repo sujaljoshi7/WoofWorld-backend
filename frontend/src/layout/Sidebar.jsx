@@ -107,24 +107,9 @@ function Sidebar({ user }) {
       subItems: ["Add Category", "Add Service", "View Services"],
     },
     {
-      name: "Blogs",
-      icon: "fa-note-sticky",
-      subItems: ["Add Category", "Add Blog", "View Blogs"],
-    },
-    {
       name: "Events",
       icon: "fa-calendar-days",
       subItems: ["Category", "Events"],
-    },
-    {
-      name: "Webinars",
-      icon: "fa-laptop",
-      subItems: ["Add Category", "Add Webinar", "View Webinars"],
-    },
-    {
-      name: "News",
-      icon: "fa-newspaper",
-      subItems: ["Add Category", "Add News", "View News"],
     },
   ];
 
@@ -171,6 +156,26 @@ function Sidebar({ user }) {
             <i className="fa-solid fa-box-open me-3"></i> Orders
           </NavLink>
         </li>
+        <li>
+          <NavLink
+            to="/blogs"
+            className={({ isActive }) =>
+              isActive ? "nav-link active" : "nav-link text-white"
+            }
+          >
+            <i className="fa-solid fa-note-sticky me-3"></i> Blogs
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/webinars"
+            className={({ isActive }) =>
+              isActive ? "nav-link active" : "nav-link text-white"
+            }
+          >
+            <i className="fa-solid fa-laptop me-3"></i> Webinars
+          </NavLink>
+        </li>
 
         {menuItems.map((menu) => (
           <li key={menu.name} className="nav-item">
@@ -197,6 +202,8 @@ function Sidebar({ user }) {
                     <NavLink
                       to={`/${menu.name.toLowerCase().replace(" ", "")}${
                         sub === "Events"
+                          ? ""
+                          : sub === "Blogs"
                           ? ""
                           : "/" + sub.toLowerCase().replace(" ", "")
                       }`}

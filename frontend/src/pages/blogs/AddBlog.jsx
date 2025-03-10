@@ -1,3 +1,7 @@
-const BlogForm = () => {};
+import ModifyBlog from "../../components/ModifyBlog";
 
-export default BlogForm;
+function AddBlog() {
+  return <ModifyBlog route="/api/blogs/" method="add" />;
+}
+
+export default AddBlog;

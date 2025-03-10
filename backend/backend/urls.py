@@ -15,8 +15,10 @@ urlpatterns = [
 
     path('api/',include('api.urls')),
     path('api-auth/', include('rest_framework.urls')),
-   path("api/user/", include('user.urls')),
-   path("api/events/", include('events.urls')),
+    path("api/user/", include('user.urls')),
+    path("api/events/", include('events.urls')),
+    path("api/blogs/", include('blogs.urls')),
+    path("api/webinars/", include('webinars.urls')),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

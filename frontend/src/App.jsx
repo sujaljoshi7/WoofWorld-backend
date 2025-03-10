@@ -13,7 +13,14 @@ import ViewEvents from "./pages/events/Events";
 import AddEvent from "./pages/events/AddEvent";
 import EventDetails from "./pages/events/ViewEvent";
 import EditEvent from "./pages/events/EditEvent";
-import BlogForm from "./pages/blogs/AddBlog";
+import AddBlog from "./pages/blogs/AddBlog";
+import EditBlog from "./pages/blogs/EditBlog";
+import ViewBlogs from "./pages/blogs/Blogs";
+import BlogDetails from "./pages/blogs/ViewBlog";
+import ViewWebinars from "./pages/webinars/Webinars";
+import WebinarDetails from "./pages/webinars/ViewWebinar";
+import AddWebinar from "./pages/webinars/AddWebinar";
+import EditWebinar from "./pages/webinars/EditWebinar";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -119,14 +126,71 @@ function App() {
         />
 
         <Route
-          path="/blogs/add"
+          path="/blogs"
           element={
             <ProtectedRoute>
-              <BlogForm />
+              <ViewBlogs />
             </ProtectedRoute>
           }
         />
 
+        <Route
+          path="/blogs/add"
+          element={
+            <ProtectedRoute>
+              <AddBlog />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/blogs/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditBlog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/blogs/:id"
+          element={
+            <ProtectedRoute>
+              <BlogDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/webinars"
+          element={
+            <ProtectedRoute>
+              <ViewWebinars />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/webinars/add"
+          element={
+            <ProtectedRoute>
+              <AddWebinar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/webinars/:id"
+          element={
+            <ProtectedRoute>
+              <WebinarDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/webinars/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditWebinar />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />

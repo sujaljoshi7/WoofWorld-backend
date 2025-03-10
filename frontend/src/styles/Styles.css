@@ -26,6 +26,7 @@
   
   /* Main Content Styling */
   .main-content {
+    width: calc(100% - 280px);
     flex-grow: 1;
     overflow-y: auto; /* Allows scrolling of main content */
     height: 100vh; /* Ensures content fills height */
@@ -109,4 +110,14 @@
     }
   }
 
- 
+  .jodit-wysiwyg {
+    color: #000000 !important; 
+  }
+
+  .blog-content {
+    white-space: normal; /* Wrap the text */
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Break words if necessary */
+    line-height: 1.4; /* Reduce the line height */
+  }
+  

@@ -50,46 +50,6 @@ class AboutUs(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
 
-class BlogCategory(models.Model):
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class Blog(models.Model):
-    blog_category_id = models.ForeignKey(BlogCategory,on_delete=models.CASCADE, related_name='blog')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='author')
-    image = models.CharField(max_length=255)
-    content = models.TextField()
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class BlogComment(models.Model):
-    blog_id = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='blogcomment')
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blogusercomment')
-    comment = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-
-
-class WebinarCategory(models.Model):
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class Webinar(models.Model):
-    webinar_category_id = models.ForeignKey(WebinarCategory, on_delete=models.CASCADE, related_name='webinar')
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    date = models.CharField(max_length=12)
-    time = models.CharField(max_length=12)
-    link = models.CharField(max_length=255)
-    price = models.IntegerField()
-    image = models.CharField(max_length=255)
-    duration = models.CharField(max_length=100)
-    contact_name = models.CharField(max_length=100)
-    contact_number = models.IntegerField()
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
 class NewsCategory(models.Model):
     name = models.CharField(max_length=100)
     status = models.CharField(max_length=2)

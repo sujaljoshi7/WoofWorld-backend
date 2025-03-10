@@ -1,0 +1,131 @@
+.page-builder {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #f1f1f1; /* Light Background */
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .sidebar {
+    width: 300px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    transition: 0.3s ease;
+  }
+  
+  .sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #007bff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .sidebar button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: none;
+    background: #007bff;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .sidebar button:hover {
+    background: #0056b3;
+    letter-spacing: 1px;
+  }
+  
+  .canvas {
+    flex: 1;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    min-height: 80vh;
+    border: 2px dashed #007bff;
+    transition: 0.3s ease;
+    overflow-y: auto;
+  }
+  
+  .canvas:hover {
+    border: 2px solid #007bff;
+  }
+  
+  .canvas h2,
+  .canvas p {
+    margin-bottom: 20px;
+  }
+  
+  .canvas img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+  
+  hr {
+    border: none;
+    height: 2px;
+    background: #ddd;
+    margin: 20px 0;
+  }
+  
+  .btn-save {
+    display: block;
+    width: 200px;
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    text-align: center;
+    margin: 20px auto;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .btn-save:hover {
+    background: #218838;
+    letter-spacing: 1px;
+  }
+  
+  .delete-btn {
+    background: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s ease;
+  }
+  
+  .delete-btn:hover {
+    background: #c82333;
+  }
+  
+  .image-upload input {
+    display: none;
+  }
+  
+  .image-upload label {
+    padding: 12px 20px;
+    background: #007bff;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .image-upload label:hover {
+    background: #0056b3;
+  }
+  
