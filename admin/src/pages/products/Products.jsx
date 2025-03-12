@@ -25,7 +25,7 @@ function ViewProducts() {
 
     if (allProducts) {
       const filtered = allProducts.filter((item) =>
-        `${item.title} ${item.status} ${item.created_by}`
+        `${item.name} ${item.status} ${item.created_by}`
           .toLowerCase()
           .includes(value)
       );
@@ -196,7 +196,7 @@ function ViewProducts() {
             </div>
           )}
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Blogs</h2>
+            <h2>Products</h2>
             <button
               className="btn btn-warning"
               onClick={() => navigate("/products/add")}

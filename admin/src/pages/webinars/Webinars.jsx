@@ -25,7 +25,7 @@ function ViewWebinars() {
 
     if (allWebinars) {
       const filtered = allWebinars.filter((item) =>
-        `${item.title} ${item.status} ${item.created_by}`
+        `${item.name} ${item.status} ${item.created_by}`
           .toLowerCase()
           .includes(value)
       );
