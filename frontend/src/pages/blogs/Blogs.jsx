@@ -68,13 +68,21 @@ function ViewBlogs() {
   };
 
   useEffect(() => {
+    if (message) {
+      const toastElement = document.getElementById("liveToast");
+      if (toastElement) {
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+      }
+    }
+
     fetchEventCategories();
     const interval = setInterval(() => {
       fetchEventCategories();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
+  }, [message]);
 
   const handleDeactivate = async (blog_id) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
@@ -160,19 +168,32 @@ function ViewBlogs() {
           {message && (
             <div className="col-12 col-sm-auto mt-4 mt-sm-0">
               <div
-                className="alert alert-success alert-dismissible fade show"
-                role="alert"
+                className="position-fixed bottom-0 end-0 p-3"
+                style={{ zIndex: 11 }} // React style syntax
               >
-                {message}
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="alert"
-                  aria-label="Close"
-                ></button>
+                <div
+                  id="liveToast"
+                  className="toast hide"
+                  role="alert"
+                  aria-live="assertive"
+                  aria-atomic="true"
+                >
+                  <div className="toast-header">
+                    <strong className="me-auto">TechFlow CMS</strong>
+                    <small>Just Now</small>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      data-bs-dismiss="toast"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div className="toast-body">{message}</div>
+                </div>
               </div>
             </div>
           )}
+
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Blogs</h2>
             <button

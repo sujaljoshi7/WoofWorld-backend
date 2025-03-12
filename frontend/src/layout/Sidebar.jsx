@@ -8,7 +8,10 @@ function Sidebar({ user }) {
   const toggleDropdown = (menu) => {
     setExpandedDropdown(expandedDropdown === menu ? null : menu);
   };
-  const [isBlogDropdownExpanded, setIsBlogDropdownExpanded] = useState(false);
+  const [
+    isCompanyDetailsDropdownExpanded,
+    setIsCompanyDetailsDropdownExpanded,
+  ] = useState(false);
   const [isEventDropdownExpanded, setIsEventDropdownExpanded] = useState(false);
   const [isWebinarDropdownExpanded, setIsWebinarDropdownExpanded] =
     useState(false);
@@ -18,8 +21,8 @@ function Sidebar({ user }) {
   const [isServiceDropdownExpanded, setIsServiceDropdownExpanded] =
     useState(false);
 
-  const toggleBlogDropdown = () => {
-    setIsBlogDropdownExpanded(!isBlogDropdownExpanded);
+  const toggleCompanyDetailsDropdown = () => {
+    setIsCompanyDetailsDropdownExpanded(!isCompanyDetailsDropdownExpanded);
     setIsEventDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
@@ -28,7 +31,7 @@ function Sidebar({ user }) {
   };
   const toggleEventDropdown = () => {
     setIsEventDropdownExpanded(!isEventDropdownExpanded);
-    setIsBlogDropdownExpanded(false);
+    setIsCompanyDetailsDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
@@ -37,7 +40,7 @@ function Sidebar({ user }) {
   const toggleWebinarDropdown = () => {
     setIsWebinarDropdownExpanded(!isWebinarDropdownExpanded);
     setIsEventDropdownExpanded(false);
-    setIsBlogDropdownExpanded(false);
+    setIsCompanyDetailsDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
@@ -45,7 +48,7 @@ function Sidebar({ user }) {
   const toggleNewsDropdown = () => {
     setIsNewsDropdownExpanded(!isNewsDropdownExpanded);
     setIsEventDropdownExpanded(false);
-    setIsBlogDropdownExpanded(false);
+    setIsCompanyDetailsDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
@@ -53,7 +56,7 @@ function Sidebar({ user }) {
   const toggleProductDropdown = () => {
     setIsProductDropdownExpanded(!isProductDropdownExpanded);
     setIsEventDropdownExpanded(false);
-    setIsBlogDropdownExpanded(false);
+    setIsCompanyDetailsDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
@@ -61,7 +64,7 @@ function Sidebar({ user }) {
   const toggleServiceDropdown = () => {
     setIsServiceDropdownExpanded(!isServiceDropdownExpanded);
     setIsEventDropdownExpanded(false);
-    setIsBlogDropdownExpanded(false);
+    setIsCompanyDetailsDropdownExpanded(false);
     setIsWebinarDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
@@ -79,6 +82,8 @@ function Sidebar({ user }) {
     else if (location.pathname.startsWith("/webinars"))
       setExpandedDropdown("Webinars");
     else if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
+    else if (location.pathname.startsWith("/companyinfo"))
+      setExpandedDropdown("Company Info");
 
     // Keep parent dropdown expanded when inside category
     if (location.pathname.includes("/category")) {
@@ -92,6 +97,8 @@ function Sidebar({ user }) {
       if (location.pathname.startsWith("/webinars"))
         setExpandedDropdown("Webinars");
       if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
+      if (location.pathname.startsWith("/companyinfo"))
+        setExpandedDropdown("Company Info");
     }
   }, [location.pathname]);
 
@@ -99,17 +106,22 @@ function Sidebar({ user }) {
     {
       name: "Products",
       icon: "fa-box-open",
-      subItems: ["Add Category", "Add Product", "View Products"],
+      subItems: ["Category", "Products"],
     },
     {
       name: "Services",
       icon: "fa-cogs",
-      subItems: ["Add Category", "Add Service", "View Services"],
+      subItems: ["Category", "Services"],
     },
     {
       name: "Events",
       icon: "fa-calendar-days",
       subItems: ["Category", "Events"],
+    },
+    {
+      name: "Company Info",
+      icon: "fa-calendar-days",
+      subItems: ["About Us", "Partner Company", "Contact Details"],
     },
   ];
 
@@ -203,7 +215,9 @@ function Sidebar({ user }) {
                       to={`/${menu.name.toLowerCase().replace(" ", "")}${
                         sub === "Events"
                           ? ""
-                          : sub === "Blogs"
+                          : sub === "Services"
+                          ? ""
+                          : sub === "Products"
                           ? ""
                           : "/" + sub.toLowerCase().replace(" ", "")
                       }`}
@@ -238,24 +252,6 @@ function Sidebar({ user }) {
           <strong>{user ? user.first_name : "Loading..."}</strong>
         </a>
         <ul className="dropdown-menu dropdown-menu-dark text-small shadow">
-          <li>
-            <a className="dropdown-item" href="#">
-              New project...
-            </a>
-          </li>
-          <li>
-            <a className="dropdown-item" href="#">
-              Settings
-            </a>
-          </li>
-          <li>
-            <a className="dropdown-item" href="#">
-              Profile
-            </a>
-          </li>
-          <li>
-            <hr className="dropdown-divider" />
-          </li>
           <li>
             <a className="dropdown-item" href="/logout">
               Sign out

@@ -19,6 +19,9 @@ urlpatterns = [
     path("api/events/", include('events.urls')),
     path("api/blogs/", include('blogs.urls')),
     path("api/webinars/", include('webinars.urls')),
+    path("api/services/", include('services.urls')),
+    path("api/products/", include('products.urls')),
+    path("api/companydetails/", include('companydetails.urls')),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

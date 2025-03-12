@@ -17,21 +17,7 @@ class Address(models.Model):
         return str(self.created_at)
 
 
-class ContactDetails(models.Model):
-    company_name = models.CharField(max_length=100)
-    company_tagline = models.CharField(max_length=100)
-    company_description = models.TextField()
-    company_address = models.TextField()
-    company_contact = models.CharField(max_length=10)
-    company_logo = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=6)
-    postal_code = models.CharField(max_length=6)
-    social_links = models.JSONField()
-    office_hours = models.CharField(max_length=50)
-    google_map_url = models.CharField(max_length=500)
-    established_year = models.CharField(max_length=10)
+
 
 class ContactForm(models.Model):
     email = models.CharField(max_length=100)
@@ -40,57 +26,5 @@ class ContactForm(models.Model):
     status = models.CharField(max_length=2)
     created_at = models.DateTimeField(default=datetime.now(), editable=False)
 
-class ClientCompany(models.Model):
-    company_name = models.CharField(max_length=100)
-    company_logo = models.CharField(max_length=255)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
 
-class AboutUs(models.Model):
-    title = models.CharField(max_length=100)
-    content = models.TextField()
 
-class NewsCategory(models.Model):
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class News(models.Model):
-    news_category_id = models.ForeignKey(NewsCategory, on_delete=models.CASCADE, related_name='news')
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    image = models.CharField(max_length=255)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class NewsComment(models.Model):
-    news_id = models.ForeignKey(News, on_delete=models.CASCADE, related_name='newscomment')
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='newsusercomment')
-    comment = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-
-class ProductCategory(models.Model):
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class Products(models.Model):
-    product_category_id = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, related_name='product')
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    price = models.IntegerField()
-    brand = models.CharField(max_length=100)
-    image = models.CharField(max_length=255)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class ServiceCategory(models.Model):
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)
-
-class Service(models.Model):
-    service_category_id = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, related_name='service')
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=2)
-    created_at = models.DateTimeField(default=datetime.now(), editable=False)

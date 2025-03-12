@@ -21,6 +21,20 @@ import ViewWebinars from "./pages/webinars/Webinars";
 import WebinarDetails from "./pages/webinars/ViewWebinar";
 import AddWebinar from "./pages/webinars/AddWebinar";
 import EditWebinar from "./pages/webinars/EditWebinar";
+import ViewServiceCategories from "./pages/services/ViewCategories";
+import AddServiceCategory from "./pages/services/AddServiceCategory";
+import ViewServices from "./pages/services/Services";
+import AddService from "./pages/services/AddService";
+import ServiceDetails from "./pages/services/ViewService";
+import EditService from "./pages/services/EditService";
+import AddProductCategory from "./pages/products/AddProductCategory";
+import ViewProductCategories from "./pages/products/ViewCategories";
+import ViewProducts from "./pages/products/Products";
+import AddProduct from "./pages/products/AddProduct";
+import EditProduct from "./pages/products/EditProduct";
+import ProductDetails from "./pages/products/ViewProduct";
+import AddAboutUs from "./pages/companydetails/AddAboutus";
+import AboutUs from "./pages/companydetails/AboutUs";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -188,6 +202,118 @@ function App() {
           element={
             <ProtectedRoute>
               <EditWebinar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/category/"
+          element={
+            <ProtectedRoute>
+              <ViewServiceCategories />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/category/add"
+          element={
+            <ProtectedRoute>
+              <AddServiceCategory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services"
+          element={
+            <ProtectedRoute>
+              <ViewServices />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/add"
+          element={
+            <ProtectedRoute>
+              <AddService />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/:id"
+          element={
+            <ProtectedRoute>
+              <ServiceDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditService />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/category"
+          element={
+            <ProtectedRoute>
+              <ViewProductCategories />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/category/add"
+          element={
+            <ProtectedRoute>
+              <AddProductCategory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute>
+              <ViewProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/add"
+          element={
+            <ProtectedRoute>
+              <AddProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id"
+          element={
+            <ProtectedRoute>
+              <ProductDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/companyinfo/aboutus"
+          element={
+            <ProtectedRoute>
+              <AboutUs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/companyinfo/aboutus/edit"
+          element={
+            <ProtectedRoute>
+              <AddAboutUs />
             </ProtectedRoute>
           }
         />

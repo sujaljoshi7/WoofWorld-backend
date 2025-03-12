@@ -51,6 +51,54 @@ function AddCategory({ route, method }) {
       } finally {
         setLoading(false);
       }
+    } else if (method === "Service") {
+      try {
+        // Proceed with storing event category
+        const res = await api.post(route, {
+          name: categoryName.trim(),
+          status: categoryStatus,
+          created_by: user.first_name + " " + user.last_name,
+        });
+
+        alert("Category added successfully!");
+        navigate("/services/category"); // Redirect to categories list page
+      } catch (error) {
+        if (error.response && error.response.data) {
+          if (error.response.data.name) {
+            setError(error.response.data.name[0]); // Extracts the first error message
+          } else {
+            setError("An error occurred while adding the category.");
+          }
+        } else {
+          setError("An unexpected error occurred. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else if (method === "product") {
+      try {
+        // Proceed with storing event category
+        const res = await api.post(route, {
+          name: categoryName.trim(),
+          status: categoryStatus,
+          created_by: user.first_name + " " + user.last_name,
+        });
+
+        alert("Category added successfully!");
+        navigate("/products/category"); // Redirect to categories list page
+      } catch (error) {
+        if (error.response && error.response.data) {
+          if (error.response.data.name) {
+            setError(error.response.data.name[0]); // Extracts the first error message
+          } else {
+            setError("An error occurred while adding the category.");
+          }
+        } else {
+          setError("An unexpected error occurred. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

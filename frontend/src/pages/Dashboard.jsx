@@ -14,6 +14,7 @@ function Dashboard() {
   const [userCount, setUserCount] = useState(0);
   const [blogsCount, setBlogsCount] = useState(0);
   const [eventsCount, setEventsCount] = useState(0);
+  const [webinarCount, setWebinarCount] = useState(0);
   const [location, setLocation] = useState({ country: "", city: "" });
   const [currentTime, setCurrentTime] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,25 +43,30 @@ function Dashboard() {
     }
 
     try {
-      const [userRes, usersRes, blogsRes, eventsRes] = await Promise.all([
-        api.get("/api/user/", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get("/api/user/all-users/", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get("/api/blogs/", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get("/api/events/event", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      const [userRes, usersRes, blogsRes, eventsRes, webinarRes] =
+        await Promise.all([
+          api.get("/api/user/", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          api.get("/api/user/all-users/", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          api.get("/api/blogs/", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          api.get("/api/events/event", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          api.get("/api/webinars/", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
       setUser(userRes.data);
       setUserCount(usersRes.data.length);
       setBlogsCount(blogsRes.data.length);
       setEventsCount(eventsRes.data.length);
+      setWebinarCount(webinarRes.data.length);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -139,7 +145,11 @@ function Dashboard() {
           <DashboardCard title="Users" count={userCount} image={user_img} />
           <DashboardCard title="Blogs" count={blogsCount} image={blog_img} />
           <DashboardCard title="Events" count={eventsCount} image={event_img} />
-          <DashboardCard title="Webinars" count={100} image={webinar_img} />
+          <DashboardCard
+            title="Webinars"
+            count={webinarCount}
+            image={webinar_img}
+          />
         </div>
       </div>
     </div>

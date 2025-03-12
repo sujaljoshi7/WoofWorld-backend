@@ -63,6 +63,9 @@ INSTALLED_APPS = [
     'events',
     'blogs',
     'webinars',
+    'services',
+    'products',
+    'companydetails',
     'rest_framework',
     'corsheaders',
 ]
