@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
-import SearchBar from "../layout/SearchBar";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination"; // Import Pagination Component
 
@@ -179,10 +178,9 @@ function AllUsers() {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
         <div className="container mt-4">
-          <h2>Table with Search</h2>
-          <div className="input-group mb-3">
+          <h2>Users</h2>
+          <div className="input-group mt-3 mb-3">
             <span className="input-group-text bg-light border-0">
               <i className="fa fa-search"></i>
             </span>
@@ -274,7 +272,7 @@ function AllUsers() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center">
+                  <td colSpan="7" className="text-center">
                     No data found
                   </td>
                 </tr>

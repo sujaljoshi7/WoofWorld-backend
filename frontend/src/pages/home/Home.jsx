@@ -4,10 +4,11 @@ import api from "../../api";
 import { motion } from "framer-motion";
 
 import "../../styles/Home.css";
-import logo from "../../assets/images/logo/logo.png";
+import logo from "../../assets/images/logo/logo1.png";
 import down_arrow from "../../assets/images/icons/down-arrow.png";
-import meeting from "../../assets/images/hero/meeting.jpg";
-import team from "../../assets/images/hero/team.jpg";
+import image1 from "../../assets/images/hero/image1.jpg";
+import image2 from "../../assets/images/hero/image2.jpg";
+import image3 from "../../assets/images/hero/image3.jpg";
 import company1 from "../../assets/images/companies/company1.png";
 import company2 from "../../assets/images/companies/company2.png";
 import company3 from "../../assets/images/companies/company3.png";
@@ -286,7 +287,7 @@ function Home() {
                     </button>
                   </div>
                   <div className="black-overlay"></div>
-                  <img src={meeting} alt="Meeting" className="hero-image" />
+                  <img src={image1} alt="Hero Image1" className="hero-image" />
                 </div>
               </div>
               <div className="carousel-item">
@@ -302,7 +303,7 @@ function Home() {
                     <button className="btn hero-btn">Get Started Today</button>
                   </div>
                   <div className="black-overlay"></div>
-                  <img src={team} alt="Meeting" className="hero-image" />
+                  <img src={image2} alt="Hero Image2" className="hero-image" />
                 </div>
               </div>
             </div>
@@ -395,7 +396,21 @@ function Home() {
             cloud computing, AI, IoT, and cybersecurity, ensuring businesses
             stay ahead in the digital era. 🚀
           </p>
-          <div className="services-cards"></div>
+          <div className="services-cards">
+            <div className="card" style={{ width: "350px" }}>
+              <img src={image1} className="card-img-top" alt="..." />
+              <div className="card-body">
+                <h5 className="card-title">Card title</h5>
+                <p className="card-text">
+                  Some quick example text to build on the card title and make up
+                  the bulk of the card's content.
+                </p>
+                <a href="#" className="btn btn-primary">
+                  Go somewhere
+                </a>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </div>

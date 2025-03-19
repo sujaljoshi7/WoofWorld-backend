@@ -14,7 +14,7 @@ function Sidebar({ user }) {
     setIsCompanyDetailsDropdownExpanded,
   ] = useState(false);
   const [isEventDropdownExpanded, setIsEventDropdownExpanded] = useState(false);
-  const [isWebinarDropdownExpanded, setIsWebinarDropdownExpanded] =
+  const [isAdoptionDropdownExpanded, setIsAdoptionDropdownExpanded] =
     useState(false);
   const [isNewsDropdownExpanded, setIsNewsDropdownExpanded] = useState(false);
   const [isProductDropdownExpanded, setIsProductDropdownExpanded] =
@@ -25,7 +25,7 @@ function Sidebar({ user }) {
   const toggleCompanyDetailsDropdown = () => {
     setIsCompanyDetailsDropdownExpanded(!isCompanyDetailsDropdownExpanded);
     setIsEventDropdownExpanded(false);
-    setIsWebinarDropdownExpanded(false);
+    setIsAdoptionDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
@@ -33,13 +33,13 @@ function Sidebar({ user }) {
   const toggleEventDropdown = () => {
     setIsEventDropdownExpanded(!isEventDropdownExpanded);
     setIsCompanyDetailsDropdownExpanded(false);
-    setIsWebinarDropdownExpanded(false);
+    setIsAdoptionDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
   };
-  const toggleWebinarDropdown = () => {
-    setIsWebinarDropdownExpanded(!isWebinarDropdownExpanded);
+  const toggleAdoptionDropdown = () => {
+    setIsAdoptionDropdownExpanded(!isAdoptionDropdownExpanded);
     setIsEventDropdownExpanded(false);
     setIsCompanyDetailsDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
@@ -50,7 +50,7 @@ function Sidebar({ user }) {
     setIsNewsDropdownExpanded(!isNewsDropdownExpanded);
     setIsEventDropdownExpanded(false);
     setIsCompanyDetailsDropdownExpanded(false);
-    setIsWebinarDropdownExpanded(false);
+    setIsAdoptionDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
   };
@@ -58,7 +58,7 @@ function Sidebar({ user }) {
     setIsProductDropdownExpanded(!isProductDropdownExpanded);
     setIsEventDropdownExpanded(false);
     setIsCompanyDetailsDropdownExpanded(false);
-    setIsWebinarDropdownExpanded(false);
+    setIsAdoptionDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsServiceDropdownExpanded(false);
   };
@@ -66,7 +66,7 @@ function Sidebar({ user }) {
     setIsServiceDropdownExpanded(!isServiceDropdownExpanded);
     setIsEventDropdownExpanded(false);
     setIsCompanyDetailsDropdownExpanded(false);
-    setIsWebinarDropdownExpanded(false);
+    setIsAdoptionDropdownExpanded(false);
     setIsNewsDropdownExpanded(false);
     setIsProductDropdownExpanded(false);
   };
@@ -80,8 +80,8 @@ function Sidebar({ user }) {
       setExpandedDropdown("Blogs");
     else if (location.pathname.startsWith("/events"))
       setExpandedDropdown("Events");
-    else if (location.pathname.startsWith("/webinars"))
-      setExpandedDropdown("Webinars");
+    else if (location.pathname.startsWith("/adoption"))
+      setExpandedDropdown("Adoption");
     else if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
     else if (location.pathname.startsWith("/companyinfo"))
       setExpandedDropdown("Company Info");
@@ -95,8 +95,8 @@ function Sidebar({ user }) {
       if (location.pathname.startsWith("/blogs")) setExpandedDropdown("Blogs");
       if (location.pathname.startsWith("/events"))
         setExpandedDropdown("Events");
-      if (location.pathname.startsWith("/webinars"))
-        setExpandedDropdown("Webinars");
+      if (location.pathname.startsWith("/adoption"))
+        setExpandedDropdown("Adoption");
       if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
       if (location.pathname.startsWith("/companyinfo"))
         setExpandedDropdown("Company Info");
@@ -104,6 +104,11 @@ function Sidebar({ user }) {
   }, [location.pathname]);
 
   const menuItems = [
+    {
+      name: "Adoption",
+      icon: "fa-dog",
+      subItems: ["Breeds", "View"],
+    },
     {
       name: "Products",
       icon: "fa-box-open",
@@ -135,7 +140,7 @@ function Sidebar({ user }) {
         to="/"
         className="d-flex align-items-center mb-3 text-white text-decoration-none"
       >
-        <span className="fs-4">TechFlow CMS</span>
+        <span className="fs-4">WoofWorld Admin</span>
       </NavLink>
       <hr />
       <ul className="nav nav-pills flex-column mb-auto">
@@ -177,16 +182,6 @@ function Sidebar({ user }) {
             }
           >
             <i className="fa-solid fa-note-sticky me-3"></i> Blogs
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/webinars"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link text-white"
-            }
-          >
-            <i className="fa-solid fa-laptop me-3"></i> Webinars
           </NavLink>
         </li>
 

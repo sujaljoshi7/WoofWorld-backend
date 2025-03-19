@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Increase file upload size limit
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -65,6 +69,7 @@ INSTALLED_APPS = [
     'webinars',
     'services',
     'products',
+    'adoption',
     'companydetails',
     'rest_framework',
     'corsheaders',

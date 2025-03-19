@@ -5,7 +5,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api"; // Your Axios API instance
 const BASE_URL = import.meta.env.VITE_API_URL;
 import Sidebar from "../../layout/Sidebar";
-import SearchBar from "../../layout/SearchBar";
 import "../../styles/styles.css";
 
 const ServiceDetails = () => {
@@ -50,7 +49,6 @@ const ServiceDetails = () => {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
         <div className="container mt-4">
           {loading ? (
             <div className="d-flex justify-content-center">

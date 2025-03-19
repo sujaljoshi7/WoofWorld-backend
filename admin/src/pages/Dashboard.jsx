@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
-import SearchBar from "../layout/SearchBar";
-import planet_earth from "../assets/images/planet-earth.png";
 import user_img from "../assets/images/user.png";
 import blog_img from "../assets/images/blog.png";
 import event_img from "../assets/images/event.png";
-import webinar_img from "../assets/images/webinar.png";
+import webinar_img from "../assets/images/puppy.png";
 import { useNavigate } from "react-router-dom";
 import {
   PieChart,
@@ -39,7 +37,7 @@ function Dashboard() {
     { name: "Users", value: userCount },
     { name: "Blogs", value: blogsCount },
     { name: "Events", value: eventsCount },
-    { name: "Webinars", value: webinarCount },
+    { name: "Adoptions", value: webinarCount },
   ];
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -48,7 +46,7 @@ function Dashboard() {
     { name: "Users", count: userCount },
     { name: "Blogs", count: blogsCount },
     { name: "Events", count: eventsCount },
-    { name: "Webinars", count: webinarCount },
+    { name: "Adoptioons", count: webinarCount },
   ];
 
   const fetchLocation = async () => {
@@ -87,7 +85,7 @@ function Dashboard() {
           api.get("/api/events/event", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          api.get("/api/webinars/", {
+          api.get("/api/adoption/", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -156,7 +154,6 @@ function Dashboard() {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
         <div className="d-flex justify-content-between align-items-center mt-5">
           <h1 className="fw-semibold">Hello, {user?.first_name}</h1>
         </div>
@@ -186,7 +183,7 @@ function Dashboard() {
             onClick={handleRowClick}
           />
           <DashboardCard
-            title="Webinars"
+            title="Adoptions"
             count={webinarCount}
             image={webinar_img}
             onClick={handleRowClick}

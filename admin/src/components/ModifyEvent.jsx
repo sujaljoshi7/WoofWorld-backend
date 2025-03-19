@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
-import SearchBar from "../layout/SearchBar";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/styles.css";
 import useUser from "../hooks/useUser";
@@ -168,8 +167,6 @@ function AddEvent({ route, method }) {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
-
         <div className="container mt-4">
           <div className="row align-items-center mb-7">
             <div className="col">

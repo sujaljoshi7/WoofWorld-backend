@@ -5,7 +5,6 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import { useLocation } from "react-router-dom";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
-import SearchBar from "../layout/SearchBar";
 import "../styles/Styles.css";
 
 import useUser from "../hooks/useUser";
@@ -110,8 +109,6 @@ const ModifyBlog = ({ method }) => {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
-
         <div className="container mt-4">
           <div className="row align-items-center mb-7">
             <div className="col">

@@ -17,10 +17,11 @@ import AddBlog from "./pages/blogs/AddBlog";
 import EditBlog from "./pages/blogs/EditBlog";
 import ViewBlogs from "./pages/blogs/Blogs";
 import BlogDetails from "./pages/blogs/ViewBlog";
-import ViewWebinars from "./pages/webinars/Webinars";
-import WebinarDetails from "./pages/webinars/ViewWebinar";
-import AddWebinar from "./pages/webinars/AddWebinar";
-import EditWebinar from "./pages/webinars/EditWebinar";
+import ViewAdoption from "./pages/adoption/Adoption";
+import AdoptionDetails from "./pages/adoption/ViewAdoption";
+import AddAdoption from "./pages/adoption/AddAdoption";
+import AddBreed from "./pages/adoption/AddBreed";
+import EditAdoption from "./pages/adoption/EditAdoption";
 import ViewServiceCategories from "./pages/services/ViewCategories";
 import AddServiceCategory from "./pages/services/AddServiceCategory";
 import ViewServices from "./pages/services/Services";
@@ -35,6 +36,7 @@ import EditProduct from "./pages/products/EditProduct";
 import ProductDetails from "./pages/products/ViewProduct";
 import AddAboutUs from "./pages/companydetails/AddAboutus";
 import AboutUs from "./pages/companydetails/AboutUs";
+import ViewBreeds from "./pages/adoption/ViewBreeds";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -174,34 +176,50 @@ function App() {
           }
         />
         <Route
-          path="/webinars"
+          path="/adoption"
           element={
             <ProtectedRoute>
-              <ViewWebinars />
+              <ViewAdoption />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/webinars/add"
+          path="/adoption/add"
           element={
             <ProtectedRoute>
-              <AddWebinar />
+              <AddAdoption />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/webinars/:id"
+          path="/adoption/breeds"
           element={
             <ProtectedRoute>
-              <WebinarDetails />
+              <ViewBreeds />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/webinars/edit/:id"
+          path="/adoption/breed/add"
           element={
             <ProtectedRoute>
-              <EditWebinar />
+              <AddBreed />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/adoption/:id"
+          element={
+            <ProtectedRoute>
+              <AdoptionDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/adoption/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditAdoption />
             </ProtectedRoute>
           }
         />

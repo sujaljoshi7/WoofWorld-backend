@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
-import SearchBar from "../../layout/SearchBar";
 
 import Pagination from "../../components/Pagination"; // Import Pagination Component
 import useUser from "../../hooks/useUser";
@@ -160,7 +159,6 @@ function ViewBlogs() {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
         <div className="container mt-4">
           {error && (
             <div className="col-12 col-sm-auto mt-4 mt-sm-0">

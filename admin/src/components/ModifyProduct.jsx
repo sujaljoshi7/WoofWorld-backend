@@ -5,7 +5,6 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import { useLocation } from "react-router-dom";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
-import SearchBar from "../layout/SearchBar";
 import "../styles/Styles.css";
 import LoadingIndicator from "./LoadingIndicator";
 
@@ -132,8 +131,6 @@ const ModifyProduct = ({ method }) => {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
-
         <div className="container mt-4">
           <div className="row align-items-center mb-7">
             <div className="col">
@@ -213,7 +210,7 @@ const ModifyProduct = ({ method }) => {
                           {category.name}
                         </option>
                       ))}
-                    </select>{" "}
+                    </select>
                   </div>
                   <div className="col-6 mb-4">
                     <label className="form-label" htmlFor="status">
