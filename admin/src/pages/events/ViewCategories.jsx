@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import SearchBar from "../../layout/SearchBar";
+import Sidebar from "../../layout/Sidebar";
 
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";

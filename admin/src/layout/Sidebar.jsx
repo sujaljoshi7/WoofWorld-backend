@@ -9,67 +9,6 @@ function Sidebar({ user }) {
   const toggleDropdown = (menu) => {
     setExpandedDropdown(expandedDropdown === menu ? null : menu);
   };
-  const [
-    isCompanyDetailsDropdownExpanded,
-    setIsCompanyDetailsDropdownExpanded,
-  ] = useState(false);
-  const [isEventDropdownExpanded, setIsEventDropdownExpanded] = useState(false);
-  const [isAdoptionDropdownExpanded, setIsAdoptionDropdownExpanded] =
-    useState(false);
-  const [isNewsDropdownExpanded, setIsNewsDropdownExpanded] = useState(false);
-  const [isProductDropdownExpanded, setIsProductDropdownExpanded] =
-    useState(false);
-  const [isServiceDropdownExpanded, setIsServiceDropdownExpanded] =
-    useState(false);
-
-  const toggleCompanyDetailsDropdown = () => {
-    setIsCompanyDetailsDropdownExpanded(!isCompanyDetailsDropdownExpanded);
-    setIsEventDropdownExpanded(false);
-    setIsAdoptionDropdownExpanded(false);
-    setIsNewsDropdownExpanded(false);
-    setIsProductDropdownExpanded(false);
-    setIsServiceDropdownExpanded(false);
-  };
-  const toggleEventDropdown = () => {
-    setIsEventDropdownExpanded(!isEventDropdownExpanded);
-    setIsCompanyDetailsDropdownExpanded(false);
-    setIsAdoptionDropdownExpanded(false);
-    setIsNewsDropdownExpanded(false);
-    setIsProductDropdownExpanded(false);
-    setIsServiceDropdownExpanded(false);
-  };
-  const toggleAdoptionDropdown = () => {
-    setIsAdoptionDropdownExpanded(!isAdoptionDropdownExpanded);
-    setIsEventDropdownExpanded(false);
-    setIsCompanyDetailsDropdownExpanded(false);
-    setIsNewsDropdownExpanded(false);
-    setIsProductDropdownExpanded(false);
-    setIsServiceDropdownExpanded(false);
-  };
-  const toggleNewsDropdown = () => {
-    setIsNewsDropdownExpanded(!isNewsDropdownExpanded);
-    setIsEventDropdownExpanded(false);
-    setIsCompanyDetailsDropdownExpanded(false);
-    setIsAdoptionDropdownExpanded(false);
-    setIsProductDropdownExpanded(false);
-    setIsServiceDropdownExpanded(false);
-  };
-  const toggleProductDropdown = () => {
-    setIsProductDropdownExpanded(!isProductDropdownExpanded);
-    setIsEventDropdownExpanded(false);
-    setIsCompanyDetailsDropdownExpanded(false);
-    setIsAdoptionDropdownExpanded(false);
-    setIsNewsDropdownExpanded(false);
-    setIsServiceDropdownExpanded(false);
-  };
-  const toggleServiceDropdown = () => {
-    setIsServiceDropdownExpanded(!isServiceDropdownExpanded);
-    setIsEventDropdownExpanded(false);
-    setIsCompanyDetailsDropdownExpanded(false);
-    setIsAdoptionDropdownExpanded(false);
-    setIsNewsDropdownExpanded(false);
-    setIsProductDropdownExpanded(false);
-  };
 
   useEffect(() => {
     if (location.pathname.startsWith("/products"))
@@ -85,22 +24,8 @@ function Sidebar({ user }) {
     else if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
     else if (location.pathname.startsWith("/companyinfo"))
       setExpandedDropdown("Company Info");
-
-    // Keep parent dropdown expanded when inside category
-    if (location.pathname.includes("/category")) {
-      if (location.pathname.startsWith("/products"))
-        setExpandedDropdown("Products");
-      if (location.pathname.startsWith("/services"))
-        setExpandedDropdown("Services");
-      if (location.pathname.startsWith("/blogs")) setExpandedDropdown("Blogs");
-      if (location.pathname.startsWith("/events"))
-        setExpandedDropdown("Events");
-      if (location.pathname.startsWith("/adoption"))
-        setExpandedDropdown("Adoption");
-      if (location.pathname.startsWith("/news")) setExpandedDropdown("News");
-      if (location.pathname.startsWith("/companyinfo"))
-        setExpandedDropdown("Company Info");
-    }
+    else if (location.pathname.startsWith("/homepage"))
+      setExpandedDropdown("Home Page");
   }, [location.pathname]);
 
   const menuItems = [
@@ -125,8 +50,20 @@ function Sidebar({ user }) {
       subItems: ["Category", "View"],
     },
     {
+      name: "Home Page",
+      icon: "fa-gear",
+      subItems: [
+        "Hero Section",
+        "Partner Company",
+        "Contact Details",
+        "Banner",
+        "Testimonials",
+        "Gallery",
+      ],
+    },
+    {
       name: "Company Info",
-      icon: "fa-calendar-days",
+      icon: "fa-building",
       subItems: ["About Us", "Partner Company", "Contact Details"],
     },
   ];
@@ -220,7 +157,7 @@ function Sidebar({ user }) {
                       className={({ isActive }) =>
                         isActive ? "nav-link active" : "nav-link text-white"
                       }
-                      end // <-- This ensures exact matching
+                      end
                     >
                       {sub}
                     </NavLink>

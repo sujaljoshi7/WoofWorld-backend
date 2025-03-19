@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'services',
     'products',
     'adoption',
+    'homepage',
     'companydetails',
     'rest_framework',
     'corsheaders',

@@ -37,6 +37,10 @@ import ProductDetails from "./pages/products/ViewProduct";
 import AddAboutUs from "./pages/companydetails/AddAboutus";
 import AboutUs from "./pages/companydetails/AboutUs";
 import ViewBreeds from "./pages/adoption/ViewBreeds";
+import ComingSoon from "./pages/ComingSoon";
+import HeroSection from "./pages/homepage/HeroSection";
+import AddHero from "./pages/homepage/AddHero";
+import EditHero from "./pages/homepage/EditHero";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -332,6 +336,54 @@ function App() {
           element={
             <ProtectedRoute>
               <AddAboutUs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/herosection"
+          element={
+            <ProtectedRoute>
+              <HeroSection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/herosection/add"
+          element={
+            <ProtectedRoute>
+              <AddHero />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/herosection/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditHero />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <ComingSoon />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/companyinfo/partnercompany"
+          element={
+            <ProtectedRoute>
+              <ComingSoon />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/companyinfo/contactdetails"
+          element={
+            <ProtectedRoute>
+              <ComingSoon />
             </ProtectedRoute>
           }
         />

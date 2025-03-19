@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import { motion } from "framer-motion";
-
 import "../../styles/Home.css";
 import logo from "../../assets/images/logo/logo1.png";
 import down_arrow from "../../assets/images/icons/down-arrow.png";
@@ -16,12 +16,42 @@ import company4 from "../../assets/images/companies/company4.png";
 import company5 from "../../assets/images/companies/company5.png";
 import company6 from "../../assets/images/companies/company6.png";
 import team_work from "../../assets/images/about/team-work.jpg";
+import LoadingScreen from "../../components/LoadingScreen";
 
 function Home() {
   const [user, setUser] = useState(null);
+  const [allHeros, setAllHeros] = useState([]);
+  const [isLoadingHero, setIsLoadingHero] = useState([]);
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  const fetchHero = async () => {
+    setIsLoadingHero(true);
+    try {
+      // Fetch user details independently
+      const response = await api.get("/api/homepage/hero/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
 
+      const heroes = response.data.filter((hero) => hero.status === 1);
+      console.log("Filtered Heroes:", heroes);
+
+      // Wait for both requests to complete independently
+      // const [hero] = await Promise.all([heroRes]);
+
+      // Update state
+      setAllHeros(heroes);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingHero(false);
+    }
+  };
+  useEffect(() => {
+    fetchHero();
+  }, []);
   const logos = [company1, company2, company3, company4, company5, company6];
-
+  if (isLoadingHero) return <LoadingScreen />;
   return (
     <div>
       <div className="main-content">
@@ -270,45 +300,63 @@ function Home() {
             id="carouselExampleAutoplaying"
             className="carousel slide"
             data-bs-ride="carousel"
+            data-bs-interval="2000"
           >
             <div className="carousel-inner">
-              <div className="carousel-item active">
-                <div className="hero-content">
-                  <div className="hero-text-overlay container">
-                    <h1 className="hero-text-header">
-                      Digital Solutions for a Smarter Future
-                    </h1>
-                    <p className="hero-text-body">
-                      Transforming businesses with next-gen IT solutions. AI,
-                      cloud, and web development tailored for growth.
-                    </p>
-                    <button className="btn hero-btn">
-                      Explore our services
-                    </button>
+              {allHeros.length > 0 ? (
+                allHeros.map((hero, index) => (
+                  <div
+                    key={hero.id}
+                    className={`carousel-item ${index === 0 ? "active" : ""}`}
+                  >
+                    <div className="hero-content">
+                      <div className="hero-text-overlay container">
+                        <h1 className="hero-text-header">{hero.headline}</h1>
+                        <p className="hero-text-body">{hero.subtext}</p>
+                        <button className="btn hero-btn">{hero.cta}</button>
+                      </div>
+                      <div className="black-overlay"></div>
+                      <img
+                        src={`${BASE_URL}${hero.image}`}
+                        alt={`Hero ${index + 1}`}
+                        className="hero-image"
+                      />
+                    </div>
                   </div>
-                  <div className="black-overlay"></div>
-                  <img src={image1} alt="Hero Image1" className="hero-image" />
-                </div>
-              </div>
-              <div className="carousel-item">
-                <div className="hero-content">
-                  <div className="hero-text-overlay">
-                    <h1 className="hero-text-header">
-                      Powering Innovation Through Technology
-                    </h1>
-                    <p className="hero-text-body">
-                      calable software, AI-driven solutions, and seamless
-                      digital experiences—your success, our mission.
-                    </p>
-                    <button className="btn hero-btn">Get Started Today</button>
-                  </div>
-                  <div className="black-overlay"></div>
-                  <img src={image2} alt="Hero Image2" className="hero-image" />
-                </div>
-              </div>
+                ))
+              ) : (
+                <p>Loading hero content...</p>
+              )}
             </div>
+
+            {/* Carousel Controls (Optional) */}
+            <button
+              className="carousel-control-prev"
+              type="button"
+              data-bs-target="#carouselExampleAutoplaying"
+              data-bs-slide="prev"
+            >
+              <span
+                className="carousel-control-prev-icon"
+                aria-hidden="true"
+              ></span>
+              <span className="visually-hidden">Previous</span>
+            </button>
+            <button
+              className="carousel-control-next"
+              type="button"
+              data-bs-target="#carouselExampleAutoplaying"
+              data-bs-slide="next"
+            >
+              <span
+                className="carousel-control-next-icon"
+                aria-hidden="true"
+              ></span>
+              <span className="visually-hidden">Next</span>
+            </button>
           </div>
         </section>
+
         <section className="partner-companies">
           <h4 className="text-center">Trusted by great companies</h4>
           <div className="overflow-hidden bg-gray-100 py-4 relative w-full mt-3">
