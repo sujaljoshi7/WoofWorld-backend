@@ -8,6 +8,8 @@ import SearchBar from "../../layout/SearchBar";
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
 
+import Pagination from "../../components/Pagination"; // Import Pagination Component
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 function ViewServices() {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ function ViewServices() {
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5;
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
@@ -119,6 +123,16 @@ function ViewServices() {
       setError(error.response.data.message || "Error activating Service");
       console.log(error);
     }
+  };
+
+  const pageCount = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
   };
 
   const handleRowClick = (service_id) => {
@@ -236,8 +250,8 @@ function ViewServices() {
                     Loading Events
                   </td>
                 </tr>
-              ) : filteredData.length > 0 ? (
-                filteredData.map((item) => (
+              ) : paginatedData.length > 0 ? (
+                paginatedData.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => handleRowClick(item.id)}
@@ -300,6 +314,7 @@ function ViewServices() {
               )}
             </tbody>
           </table>
+          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
         </div>
       </div>
     </div>

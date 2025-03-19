@@ -8,8 +8,22 @@ import user_img from "../assets/images/user.png";
 import blog_img from "../assets/images/blog.png";
 import event_img from "../assets/images/event.png";
 import webinar_img from "../assets/images/webinar.png";
+import { useNavigate } from "react-router-dom";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userCount, setUserCount] = useState(0);
   const [blogsCount, setBlogsCount] = useState(0);
@@ -20,6 +34,22 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const updateTime = () => setCurrentTime(new Date().toLocaleTimeString());
+
+  const data = [
+    { name: "Users", value: userCount },
+    { name: "Blogs", value: blogsCount },
+    { name: "Events", value: eventsCount },
+    { name: "Webinars", value: webinarCount },
+  ];
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+  const barData = [
+    { name: "Users", count: userCount },
+    { name: "Blogs", count: blogsCount },
+    { name: "Events", count: eventsCount },
+    { name: "Webinars", count: webinarCount },
+  ];
 
   const fetchLocation = async () => {
     try {
@@ -100,6 +130,10 @@ function Dashboard() {
     }
   };
 
+  const handleRowClick = (name) => {
+    navigate(`/${name}`);
+  };
+
   useEffect(() => {
     const timer = setInterval(updateTime, 1000);
     fetchLocation();
@@ -125,15 +159,6 @@ function Dashboard() {
         <SearchBar />
         <div className="d-flex justify-content-between align-items-center mt-5">
           <h1 className="fw-semibold">Hello, {user?.first_name}</h1>
-          <div className="text-end">
-            <img
-              src={planet_earth}
-              alt="Planet Earth"
-              height={25}
-              className="me-2"
-            />
-            {location.city}, {location.country} - {currentTime}
-          </div>
         </div>
         <p className="text-secondary">
           Your go-to system for creating, editing, and managing content
@@ -142,23 +167,92 @@ function Dashboard() {
         <hr className="mt-4 mb-3" />
 
         <div className="row justify-content-between">
-          <DashboardCard title="Users" count={userCount} image={user_img} />
-          <DashboardCard title="Blogs" count={blogsCount} image={blog_img} />
-          <DashboardCard title="Events" count={eventsCount} image={event_img} />
+          <DashboardCard
+            title="Users"
+            count={userCount}
+            image={user_img}
+            onClick={handleRowClick}
+          />
+          <DashboardCard
+            title="Blogs"
+            count={blogsCount}
+            image={blog_img}
+            onClick={handleRowClick}
+          />
+          <DashboardCard
+            title="Events"
+            count={eventsCount}
+            image={event_img}
+            onClick={handleRowClick}
+          />
           <DashboardCard
             title="Webinars"
             count={webinarCount}
             image={webinar_img}
+            onClick={handleRowClick}
           />
+        </div>
+        <div className="row mt-5">
+          <div className="col-lg-6 bg-dark">
+            <h4 className="text-light text-center mt-5 mb-5">
+              Revenue Analysis
+            </h4>
+            <div className="mt-5">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={barData}>
+                  <XAxis dataKey="name" stroke="#fff" />
+                  <YAxis stroke="#fff" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#f5d107" barSize={50} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="col-lg-6 bg-dark">
+            <h4 className="text-light text-center mt-5 mb-5">Order Analysis</h4>
+
+            <div className="mt-5">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-const DashboardCard = ({ title, count, image }) => (
+const DashboardCard = ({ title, count, image, onClick }) => (
   <div className="col-3">
-    <div className="card bg-dark" style={{ maxWidth: "250px", margin: "10px" }}>
+    <div
+      className="card bg-dark"
+      style={{ maxWidth: "250px", margin: "10px", cursor: "pointer" }}
+      onClick={() => onClick(title)}
+    >
       <div className="card-body d-flex justify-content-between align-items-center">
         <div>
           <h6 className="card-title text-secondary fs-6 fw-light">{title}</h6>

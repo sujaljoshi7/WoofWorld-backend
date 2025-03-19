@@ -26,7 +26,6 @@ const styles = {
     maxWidth: "600px",
     margin: "50px auto",
     background: "white",
-    padding: "40px",
     borderRadius: "10px",
     boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
   },

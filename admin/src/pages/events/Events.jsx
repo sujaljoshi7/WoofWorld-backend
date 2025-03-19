@@ -7,6 +7,8 @@ import SearchBar from "../../layout/SearchBar";
 
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import ReactPaginate from "react-paginate";
+import Pagination from "../../components/Pagination"; // Import Pagination Component
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 function ViewEvents() {
@@ -19,6 +21,10 @@ function ViewEvents() {
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5;
+
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
@@ -30,6 +36,7 @@ function ViewEvents() {
           .includes(value)
       );
       setFilteredData(filtered);
+      setCurrentPage(0);
     }
   };
 
@@ -121,6 +128,16 @@ function ViewEvents() {
     navigate(`/events/${event_id}`);
   };
 
+  const pageCount = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
   if (isLoading) {
     return (
       <div
@@ -145,7 +162,6 @@ function ViewEvents() {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
         <div className="container mt-4">
           {error && (
             <div className="col-12 col-sm-auto mt-4 mt-sm-0">
@@ -232,8 +248,8 @@ function ViewEvents() {
                     Loading Events
                   </td>
                 </tr>
-              ) : filteredData.length > 0 ? (
-                filteredData.map((item) => (
+              ) : paginatedData.length > 0 ? (
+                paginatedData.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => handleRowClick(item.id)}
@@ -296,6 +312,8 @@ function ViewEvents() {
               )}
             </tbody>
           </table>
+          {/* Pagination Component */}
+          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
         </div>
       </div>
     </div>

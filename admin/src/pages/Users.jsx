@@ -5,6 +5,7 @@ import api from "../api";
 import Sidebar from "../layout/Sidebar";
 import SearchBar from "../layout/SearchBar";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination"; // Import Pagination Component
 
 function AllUsers() {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ function AllUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5;
 
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
@@ -142,6 +145,16 @@ function AllUsers() {
     navigate(`/view-user/${userId}`);
   };
 
+  const pageCount = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
   if (isLoadingUser) {
     return (
       <div
@@ -195,8 +208,8 @@ function AllUsers() {
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((item) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => handleRowClick(item.id)}
@@ -268,6 +281,9 @@ function AllUsers() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Component */}
+          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
 import SearchBar from "../../layout/SearchBar";
 
+import Pagination from "../../components/Pagination"; // Import Pagination Component
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
 
@@ -19,6 +20,8 @@ function ViewBlogs() {
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5;
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
@@ -121,6 +124,16 @@ function ViewBlogs() {
 
   const handleRowClick = (blog_id) => {
     navigate(`/blogs/${blog_id}`);
+  };
+
+  const pageCount = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
   };
 
   if (isLoading) {
@@ -235,8 +248,8 @@ function ViewBlogs() {
                     Loading Events
                   </td>
                 </tr>
-              ) : filteredData.length > 0 ? (
-                filteredData.map((item) => (
+              ) : paginatedData.length > 0 ? (
+                paginatedData.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => handleRowClick(item.id)}
@@ -299,6 +312,9 @@ function ViewBlogs() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Component */}
+          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
         </div>
       </div>
     </div>

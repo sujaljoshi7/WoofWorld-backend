@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import user_img from "../assets/images/user.png";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar({ user }) {
   const location = useLocation();
@@ -106,17 +107,17 @@ function Sidebar({ user }) {
     {
       name: "Products",
       icon: "fa-box-open",
-      subItems: ["Category", "Products"],
+      subItems: ["Category", "View"],
     },
     {
       name: "Services",
       icon: "fa-cogs",
-      subItems: ["Category", "Services"],
+      subItems: ["Category", "View"],
     },
     {
       name: "Events",
       icon: "fa-calendar-days",
-      subItems: ["Category", "Events"],
+      subItems: ["Category", "View"],
     },
     {
       name: "Company Info",
@@ -212,15 +213,15 @@ function Sidebar({ user }) {
                 {menu.subItems.map((sub, index) => (
                   <li key={index}>
                     <NavLink
-                      to={`/${menu.name.toLowerCase().replace(" ", "")}${
-                        sub === "Events"
-                          ? ""
-                          : sub === "Services"
-                          ? ""
-                          : sub === "Products"
-                          ? ""
-                          : "/" + sub.toLowerCase().replace(" ", "")
-                      }`}
+                      to={
+                        sub === "View"
+                          ? `/${menu.name.toLowerCase().replace(/\s+/g, "")}`
+                          : `/${menu.name
+                              .toLowerCase()
+                              .replace(/\s+/g, "")}/${sub
+                              .toLowerCase()
+                              .replace(/\s+/g, "")}`
+                      }
                       className={({ isActive }) =>
                         isActive ? "nav-link active" : "nav-link text-white"
                       }

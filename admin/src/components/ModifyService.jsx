@@ -131,7 +131,7 @@ const ModifyService = ({ method }) => {
                   <li className="breadcrumb-item">
                     <p
                       className="text-body-secondary"
-                      onClick={() => navigate("/blogs")}
+                      onClick={() => navigate("/services")}
                       style={{ cursor: "pointer" }}
                     >
                       Services
