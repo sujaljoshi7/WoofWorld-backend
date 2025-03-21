@@ -1,4 +1,4 @@
-import ModifyHero from "../../components/ModifyHero";
+import ModifyHero from "../../../components/ModifyHero";
 
 function AddHero() {
   return <ModifyHero method="add" />;

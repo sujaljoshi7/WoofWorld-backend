@@ -1,13 +1,14 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
-import api from "../../api";
-import Sidebar from "../../layout/Sidebar";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../../constants";
+import api from "../../../api";
+import Sidebar from "../../../layout/Sidebar";
+import { exportToCSV } from "../../../utils/export";
 
-import useUser from "../../hooks/useUser";
+import useUser from "../../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
 
-import Pagination from "../../components/Pagination"; // Import Pagination Component
+import Pagination from "../../../components/Pagination"; // Import Pagination Component
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 function HeroSection() {
@@ -28,7 +29,7 @@ function HeroSection() {
 
     if (allHeros) {
       const filtered = allHeros.filter((item) =>
-        `${item.name} ${item.status} ${item.created_by}`
+        `${item.headline} ${item.subtext} ${item.cta}`
           .toLowerCase()
           .includes(value)
       );
@@ -117,7 +118,16 @@ function HeroSection() {
   };
 
   const handleRowClick = (hero_id) => {
-    navigate(`/products/${hero_id}`);
+    navigate(`/homepage/herosection/edit/${hero_id}`);
+  };
+
+  const handleExport = () => {
+    exportToCSV(
+      filteredData,
+      ["ID", "Headline", "Subtext", "CTA", "Image URL"], // Headers
+      ["id", "headline", "subtext", "cta", "image"], // Fields
+      "hero_section.csv"
+    );
   };
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
@@ -200,13 +210,18 @@ function HeroSection() {
             </div>
           )}
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Products</h2>
-            <button
-              className="btn btn-warning"
-              onClick={() => navigate("/homepage/herosection/add")}
-            >
-              + Add Hero
-            </button>
+            <h2>Heros</h2>
+            <div>
+              <button className="btn btn-primary me-2" onClick={handleExport}>
+                Export to CSV
+              </button>
+              <button
+                className="btn btn-warning"
+                onClick={() => navigate("/homepage/herosection/add")}
+              >
+                + Add Hero
+              </button>
+            </div>
           </div>
           <div className="input-group mb-3 mt-3">
             <span className="input-group-text bg-light border-0">
@@ -237,7 +252,7 @@ function HeroSection() {
               {isLoading || isLoadingHero ? (
                 <tr>
                   <td colSpan="7" className="text-center">
-                    Loading Events
+                    Loading Heros
                   </td>
                 </tr>
               ) : paginatedData.length > 0 ? (

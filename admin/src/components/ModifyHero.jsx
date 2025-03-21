@@ -32,10 +32,11 @@ const ModifyHero = ({ method }) => {
 
   const fetchHeroDetails = async () => {
     try {
-      const res = await api.get(`/api/products/${id}/`);
+      const res = await api.get(`/api/homepage/${id}/`);
       const data = res.data;
-      setHeadline(data.name);
-      setSubText(data.description);
+      setHeadline(data.headline);
+      setSubText(data.subtext);
+      setCta(data.cta);
       setPreviewImage(data.image ? `${BASE_URL}${data.image}` : "");
     } catch (err) {
       console.error("Failed to fetch hero details:", err);
@@ -65,10 +66,10 @@ const ModifyHero = ({ method }) => {
     }
     try {
       if (method === "edit") {
-        await api.patch(`/api/products/product/${id}/`, formData, {
+        await api.patch(`/api/homepage/hero/${id}/`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        alert("Product Updated Successfully!");
+        alert("Hero Updated Successfully!");
       } else {
         await api.post(`/api/homepage/hero/`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
@@ -101,7 +102,7 @@ const ModifyHero = ({ method }) => {
                   <li className="breadcrumb-item">
                     <p
                       className="text-body-secondary"
-                      onClick={() => navigate("/products")}
+                      onClick={() => navigate("/homepage/herosection")}
                       style={{ cursor: "pointer" }}
                     >
                       Heros

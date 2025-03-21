@@ -38,9 +38,15 @@ import AddAboutUs from "./pages/companydetails/AddAboutus";
 import AboutUs from "./pages/companydetails/AboutUs";
 import ViewBreeds from "./pages/adoption/ViewBreeds";
 import ComingSoon from "./pages/ComingSoon";
-import HeroSection from "./pages/homepage/HeroSection";
-import AddHero from "./pages/homepage/AddHero";
-import EditHero from "./pages/homepage/EditHero";
+import HeroSection from "./pages/homepage/herosection/HeroSection";
+import AddHero from "./pages/homepage/herosection/AddHero";
+import EditHero from "./pages/homepage/herosection/EditHero";
+import PartnerCompanies from "./pages/homepage/partnercompanies/PartnerCompanies";
+import AddPartnerCompany from "./pages/homepage/partnercompanies/AddPartnerCompany";
+import EditPartnerCompany from "./pages/homepage/partnercompanies/EditPartnerCompany";
+import NavbarItems from "./pages/homepage/navbar/NavbarItems";
+import AddNavbarItems from "./pages/homepage/navbar/AddNavbarItem";
+import EditNavbarItems from "./pages/homepage/navbar/EditNavbarItem";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -360,6 +366,54 @@ function App() {
           element={
             <ProtectedRoute>
               <EditHero />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/partnercompany"
+          element={
+            <ProtectedRoute>
+              <PartnerCompanies />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/partnercompany/add"
+          element={
+            <ProtectedRoute>
+              <AddPartnerCompany />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/partnercompany/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditPartnerCompany />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/navbar"
+          element={
+            <ProtectedRoute>
+              <NavbarItems />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/navbar/add"
+          element={
+            <ProtectedRoute>
+              <AddNavbarItems />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/homepage/navbar/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditNavbarItems />
             </ProtectedRoute>
           }
         />

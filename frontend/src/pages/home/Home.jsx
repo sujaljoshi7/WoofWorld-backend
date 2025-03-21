@@ -4,6 +4,8 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import { motion } from "framer-motion";
 import "../../styles/Home.css";
+import { useLocation } from "react-router-dom";
+
 import logo from "../../assets/images/logo/logo1.png";
 import down_arrow from "../../assets/images/icons/down-arrow.png";
 import image1 from "../../assets/images/hero/image1.jpg";
@@ -21,8 +23,15 @@ import LoadingScreen from "../../components/LoadingScreen";
 function Home() {
   const [user, setUser] = useState(null);
   const [allHeros, setAllHeros] = useState([]);
+  const [allPartnerCompanies, setAllPartnerCompanies] = useState([]);
+  const [allNavbarItems, setAllNavbarItems] = useState([]);
   const [isLoadingHero, setIsLoadingHero] = useState([]);
+  const [isLoadingPartnerCompany, setIsLoadingPartnerCompany] = useState([]);
+  const [isLoadingNavbarItems, setIsLoadingNavbarItems] = useState([]);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const location = useLocation(); // Get current path
+
   const fetchHero = async () => {
     setIsLoadingHero(true);
     try {
@@ -47,10 +56,85 @@ function Home() {
       setIsLoadingHero(false);
     }
   };
+  const fetchPartnerCompany = async () => {
+    setIsLoadingPartnerCompany(true);
+    try {
+      // Fetch user details independently
+      const response = await api.get("/api/homepage/partnercompany/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
+      const partnerCompanies = response.data
+        .filter((company) => company.status === 1)
+        .map((company) => company);
+
+      console.log("Filtered Companies:", partnerCompanies);
+
+      // Wait for both requests to complete independently
+      // const [hero] = await Promise.all([heroRes]);
+
+      // Update state
+      setAllPartnerCompanies(partnerCompanies);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingHero(false);
+    }
+  };
+
+  const fetchNavbarItems = async () => {
+    setIsLoadingNavbarItems(true);
+    try {
+      const response = await api.get("/api/navbar/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
+      const navbarItems = response.data.filter(
+        (navItem) => navItem.status === 1
+      );
+
+      // Process the data to create nested structure
+      const structuredNavbar = processNavbarData(navbarItems);
+      console.log("Processed Navbar:", structuredNavbar);
+
+      setAllNavbarItems(structuredNavbar);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingNavbarItems(false);
+    }
+  };
+
+  const processNavbarData = (items) => {
+    const menu = [];
+    const itemMap = {};
+
+    // Pehle sab items ko ek object ke andar store karo
+    items.forEach((item) => {
+      itemMap[item.id] = { ...item, subItems: [] };
+    });
+
+    // Ab parent-child relation create karo
+    items.forEach((item) => {
+      if (item.dropdown_parent) {
+        if (itemMap[item.dropdown_parent]) {
+          itemMap[item.dropdown_parent].subItems.push(itemMap[item.id]);
+        }
+      } else {
+        menu.push(itemMap[item.id]); // Ye parent hai, direct menu me daal do
+      }
+    });
+
+    return menu;
+  };
+
   useEffect(() => {
     fetchHero();
+    fetchPartnerCompany();
+    fetchNavbarItems();
   }, []);
-  const logos = [company1, company2, company3, company4, company5, company6];
   if (isLoadingHero) return <LoadingScreen />;
   return (
     <div>
@@ -82,83 +166,46 @@ function Home() {
                 id="navbarSupportedContent"
               >
                 <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
-                  <li className="nav-item">
-                    <a className="nav-link active" href="#">
-                      Home
-                    </a>
-                  </li>
-
-                  <li className="nav-item dropdown">
-                    <a
-                      className="nav-link dropdown-toggle"
-                      href="#"
-                      role="button"
-                      data-bs-toggle="dropdown"
+                  {allNavbarItems.map((item) => (
+                    <li
+                      key={item.id}
+                      className={`nav-item ${
+                        item.subItems.length > 0 ? "dropdown" : ""
+                      }`}
                     >
-                      Events
-                    </a>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Upcoming Events
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Past Events
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Webinars
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-
-                  <li className="nav-item">
-                    <a className="nav-link" href="#">
-                      Blog
-                    </a>
-                  </li>
-
-                  <li className="nav-item dropdown">
-                    <a
-                      className="nav-link dropdown-toggle"
-                      href="#"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                    >
-                      Services
-                    </a>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Web Development
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          AI/ML Solutions
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          SaaS Products
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="#">
-                      About
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a className="nav-link" href="#">
-                      Contact us
-                    </a>
-                  </li>
+                      <a
+                        className={`nav-link ${
+                          location.pathname === item.url ? "active" : ""
+                        } 
+                      ${item.subItems.length > 0 ? "dropdown-toggle" : ""}`}
+                        href={item.url}
+                        role="button"
+                        data-bs-toggle={
+                          item.subItems.length > 0 ? "dropdown" : ""
+                        }
+                      >
+                        {item.title}
+                      </a>
+                      {item.subItems.length > 0 && (
+                        <ul className="dropdown-menu">
+                          {item.subItems.map((subItem) => (
+                            <li key={subItem.id}>
+                              <a
+                                className={`dropdown-item ${
+                                  location.pathname === subItem.url
+                                    ? "active"
+                                    : ""
+                                }`}
+                                href={subItem.url}
+                              >
+                                {subItem.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -300,7 +347,7 @@ function Home() {
             id="carouselExampleAutoplaying"
             className="carousel slide"
             data-bs-ride="carousel"
-            data-bs-interval="2000"
+            data-bs-interval="5000"
           >
             <div className="carousel-inner">
               {allHeros.length > 0 ? (
@@ -360,28 +407,56 @@ function Home() {
         <section className="partner-companies">
           <h4 className="text-center">Trusted by great companies</h4>
           <div className="overflow-hidden bg-gray-100 py-4 relative w-full mt-3">
-            <motion.div
-              className="flex items-center w-max"
-              animate={{ x: ["0%", "-100%"] }}
-              transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
-              style={{
-                whiteSpace: "nowrap",
-                display: "flex",
-                gap: "150px",
-                height: "45px",
-              }}
-            >
-              {[...logos, ...logos].map((logo, index) => (
-                <img
-                  key={index}
-                  src={logo}
-                  alt="Company Logo"
-                  className="h-10 w-auto"
-                />
-              ))}
-            </motion.div>
+            <div className="scrolling-wrapper">
+              <div className="logos">
+                {/* Rendered twice for seamless looping */}
+                {[...allPartnerCompanies, ...allPartnerCompanies].map(
+                  (company, index) => (
+                    <img
+                      key={index}
+                      title={company.name}
+                      src={`${BASE_URL}${company.image}`}
+                      alt="Company Logo"
+                      className="logo"
+                    />
+                  )
+                )}
+              </div>
+            </div>
           </div>
         </section>
+
+        <style>
+          {`
+  .scrolling-wrapper {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .logos {
+    display: flex;
+    gap: 150px;
+    animation: scroll 30s linear infinite;
+  }
+
+  .logo {
+    height: 100px;
+    width: auto;
+  }
+
+  @keyframes scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+`}
+        </style>
+
         <section className="aboutus-section container">
           {/* <h2 className="aboutus-heading text-center">Who We Are</h2> */}
           <div className="row aboutus-content d-flex align-items-center">

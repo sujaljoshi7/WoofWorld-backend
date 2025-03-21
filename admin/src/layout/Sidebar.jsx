@@ -30,6 +30,16 @@ function Sidebar({ user }) {
 
   const menuItems = [
     {
+      name: "Home Page",
+      icon: "fa-home",
+      subItems: ["Hero Section", "Partner Company", "Navbar"],
+    },
+    {
+      name: "Company Info",
+      icon: "fa-building",
+      subItems: ["About Us", "Contact Details"],
+    },
+    {
       name: "Adoption",
       icon: "fa-dog",
       subItems: ["Breeds", "View"],
@@ -48,23 +58,6 @@ function Sidebar({ user }) {
       name: "Events",
       icon: "fa-calendar-days",
       subItems: ["Category", "View"],
-    },
-    {
-      name: "Home Page",
-      icon: "fa-gear",
-      subItems: [
-        "Hero Section",
-        "Partner Company",
-        "Contact Details",
-        "Banner",
-        "Testimonials",
-        "Gallery",
-      ],
-    },
-    {
-      name: "Company Info",
-      icon: "fa-building",
-      subItems: ["About Us", "Partner Company", "Contact Details"],
     },
   ];
 

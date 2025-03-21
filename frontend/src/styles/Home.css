@@ -6,7 +6,7 @@
 .navbar {
     padding: 20px;
     font-size: larger;
-    z-index: 2;
+    z-index: 5;
 }
 
 .container-fluid {
@@ -169,10 +169,27 @@
 
 @media (min-width: 992px) {
 
-    /* Apply only for desktop */
     .nav-item.dropdown:hover .dropdown-menu {
         display: block;
         animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .dropdown-menu {
+        display: block;
+    }
+
+    /* Ensure dropdown stays open while moving between items */
+    .dropdown-menu {
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .nav-item.dropdown:hover .dropdown-menu {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
     }
 }
 

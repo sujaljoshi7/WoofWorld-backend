@@ -14,3 +14,8 @@ class Hero(models.Model):
     subtext = models.CharField(max_length=201)
     cta = models.CharField(max_length=50)
     status = models.IntegerField()
+
+class PartnerCompany(models.Model):
+    image = models.ImageField(upload_to='partnercompanies/', validators=[validate_image_size])
+    name = models.CharField(max_length=100)
+    status = models.IntegerField()

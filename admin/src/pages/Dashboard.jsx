@@ -183,7 +183,7 @@ function Dashboard() {
             onClick={handleRowClick}
           />
           <DashboardCard
-            title="Adoptions"
+            title="Adoption"
             count={webinarCount}
             image={webinar_img}
             onClick={handleRowClick}
