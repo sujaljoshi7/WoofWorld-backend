@@ -8,13 +8,14 @@ import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import Pagination from "../../components/Pagination"; // Import Pagination Component
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 function ViewEvents() {
   const navigate = useNavigate();
 
   const { user, isLoading } = useUser();
-  const [allEventCategories, setAllEventCategories] = useState([]);
+  const [allEventCategories, setAllEvents] = useState([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -48,7 +49,7 @@ function ViewEvents() {
     second: "2-digit",
   };
 
-  const fetchEventCategories = async () => {
+  const fetchEvents = async () => {
     setIsLoadingEvents(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
@@ -58,16 +59,25 @@ function ViewEvents() {
     }
     try {
       // Fetch user details independently
-      const eventCategoriesRes = api.get("/api/events/event");
+      const eventRes = api.get("/api/events/event");
 
       // Wait for both requests to complete independently
-      const [eventCategories] = await Promise.all([eventCategoriesRes]);
+      const [event] = await Promise.all([eventRes]);
 
       // Update state
-      setAllEventCategories(eventCategories.data);
-      setFilteredData(eventCategories.data);
+      setAllEvents(event.data);
+      setFilteredData(event.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchEvents(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingEvents(false);
     }
@@ -82,9 +92,9 @@ function ViewEvents() {
       }
     }
 
-    fetchEventCategories();
+    fetchEvents();
     const interval = setInterval(() => {
-      fetchEventCategories();
+      fetchEvents();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
@@ -103,7 +113,7 @@ function ViewEvents() {
       );
       setMessage(response.data.message);
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchEvents();
     } catch (error) {
       setError(error.response.data.message || "Error deactivating user");
     }
@@ -116,7 +126,7 @@ function ViewEvents() {
       );
       setMessage("Event Activated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchEvents();
     } catch (error) {
       setError(error.response.data.message || "Error activating Event");
       console.log(error);
@@ -192,7 +202,7 @@ function ViewEvents() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"

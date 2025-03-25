@@ -9,6 +9,9 @@ import { useNavigate } from "react-router-dom";
 
 import Pagination from "../../components/Pagination"; // Import Pagination Component
 
+import { exportToCSV } from "../../utils/export";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 function ViewProducts() {
   const navigate = useNavigate();
@@ -21,6 +24,7 @@ function ViewProducts() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [homePageToggle, setHomePageToggle] = useState();
   const itemsPerPage = 5;
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
@@ -45,7 +49,7 @@ function ViewProducts() {
     second: "2-digit",
   };
 
-  const fetchServices = async () => {
+  const fetchProducts = async () => {
     setIsLoadingProducts(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
@@ -64,7 +68,16 @@ function ViewProducts() {
       setAllProducts(services.data);
       setFilteredData(services.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchProducts(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingProducts(false);
     }
@@ -79,9 +92,9 @@ function ViewProducts() {
       }
     }
 
-    fetchServices();
+    fetchProducts();
     const interval = setInterval(() => {
-      fetchServices();
+      fetchProducts();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
@@ -105,7 +118,7 @@ function ViewProducts() {
       );
       setMessage(response.data.message);
       //   alert("User activated successfully!");
-      fetchServices();
+      fetchProducts();
     } catch (error) {
       setError(error.response.data.message || "Error deactivating product");
     }
@@ -117,11 +130,84 @@ function ViewProducts() {
         `api/products/product/${product_id}/activate/`
       );
       setMessage(response.data.message);
-      fetchServices();
+      fetchProducts();
     } catch (error) {
       setError(error.response.data.message || "Error activating product");
       console.log(error);
     }
+  };
+
+  const handleToggleStatus = async (id, newStatus, name, updatedStatus) => {
+    updatedStatus = 0;
+    if (newStatus) {
+      updatedStatus = 1;
+    }
+    const formData = new FormData();
+    formData.append("show_on_homepage", newStatus);
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
+    }
+    try {
+      await api.patch(`/api/products/product/${id}/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      fetchProducts();
+      if (newStatus) {
+        setMessage(name + " is live on featured section!");
+      } else {
+        setMessage(name + " will no longer be displayed on featured section!");
+      }
+    } catch (error) {
+      console.error("Failed to update product:", error);
+    }
+  };
+
+  const handleExport = () => {
+    const formattedData = filteredData.map((item) => ({
+      id: item.id,
+      image: item.image,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      status: item.status,
+      category: item.category.name,
+      created_by: item.created_by
+        ? `${item.created_by.first_name} ${item.created_by.last_name} [${item.created_by.email}]`
+        : "",
+      breed: item.breeds ? `${item.breeds.name}` : "",
+      age: item.age,
+      show_on_homepage: item.show_on_homepage,
+    }));
+    exportToCSV(
+      formattedData,
+      [
+        "ID",
+        "Image",
+        "Title",
+        "Description",
+        "Price",
+        "Age",
+        "Breed",
+        "Status",
+        "Category",
+        "Featured",
+        "Created By",
+      ], // Headers
+      [
+        "id",
+        "image",
+        "name",
+        "description",
+        "price",
+        "age",
+        "breed",
+        "status",
+        "category",
+        "show_on_homepage",
+        "created_by",
+      ], // Fields
+      "products.csv"
+    );
   };
 
   const handleRowClick = (product_id) => {
@@ -193,7 +279,7 @@ function ViewProducts() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"
@@ -209,12 +295,17 @@ function ViewProducts() {
           )}
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Products</h2>
-            <button
-              className="btn btn-warning"
-              onClick={() => navigate("/products/add")}
-            >
-              + Add Product
-            </button>
+            <div>
+              <button className="btn btn-primary me-2" onClick={handleExport}>
+                Export to CSV
+              </button>
+              <button
+                className="btn btn-warning"
+                onClick={() => navigate("/products/add")}
+              >
+                + Add Product
+              </button>
+            </div>
           </div>
           <div className="input-group mb-3 mt-3">
             <span className="input-group-text bg-light border-0">
@@ -236,8 +327,8 @@ function ViewProducts() {
                 <th>Image</th>
                 <th>Title</th>
                 <th>Status</th>
-                <th>Created At</th>
                 <th>Created By</th>
+                <th>Featured </th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -272,15 +363,26 @@ function ViewProducts() {
                       )}
                     </td>
                     <td>
-                      {item.created_at
-                        ? new Date(item.created_at).toLocaleDateString(
-                            undefined,
-                            date_format
-                          )
-                        : "N/A"}
-                    </td>
-                    <td>
                       {item.created_by.first_name} {item.created_by.last_name}
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="form-check form-switch">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id={`flexSwitchCheckDefault-${item.id}`}
+                          checked={item.show_on_homepage}
+                          value={homePageToggle}
+                          onChange={(e) =>
+                            handleToggleStatus(
+                              item.id,
+                              e.target.checked,
+                              item.name
+                            )
+                          }
+                        />
+                      </div>
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       {item.status ? (

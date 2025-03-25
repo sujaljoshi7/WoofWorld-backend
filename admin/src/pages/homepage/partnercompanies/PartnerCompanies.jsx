@@ -7,7 +7,7 @@ import { exportToCSV } from "../../../utils/export";
 
 import useUser from "../../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
-
+import { handleTokenRefresh } from "../../../hooks/tokenRefresh";
 import Pagination from "../../../components/Pagination"; // Import Pagination Component
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -57,7 +57,16 @@ function PartnerCompanies() {
       setAllCompanies(company.data);
       setFilteredData(company.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchPartnedCompanies(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingCompanies(false);
     }
@@ -195,7 +204,7 @@ function PartnerCompanies() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"

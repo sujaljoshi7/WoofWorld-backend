@@ -6,6 +6,7 @@ import api from "../../api"; // Your Axios API instance
 const BASE_URL = import.meta.env.VITE_API_URL;
 import Sidebar from "../../layout/Sidebar";
 import "../../styles/styles.css";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const ServiceDetails = () => {
   const { user, isLoading } = useUser();
@@ -31,7 +32,16 @@ const ServiceDetails = () => {
         const response = await api.get(`/api/services/${id}/`);
         setService(response.data);
       } catch (err) {
-        setError("Failed to fetch blog details");
+        if (error.response?.status === 401) {
+          console.warn("Access token expired, refreshing...");
+
+          const refreshed = await handleTokenRefresh();
+          if (refreshed) {
+            return fetchServiceDetails(); // Retry after refreshing
+          }
+        } else {
+          console.error("Failed to fetch user data:", error);
+        }
       } finally {
         setLoading(false);
       }

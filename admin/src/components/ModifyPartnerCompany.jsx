@@ -52,6 +52,12 @@ const ModifyPartnerCompany = ({ method }) => {
     setLoading(true);
     setError("");
 
+    if (!image && method === "add") {
+      setError("Please select Image");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", companyName);
     formData.append("status", 1);
@@ -79,6 +85,16 @@ const ModifyPartnerCompany = ({ method }) => {
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup on unmount
+    }
+  }, [error]);
+
   return (
     <div className="d-flex">
       <div className="sidebar">
@@ -96,7 +112,7 @@ const ModifyPartnerCompany = ({ method }) => {
                   <li className="breadcrumb-item">
                     <p
                       className="text-body-secondary"
-                      onClick={() => navigate("/homepage/herosection")}
+                      onClick={() => navigate("/homepage/partnercompany")}
                       style={{ cursor: "pointer" }}
                     >
                       Companies

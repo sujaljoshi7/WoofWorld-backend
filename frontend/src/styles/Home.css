@@ -1,3 +1,25 @@
+:root {
+    color-scheme: light;
+}
+
+
+html {
+    background-color: #fff;
+    color: #000;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    html {
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+}
+
+.primary-btn {
+    background-color: #FF8C42;
+}
+
 .main-content {
     display: flex;
     flex-direction: column;
@@ -111,49 +133,7 @@
 }
 
 
-
-
-/* About US Section */
-.aboutus-section {
-    margin-top: 100px;
-}
-
-.aboutus-heading {
-    font-size: 40px;
-    font-weight: bold;
-}
-
-.aboutus-content {
-    margin-top: 20px;
-    font-size: 20px;
-    text-align: justify;
-}
-
-/* .aboutus-image {
-    height: 200px;
-    clip-path: url(#blobClipPath);
-    object-fit: cover;
-} */
-
-.aboutus-image {
-    background-size: cover;
-}
-
-.aboutus-header {
-    font-size: 40px;
-    text-align: left;
-    font-weight: bold;
-}
-
-.aboutus-cta {
-    padding: 8px;
-    background-color: black;
-    color: white;
-    border: 0;
-    border-radius: 20px;
-    padding-left: 50px;
-    padding-right: 50px;
-}
+/* Our Services Section */
 
 .ourservices-section {
     margin-top: 100px;
@@ -164,8 +144,159 @@
     font-weight: bold;
 }
 
+.services-wrapper {
 
-/* About US Section */
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    gap: 10px;
+    scroll-behavior: smooth;
+    padding-bottom: 10px;
+}
+
+.services-wrapper .card {
+    width: 300px;
+    height: 100%;
+}
+
+.services-wrapper .card .card-img-top {
+    height: 250px;
+    object-fit: cover;
+}
+
+.services-wrapper .card .card-body {
+    min-height: 150px;
+}
+
+.services-wrapper .card .card-body .card-text {
+    flex-grow: 1;
+}
+
+/* Our Services Section */
+
+
+/* Featured Products Section */
+.featuredproducts-section {
+    margin-top: 100px;
+}
+
+.featuredproducts-heading {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.products-wrapper {
+
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    gap: 10px;
+    scroll-behavior: smooth;
+    padding-bottom: 10px;
+}
+
+.products-wrapper .card {
+    width: 300px;
+    height: 100%;
+}
+
+.products-wrapper .card .card-img-top {
+    height: 250px;
+    object-fit: cover;
+}
+
+.products-wrapper .card .card-body {
+    min-height: 200px;
+}
+
+.products-wrapper .card .card-body .card-text {
+    flex-grow: 1;
+}
+
+/* Featured Products Section */
+
+/* Upcoming Events Section */
+
+.upcomingevents-section {
+    margin-top: 100px;
+}
+
+.upcomingevents-heading {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.events-wrapper {
+
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    gap: 10px;
+    scroll-behavior: smooth;
+    padding-bottom: 10px;
+}
+
+.events-wrapper .card {
+    width: 300px;
+    height: 100%;
+}
+
+.events-wrapper .card .card-img-top {
+    height: 250px;
+    object-fit: cover;
+}
+
+.events-wrapper .card .card-body {
+    min-height: 200px;
+}
+
+.events-wrapper .card .card-body .card-text {
+    flex-grow: 1;
+}
+
+/* Upcoming Events Section */
+
+/* Adoption Section */
+
+.adoption-section {
+    margin-top: 100px;
+}
+
+.adoption-heading {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.adoption-wrapper {
+
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    gap: 10px;
+    scroll-behavior: smooth;
+    padding-bottom: 10px;
+}
+
+.adoption-wrapper .card {
+    width: 300px;
+    height: 100%;
+}
+
+.adoption-wrapper .card .card-img-top {
+    height: 250px;
+    object-fit: cover;
+}
+
+.adoption-wrapper .card .card-body {
+    min-height: 200px;
+}
+
+.adoption-wrapper .card .card-body .card-text {
+    flex-grow: 1;
+}
+
+/* Adoption Section */
+
 
 @media (min-width: 992px) {
 

@@ -34,6 +34,11 @@ def hero(request, **kwargs):
             hero = Hero.objects.get(id=id)
         except Hero.DoesNotExist:
             return Response({"error": "Hero not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = HeroSerializer(hero, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users

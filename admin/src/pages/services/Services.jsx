@@ -6,7 +6,7 @@ import Sidebar from "../../layout/Sidebar";
 
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
-
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import Pagination from "../../components/Pagination"; // Import Pagination Component
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -21,6 +21,7 @@ function ViewServices() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [homePageToggle, setHomePageToggle] = useState();
   const itemsPerPage = 5;
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
@@ -63,8 +64,18 @@ function ViewServices() {
       // Update state
       setAllServices(services.data);
       setFilteredData(services.data);
+      console.log(services.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchServices(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingServices(false);
     }
@@ -121,6 +132,31 @@ function ViewServices() {
     } catch (error) {
       setError(error.response.data.message || "Error activating Service");
       console.log(error);
+    }
+  };
+
+  const handleToggleStatus = async (id, newStatus, name, updatedStatus) => {
+    updatedStatus = 0;
+    if (newStatus) {
+      updatedStatus = 1;
+    }
+    const formData = new FormData();
+    formData.append("show_on_homepage", newStatus);
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
+    }
+    try {
+      await api.patch(`/api/services/service/${id}/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      fetchServices();
+      if (newStatus) {
+        setMessage(name + " is live on homepage!");
+      } else {
+        setMessage(name + " will no longer be displayed on homepage!");
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
     }
   };
 
@@ -193,7 +229,7 @@ function ViewServices() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"
@@ -208,7 +244,7 @@ function ViewServices() {
             </div>
           )}
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Blogs</h2>
+            <h2>Services</h2>
             <button
               className="btn btn-warning"
               onClick={() => navigate("/services/add")}
@@ -235,9 +271,11 @@ function ViewServices() {
                 <th>ID</th>
                 <th>Image</th>
                 <th>Title</th>
+                <th>Category</th>
                 <th>Status</th>
                 <th>Created At</th>
                 <th>Created By</th>
+                <th>Display on Home Page</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -245,7 +283,7 @@ function ViewServices() {
               {isLoading || isLoadingServices ? (
                 <tr>
                   <td colSpan="7" className="text-center">
-                    Loading Events
+                    Loading Services
                   </td>
                 </tr>
               ) : paginatedData.length > 0 ? (
@@ -256,6 +294,7 @@ function ViewServices() {
                     style={{ cursor: "pointer" }}
                   >
                     <td>{item.id}</td>
+
                     <td>
                       <img
                         src={`${BASE_URL}${item.image}`}
@@ -263,7 +302,11 @@ function ViewServices() {
                         height={100}
                       />
                     </td>
+
                     <td>{item.name}</td>
+
+                    <td>{item.category.name}</td>
+
                     <td>
                       {item.status ? (
                         <span className="badge text-bg-success">Active</span>
@@ -271,6 +314,7 @@ function ViewServices() {
                         <span className="badge text-bg-danger">Inactive</span>
                       )}
                     </td>
+
                     <td>
                       {item.created_at
                         ? new Date(item.created_at).toLocaleDateString(
@@ -279,9 +323,31 @@ function ViewServices() {
                           )
                         : "N/A"}
                     </td>
+
                     <td>
                       {item.created_by.first_name} {item.created_by.last_name}
                     </td>
+
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="form-check form-switch">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id={`flexSwitchCheckDefault-${item.id}`}
+                          checked={item.show_on_homepage}
+                          value={homePageToggle}
+                          onChange={(e) =>
+                            handleToggleStatus(
+                              item.id,
+                              e.target.checked,
+                              item.name
+                            )
+                          }
+                        />
+                      </div>
+                    </td>
+
                     <td onClick={(e) => e.stopPropagation()}>
                       {item.status ? (
                         <button
@@ -305,7 +371,7 @@ function ViewServices() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="text-center">
+                  <td colSpan="8" className="text-center">
                     No data found
                   </td>
                 </tr>

@@ -1,0 +1,18 @@
+:root {
+    color-scheme: only light;
+}
+
+html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+
+
+
+@media (prefers-color-scheme: dark) {
+    html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+}

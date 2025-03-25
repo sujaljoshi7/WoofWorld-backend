@@ -3,7 +3,7 @@ from .models import Category, Service
 from django.utils import timezone
 from user.serializers import UserSerializer
 from django.contrib.auth.models import User
-
+  
 
 class ServiceCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,21 +17,19 @@ class ServiceCategorySerializer(serializers.ModelSerializer):
         return value
 
 class ServiceSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only = True)
+    created_by = UserSerializer(read_only=True)
+    category = ServiceCategorySerializer(source="service_category_id", read_only=True)  # Fetch full category details
+    service_category_id = serializers.PrimaryKeyRelatedField(  # Ensure correct field name
+        queryset=Category.objects.all(), write_only=True
+    )
 
     class Meta:
         model = Service
-        fields  = '__all__'
-    
+        fields = '__all__'
+
     def create(self, validated_data):
         request = self.context.get("request")
-        validated_data["created_by"] = request.user
+        category_instance = validated_data.pop("service_category_id", None)  # Use correct field name
+        validated_data["service_category_id"] = category_instance  # Assign to correct field
+        validated_data["created_by"] = request.user  # Ensure created_by is set
         return super().create(validated_data)
-
-    def get_created_by(self, obj):
-        return {
-            "id": obj.created_by.id,
-            "first_name": obj.created_by.first_name,
-            "last_name": obj.created_by.last_name,
-            "email": obj.created_by.email,
-        }

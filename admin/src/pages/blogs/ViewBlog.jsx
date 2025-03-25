@@ -6,6 +6,7 @@ import api from "../../api"; // Your Axios API instance
 const BASE_URL = import.meta.env.VITE_API_URL;
 import Sidebar from "../../layout/Sidebar";
 import "../../styles/styles.css";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const BlogDetails = () => {
   const { user, isLoading } = useUser();
@@ -31,7 +32,16 @@ const BlogDetails = () => {
         const response = await api.get(`/api/blogs/${id}/`);
         setBlog(response.data);
       } catch (err) {
-        setError("Failed to fetch blog details");
+        if (error.response?.status === 401) {
+          console.warn("Access token expired, refreshing...");
+
+          const refreshed = await handleTokenRefresh();
+          if (refreshed) {
+            return fetchBlogDetails(); // Retry after refreshing
+          }
+        } else {
+          console.error("Failed to fetch user data:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -101,6 +111,12 @@ const BlogDetails = () => {
 
                         <button
                           className="btn btn-warning btn-sm"
+                          style={{
+                            whiteSpace: "nowrap",
+                            width: "100px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
                           onClick={() =>
                             navigate(`/blogs/edit/${blog.id}`, {
                               state: { method: "edit", blog: blog },
@@ -118,7 +134,7 @@ const BlogDetails = () => {
                         alt="Blog Image"
                         className="img-fluid mb-3 rounded shadow-sm"
                         style={{
-                          maxHeight: "400px",
+                          maxHeight: "600px",
                           width: "100%",
                           objectFit: "cover",
                         }}

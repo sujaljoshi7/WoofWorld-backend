@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
+
+def validate_image_size(value):
+    limit = 5 * 1024 * 1024  # 5MB limit
+    if value.size > limit:
+        raise ValidationError("Image size should not exceed 5MB.")
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -17,7 +23,7 @@ class Event(models.Model):
     time = models.CharField(max_length=12)
     location = models.CharField(max_length=100)
     price = models.FloatField()
-    image = models.ImageField(upload_to='uploads/')
+    image = models.ImageField(upload_to='uploads/', validators=[validate_image_size])
     duration = models.CharField(max_length=100)
     contact_name = models.CharField(max_length=100)
     contact_number = models.BigIntegerField()

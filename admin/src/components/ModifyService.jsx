@@ -28,7 +28,7 @@ const ModifyService = ({ method }) => {
   const config = {
     readonly: false,
     height: 400,
-    placeholder: "Write your blog here...",
+    placeholder: "Write your comment here...",
     toolbarButtonSize: "large",
     theme: "dark",
     buttons:
@@ -58,7 +58,7 @@ const ModifyService = ({ method }) => {
       const data = res.data;
       setServiceTitle(data.name);
       setContent(data.content);
-      setSelectedCategory(data.service_category_id);
+      setSelectedCategory(data.category.id);
       setPreviewImage(
         data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
       );
@@ -80,6 +80,12 @@ const ModifyService = ({ method }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (!serviceImage && method === "add") {
+      setError("No image selected");
+      setLoading(false);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", serviceTitle); // Add other event details
@@ -110,6 +116,16 @@ const ModifyService = ({ method }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup on unmount
+    }
+  }, [error]);
 
   return (
     <div className="d-flex">
@@ -150,19 +166,18 @@ const ModifyService = ({ method }) => {
             </div>
 
             {error && (
-              <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-                <div
-                  className="alert alert-danger alert-dismissible fade show"
-                  role="alert"
-                >
-                  <strong>Error</strong> {error}
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"
-                  ></button>
-                </div>
+              <div
+                className="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                role="alert"
+                style={{ zIndex: 1050, width: "300px" }} // Ensure it stays visible on top
+              >
+                <strong>Error:</strong> {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError("")} // Hide alert when closed
+                  aria-label="Close"
+                ></button>
               </div>
             )}
           </div>
@@ -193,6 +208,7 @@ const ModifyService = ({ method }) => {
                       className="form-select"
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
+                      required
                     >
                       <option value="">-- Select Category --</option>
                       {categories.map((category) => (
@@ -252,9 +268,15 @@ const ModifyService = ({ method }) => {
                     onBlur={(newContent) => setContent(newContent)}
                   />
                 </div>
-                <button type="submit" className="btn btn-warning w-100">
-                  Save Service
-                </button>
+                <div className="d-flex justify-content-center">
+                  {loading ? (
+                    <LoadingIndicator />
+                  ) : (
+                    <button type="submit" className="btn btn-warning w-100">
+                      Save Service
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
           </div>

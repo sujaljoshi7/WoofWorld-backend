@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api"; // Make sure this is the correct path
-import { ACCESS_TOKEN } from "../constants";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 
 const useUser = () => {
     const [user, setUser] = useState(null);
@@ -23,6 +23,7 @@ const useUser = () => {
                 });
                 setUser(response.data);
             } catch (error) {
+                
                 console.error("Failed to fetch user data:", error);
             } finally {
                 setIsLoading(false);

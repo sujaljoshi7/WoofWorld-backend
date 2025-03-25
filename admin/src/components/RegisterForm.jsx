@@ -2,7 +2,8 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import LoadingIndicator from "./LoadingIndicator";
-import bg_image from "../assets/images/signup-image.jpg";
+import bg_image from "../assets/images/signin-image.png";
+import { useEffect } from "react";
 
 const ACCESS_TOKEN = "access_token";
 const REFRESH_TOKEN = "refresh_token";
@@ -13,25 +14,40 @@ function RegisterForm(route) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (message) {
+      const toastElement = document.getElementById("liveToast");
+      if (toastElement) {
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+      }
+    }
+  }, [message]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMessage(""); // Clear previous messages
 
     try {
-      // Check if user exists
+      // 🔹 Check if the user exists
       const checkRes = await api.get(
-        `/api/users/check-email/${encodeURIComponent(email)}`
+        `/api/user/check-email/${encodeURIComponent(email)}/`
       );
-      if (checkRes.data.exists) {
-        alert("Username already exists. Please choose another.");
+
+      console.log("API Response:", checkRes.data); // Debugging response
+
+      if (checkRes?.data?.can_register === false) {
+        setMessage(checkRes.data.message); // Show "Email already exists"
         setLoading(false);
         return;
       }
 
-      // Proceed with registration
-      const username = `${email}`.trim().toLowerCase();
+      // 🔹 Proceed with registration
+      const username = email.trim().toLowerCase();
       const res = await api.post("/api/user/register/", {
         username,
         email,
@@ -40,17 +56,27 @@ function RegisterForm(route) {
         last_name: lastName,
       });
 
-      // Store tokens
+      console.log("Registration Success:", res.data); // Log successful registration
+
+      // 🔹 Store tokens
       localStorage.setItem(ACCESS_TOKEN, res.data.access);
       localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
 
-      // Navigate to homepage or dashboard
+      // 🔹 Navigate to homepage or dashboard
       navigate("/");
     } catch (error) {
-      console.error(error.response?.data); // Log the full error response
-      alert(
-        error.response?.data?.detail || "An error occurred during registration."
-      );
+      console.error("Error Response:", error.response?.data || error.message); // Debugging
+
+      if (error.response) {
+        setMessage(
+          error.response.data.message ||
+            "An error occurred during registration."
+        );
+      } else if (error.request) {
+        setMessage("No response from server. Please try again later.");
+      } else {
+        setMessage("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }
@@ -59,6 +85,34 @@ function RegisterForm(route) {
   return (
     <section className="p-3 p-md-4 p-xl-5">
       <div className="container">
+        {message && (
+          <div className="col-12 col-sm-auto mt-4 mt-sm-0">
+            <div
+              className="position-fixed bottom-0 end-0 p-3"
+              style={{ zIndex: 11 }} // React style syntax
+            >
+              <div
+                id="liveToast"
+                className="toast hide"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+              >
+                <div className="toast-header">
+                  <strong className="me-auto">WoofWorld Admin</strong>
+                  <small>Just Now</small>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="toast"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div className="toast-body">{message}</div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="card border-light-subtle shadow-sm">
           <div className="row g-0">
             <div className="col-12 col-md-6">
@@ -128,6 +182,7 @@ function RegisterForm(route) {
                         placeholder="name@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="new-email"
                         required
                       />
                     </div>
@@ -143,6 +198,7 @@ function RegisterForm(route) {
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
                         required
                       />
                     </div>
@@ -164,12 +220,13 @@ function RegisterForm(route) {
                     <hr className="mt-5 mb-4 border-secondary-subtle" />
                     <p className="m-0 text-secondary text-center">
                       Already have an account?{" "}
-                      <a
-                        href="/login"
+                      <span
                         className="link-primary text-decoration-none"
+                        onClick={() => navigate("/login")}
+                        style={{ cursor: "pointer" }}
                       >
                         Sign in
-                      </a>
+                      </span>
                     </p>
                   </div>
                 </div>

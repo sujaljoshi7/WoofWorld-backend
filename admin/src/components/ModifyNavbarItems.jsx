@@ -11,6 +11,13 @@ import LoadingIndicator from "./LoadingIndicator";
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
 
+const availableComponents = [
+  "Home",
+  "Upcoming Events",
+  "Services",
+  "WebDevelopment",
+];
+
 const ModifyNavbarItems = ({ method }) => {
   const navigate = useNavigate();
   const { user, isLoading } = useUser();
@@ -26,6 +33,8 @@ const ModifyNavbarItems = ({ method }) => {
   const { id } = useParams();
   const BASE_URL = import.meta.env.VITE_API_URL;
 
+  const [component, setComponent] = useState(availableComponents[""]);
+
   useEffect(() => {
     if (method === "edit" && id) {
       fetchNavbarItemDetails();
@@ -40,6 +49,7 @@ const ModifyNavbarItems = ({ method }) => {
       setTitle(data.title);
       setUrl(data.url);
       setOrder(data.order);
+      setComponent(data.component);
       setParentItem(data.dropdown_parent_data?.id || "");
     } catch (err) {
       console.error("Failed to fetch hero details:", err);
@@ -64,6 +74,7 @@ const ModifyNavbarItems = ({ method }) => {
     formData.append("title", title);
     formData.append("url", url);
     formData.append("order", order);
+    formData.append("component", component.replace(/\s+/g, ""));
     formData.append("dropdown_parent", parentItem === "" ? "" : parentItem);
     formData.append("status", 1);
     try {
@@ -175,7 +186,7 @@ const ModifyNavbarItems = ({ method }) => {
                   </div>
                 </div>
                 <div className="row">
-                  <div className="col-12 mb-4">
+                  <div className="col-6 mb-4">
                     <label className="form-label" htmlFor="name">
                       Url
                     </label>
@@ -196,8 +207,6 @@ const ModifyNavbarItems = ({ method }) => {
                       {url.length === 200 && "Character limit reached!"}
                     </small>
                   </div>
-                </div>
-                <div className="row">
                   <div className="col-6 mb-4">
                     <label className="form-label" htmlFor="name">
                       Order
@@ -208,16 +217,38 @@ const ModifyNavbarItems = ({ method }) => {
                       type="number"
                       value={order}
                       onChange={(e) => {
-                        if (e.target.value.length <= 200) {
+                        if (e.target.value.length <= 2) {
                           setOrder(e.target.value);
                         }
                       }}
                       required
                     />
-                    <small className={url.length === 200 ? "text-danger" : ""}>
-                      {url.length}/200{" "}
-                      {url.length === 200 && "Character limit reached!"}
+                    <small className={order.length === 2 ? "text-danger" : ""}>
+                      {order.length}/2{" "}
+                      {order.length === 2 && "Character limit reached!"}
                     </small>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-6 mb-4">
+                    <label className="form-label" htmlFor="name">
+                      Page
+                    </label>
+                    <select
+                      className="form-select"
+                      value={component}
+                      onChange={(e) => {
+                        setComponent(e.target.value);
+                      }}
+                      required // Disable if breeds is empty
+                    >
+                      <option value=""> Select Page</option>
+                      {availableComponents.map((comp) => (
+                        <option key={comp} value={comp}>
+                          {comp}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="col-6 mb-4">
                     <label className="form-label" htmlFor="name">
@@ -239,10 +270,6 @@ const ModifyNavbarItems = ({ method }) => {
                           </option>
                         ))}
                     </select>
-                    <small className={url.length === 200 ? "text-danger" : ""}>
-                      {url.length}/200{" "}
-                      {url.length === 200 && "Character limit reached!"}
-                    </small>
                   </div>
                 </div>
 

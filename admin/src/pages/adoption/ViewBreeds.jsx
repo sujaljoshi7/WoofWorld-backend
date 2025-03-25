@@ -6,12 +6,12 @@ import Sidebar from "../../layout/Sidebar";
 
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
-
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 function ViewBreeds() {
   const navigate = useNavigate();
 
   const { user, isLoading } = useUser();
-  const [allEventCategories, setAllEventCategories] = useState([]);
+  const [allEventCategories, setAllBreeds] = useState([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -41,7 +41,7 @@ function ViewBreeds() {
     second: "2-digit",
   };
 
-  const fetchEventCategories = async () => {
+  const fetchBreeds = async () => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
@@ -50,17 +50,26 @@ function ViewBreeds() {
     }
     try {
       // Fetch user details independently
-      const eventCategoriesRes = api.get("/api/adoption/breed");
+      const breedsRes = api.get("/api/adoption/breed");
 
       // Wait for both requests to complete independently
-      const [eventCategories] = await Promise.all([eventCategoriesRes]);
+      const [breeds] = await Promise.all([breedsRes]);
 
       // Update state
-      setAllEventCategories(eventCategories.data);
+      setAllBreeds(breeds.data);
 
-      setFilteredData(eventCategories.data);
+      setFilteredData(breeds.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchBreeds(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingCategories(false);
     }
@@ -75,10 +84,10 @@ function ViewBreeds() {
       }
     }
 
-    fetchEventCategories();
+    fetchBreeds();
 
     const interval = setInterval(() => {
-      fetchEventCategories();
+      fetchBreeds();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
@@ -91,7 +100,7 @@ function ViewBreeds() {
       );
       setMessage("Category Dectivated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchBreeds();
     } catch (error) {
       setError("Error deactivating category" || error.response.data.message);
     }
@@ -104,15 +113,11 @@ function ViewBreeds() {
       );
       setMessage("Category Activated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchBreeds();
     } catch (error) {
       setError("Error activating category" || error.response.data.message);
       console.log(error);
     }
-  };
-
-  const handleRowClick = (userId) => {
-    navigate(`/view-user/${userId}`);
   };
 
   if (isLoading) {
@@ -170,7 +175,7 @@ function ViewBreeds() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"
@@ -219,11 +224,7 @@ function ViewBreeds() {
             <tbody>
               {filteredData.length > 0 ? (
                 filteredData.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => handleRowClick(item.id)}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <tr key={item.id} style={{ cursor: "pointer" }}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
                     <td>

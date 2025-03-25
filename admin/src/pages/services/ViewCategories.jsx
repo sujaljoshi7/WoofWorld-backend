@@ -6,12 +6,13 @@ import Sidebar from "../../layout/Sidebar";
 
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 function ViewServiceCategories() {
   const navigate = useNavigate();
 
   const { user, isLoading } = useUser();
-  const [allEventCategories, setAllEventCategories] = useState([]);
+  const [allEventCategories, setAllServiceCategories] = useState([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -41,7 +42,7 @@ function ViewServiceCategories() {
     second: "2-digit",
   };
 
-  const fetchEventCategories = async () => {
+  const fetchSeviceCategories = async () => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
@@ -50,17 +51,26 @@ function ViewServiceCategories() {
     }
     try {
       // Fetch user details independently
-      const eventCategoriesRes = api.get("/api/services/category");
+      const serviceCategoriesRes = api.get("/api/services/category");
 
       // Wait for both requests to complete independently
-      const [eventCategories] = await Promise.all([eventCategoriesRes]);
+      const [serviceCategories] = await Promise.all([serviceCategoriesRes]);
 
       // Update state
-      setAllEventCategories(eventCategories.data);
+      setAllServiceCategories(serviceCategories.data);
 
-      setFilteredData(eventCategories.data);
+      setFilteredData(serviceCategories.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchSeviceCategories(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingCategories(false);
     }
@@ -75,10 +85,10 @@ function ViewServiceCategories() {
       }
     }
 
-    fetchEventCategories();
+    fetchSeviceCategories();
 
     const interval = setInterval(() => {
-      fetchEventCategories();
+      fetchSeviceCategories();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
@@ -91,7 +101,7 @@ function ViewServiceCategories() {
       );
       setMessage("Category Dectivated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchSeviceCategories();
     } catch (error) {
       setError("Error deactivating category" || error.response.data.message);
     }
@@ -104,15 +114,11 @@ function ViewServiceCategories() {
       );
       setMessage("Category Activated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchSeviceCategories();
     } catch (error) {
       setError("Error activating category" || error.response.data.message);
       console.log(error);
     }
-  };
-
-  const handleRowClick = (userId) => {
-    navigate(`/view-user/${userId}`);
   };
 
   if (isLoading) {
@@ -170,7 +176,7 @@ function ViewServiceCategories() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"
@@ -220,11 +226,7 @@ function ViewServiceCategories() {
             <tbody>
               {filteredData.length > 0 ? (
                 filteredData.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => handleRowClick(item.id)}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <tr key={item.id} style={{ cursor: "pointer" }}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
                     <td>

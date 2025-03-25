@@ -17,12 +17,14 @@ const ModifyProduct = ({ method }) => {
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productType, setProductType] = useState("");
-  const [productDuration, setProductDuration] = useState("");
+  const [productAge, setProductAge] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productStatus, setProductStatus] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [productImage, setProductImage] = useState(null);
+  const [selectedBreed, setSelectedBreed] = useState("");
+  const [breeds, setBreeds] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
@@ -45,6 +47,7 @@ const ModifyProduct = ({ method }) => {
       fetchProductDetails();
     }
     fetchCategories();
+    fetchBreeds();
   }, []);
 
   const fetchCategories = async () => {
@@ -56,19 +59,25 @@ const ModifyProduct = ({ method }) => {
     }
   };
 
+  const fetchBreeds = async () => {
+    try {
+      const response = await api.get("/api/adoption/breed/");
+      setBreeds(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
   const fetchProductDetails = async () => {
     try {
       const res = await api.get(`/api/products/${id}/`);
       const data = res.data;
       setProductName(data.name);
-      setProductStatus(data.status);
       setProductDescription(data.description);
-      setSelectedCategory(data.service_category_id);
+      setSelectedCategory(data.category.id);
       setProductPrice(data.price);
-      setProductType(data.link);
-      setSelectedCategory(data.product_category_id);
-      setProductDuration(data.duration);
-      setProductType(data.type);
+      setSelectedBreed(data.breeds.id);
+      setProductAge(data.age);
       setPreviewImage(
         data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
       );
@@ -90,13 +99,20 @@ const ModifyProduct = ({ method }) => {
     setLoading(true);
     setError("");
 
+    if (!productImage && method === "add") {
+      setError("No image selected");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", productName);
     formData.append("description", productDescription);
     formData.append("type", productType);
-    formData.append("duration", productDuration);
+    formData.append("age", productAge);
     formData.append("price", productPrice);
-    formData.append("status", productStatus);
+    formData.append("breed", selectedBreed);
+    formData.append("status", 1);
     formData.append("product_category_id", selectedCategory);
     if (productImage) {
       formData.append("image", productImage);
@@ -121,6 +137,16 @@ const ModifyProduct = ({ method }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup on unmount
+    }
+  }, [error]);
 
   return (
     <div className="d-flex">
@@ -160,19 +186,18 @@ const ModifyProduct = ({ method }) => {
             </div>
 
             {error && (
-              <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-                <div
-                  className="alert alert-danger alert-dismissible fade show"
-                  role="alert"
-                >
-                  <strong>Error</strong> {error}
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"
-                  ></button>
-                </div>
+              <div
+                className="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                role="alert"
+                style={{ zIndex: 1050, width: "300px" }} // Ensure it stays visible on top
+              >
+                <strong>Error:</strong> {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError("")} // Hide alert when closed
+                  aria-label="Close"
+                ></button>
               </div>
             )}
           </div>
@@ -195,6 +220,20 @@ const ModifyProduct = ({ method }) => {
                   </div>
                 </div>
                 <div className="row">
+                  <div className="mb-4">
+                    <label className="form-label" htmlFor="description">
+                      Description
+                    </label>
+                    <textarea
+                      className="form-control"
+                      id="description"
+                      value={productDescription}
+                      onChange={(e) => setProductDescription(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="row">
                   <div className="col-6 mb-4">
                     <label className="form-label" htmlFor="name">
                       Select Category
@@ -203,6 +242,7 @@ const ModifyProduct = ({ method }) => {
                       className="form-select"
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
+                      required
                     >
                       <option value="">-- Select Category --</option>
                       {categories.map((category) => (
@@ -214,41 +254,29 @@ const ModifyProduct = ({ method }) => {
                   </div>
                   <div className="col-6 mb-4">
                     <label className="form-label" htmlFor="status">
-                      Status
+                      Breed
                     </label>
-                    <div className="mb-4">
-                      <select
-                        id="status"
-                        className="form-select"
-                        value={productStatus}
-                        onChange={(e) => setProductStatus(e.target.value)}
-                        required
-                      >
-                        <option value={1}>Active</option>
-                        <option value={0}>Inactive</option>
-                      </select>
-                    </div>
+
+                    <select
+                      id="status"
+                      className="form-select"
+                      value={selectedBreed}
+                      onChange={(e) => setSelectedBreed(e.target.value)}
+                      required
+                    >
+                      <option value="">-- Select Breed --</option>
+                      {breeds.length > 0 &&
+                        breeds.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                    </select>
                   </div>
-                </div>
-                <div className="mb-4">
-                  <label className="form-label" htmlFor="description">
-                    Description
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="description"
-                    value={productDescription}
-                    onChange={(e) => setProductDescription(e.target.value)}
-                    required
-                  />
                 </div>
 
                 <div className="row">
-                  <div
-                    className={
-                      productType === "Digital" ? "col-4 mb-4" : "col-6 mb-4"
-                    }
-                  >
+                  <div className={"col-6 mb-4"}>
                     <label className="form-label" htmlFor="price">
                       Price
                     </label>
@@ -262,48 +290,31 @@ const ModifyProduct = ({ method }) => {
                     />
                   </div>
 
-                  <div
-                    className={
-                      productType === "Digital" ? "col-4 mb-4" : "col-6 mb-4"
-                    }
-                  >
+                  <div className={"col-6 mb-4"}>
                     <label className="form-label" htmlFor="type">
-                      Type
+                      Age
                     </label>
                     <div className="mb-6">
                       <select
                         id="type"
                         className="form-select"
-                        value={productType}
-                        onChange={(e) => setProductType(e.target.value)}
+                        value={productAge}
+                        onChange={(e) => setProductAge(e.target.value)}
                         required
                       >
-                        <option value={"Physical"}>Physical</option>
-                        <option value={"Digital"}>Digital</option>
+                        <option value="">-- Select Age --</option>
+                        <option value={"Puppy (0 - 1 Years)"}>
+                          Puppy (0 - 1 Years)
+                        </option>
+                        <option value={"Adult (1 - 7 Years)"}>
+                          Adult (1 - 7 Years)
+                        </option>
+                        <option value={"Mature (7 - 12 Years)"}>
+                          Mature (7 - 12 Years)
+                        </option>
                       </select>
                     </div>
                   </div>
-                  {productType === "Digital" && (
-                    <div className="col-4 mb-4">
-                      <label className="form-label" htmlFor="duration">
-                        Duration
-                      </label>
-                      <div className="mb-6">
-                        <select
-                          id="duration"
-                          className="form-select"
-                          value={productDuration}
-                          onChange={(e) => setProductDuration(e.target.value)}
-                          required
-                        >
-                          <option value="">-- Select Duration --</option>
-                          <option value={"Month"}>Month</option>
-                          <option value={"Year"}>Year</option>
-                          <option value={"Lifetime"}>Lifetime</option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <div className="mb-4">

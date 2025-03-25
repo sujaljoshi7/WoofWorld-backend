@@ -1,29 +1,31 @@
-# 🚀 TechFlow CMS
+# 🐾 WoofWorld Admin – Powering the Ultimate Dog-Centric Platform! 🚀
 
-TechFlow CMS is a powerful and modern content management system built with **Django REST Framework** and **React 19**. It enables seamless content creation, management, and publishing with an intuitive UI and rich feature set. 🎯
+WoofWorld Admin is the **brain behind WoofWorld**, seamlessly managing everything from blogs and events to product listings and user interactions. Built with **Django REST Framework** and **React 19**, it ensures a smooth and efficient content management experience. 🐶✨
 
 ---
 
-## 🌟 Features
+## 🌟 Key Features
 
-✅ **Full CMS Support** – Manage blogs, users, and events efficiently.
-✅ **Rich Text Editing** – Enhanced with **Jodit Editor** (customized toolbar, preview, and color support).
-✅ **API-Driven** – Built using Django REST Framework for scalable API interactions.
-✅ **Modern UI** – React 19-powered frontend with a clean and responsive design.
-✅ **Authentication** – Secure login/logout with Django authentication.
-✅ **Event & Blog Management** – Easily create, edit, and delete events and blogs.
+✅ **Complete Control** – Manage blogs, products, dog adoption listings, and events in one place.  
+✅ **Advanced Rich Text Editing** – Enhanced with **Jodit Editor** (custom toolbar, preview, and color customization).  
+✅ **Seamless API Integration** – Built using **Django REST Framework** for scalability.  
+✅ **Modern & Responsive UI** – Powered by **React 19** & **Bootstrap**.  
+✅ **Secure Authentication** – Role-based access with secure login/logout.  
+✅ **Adoption Management** – Easily list and manage dogs available for adoption.  
+✅ **E-commerce Ready** – Manage dog-related products efficiently.  
+✅ **Event Handling** – Organize and showcase pet-centric events.  
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### 🔹 Backend
-- **Django** & **Django REST Framework** – Robust API development.
+- **Django** & **Django REST Framework** – Robust API-driven backend.
 - **MySQL** – Scalable relational database.
 
 ### 🔹 Frontend
-- **React 19** – Modern component-based UI.
-- **Tailwind CSS** – Sleek and responsive styling.
+- **React 19** – Fast, component-based UI.
+- **Bootstrap** – Sleek and adaptive styling.
 
 ---
 
@@ -51,7 +53,7 @@ python manage.py runserver
 
 ### 2️⃣ Frontend Setup (React)
 ```sh
-cd TechFlow-CMS/frontend
+cd TechFlow-CMS/admin
 
 # Install dependencies
 yarn install  # Or npm install
@@ -64,35 +66,41 @@ yarn dev  # Or npm start
 
 ## 🖊️ Jodit Editor Customization
 
-🟢 Removed **image & file upload** options.
-🟢 Added **horizontal line, preview, color, highlight, table, font family & size**.
-🟢 Fixed **white background issue in preview**.
+🟢 Removed **image & file upload** options.  
+🟢 Added **horizontal line, preview, color, highlight, table, font family & size**.  
+🟢 Fixed **white background issue in preview**.  
 
 ---
 
 ## 🎯 API Endpoints (Example)
 
 | Method | Endpoint | Description |
-|--------|-------------------------|------------------------------|
-| `GET` | `/api/blogs/` | Fetch all blogs |
-| `POST` | `/api/blogs/` | Create a new blog |
-| `PATCH` | `/api/blogs/{id}/` | Update a blog |
-| `DELETE` | `/api/blogs/{id}/` | Delete a blog |
+|--------|-------------------------|--------------------------------|
+| `GET`  | `/api/blogs/`           | Fetch all blogs               |
+| `POST` | `/api/blogs/`           | Create a new blog             |
+| `PATCH`| `/api/blogs/{id}/`      | Update a blog                 |
+| `DELETE`| `/api/blogs/{id}/`     | Delete a blog                 |
+| `GET`  | `/api/products/`        | Fetch all products            |
+| `POST` | `/api/products/`        | Add a new product             |
+| `GET`  | `/api/adoptions/`       | Fetch dogs available for adoption |
+| `POST` | `/api/adoptions/`       | Add a new adoption listing    |
 
 ---
 
 ## 🤝 Contributing
 
-🔹 Fork the repository.
-🔹 Create a new branch (`feature/your-feature`).
-🔹 Commit your changes.
-🔹 Push to your branch and submit a PR.
+🐶 **WoofWorld is growing, and we’d love your help!**  
+🔹 Fork the repository.  
+🔹 Create a new branch (`feature/your-feature`).  
+🔹 Commit your changes.  
+🔹 Push to your branch and submit a PR.  
 
 ---
 
 ## 📞 Contact
 
 📧 **Email:** work.sujaljoshi@gmail.com  
-🌐 **GitHub:** [sujaljoshi7](https://github.com/sujaljoshi7)
+🌐 **GitHub:** [sujaljoshi7](https://github.com/sujaljoshi7)  
 
-💡 **TechFlow CMS – Manage content effortlessly!** ✨
+💡 **WoofWorld Admin – The ultimate control center for the WoofWorld experience!** 🐕🚀
+

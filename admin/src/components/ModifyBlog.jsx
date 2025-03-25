@@ -6,9 +6,10 @@ import { useLocation } from "react-router-dom";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
 import "../styles/Styles.css";
-
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
+import LoadingIndicator from "./LoadingIndicator";
+import { handleTokenRefresh } from "../hooks/tokenRefresh";
 
 const ModifyBlog = ({ method }) => {
   const blog = location.state?.blog;
@@ -16,7 +17,7 @@ const ModifyBlog = ({ method }) => {
   const [blogTitle, setBlogTitle] = useState("");
   const [content, setContent] = useState("");
   const [blogImage, setBlogImage] = useState(null);
-  const [blogStatus, setBlogStatus] = useState(0);
+  const [blogStatus, setBlogStatus] = useState(1);
   const [error, setError] = useState("");
   const { id } = useParams();
 
@@ -31,7 +32,7 @@ const ModifyBlog = ({ method }) => {
     toolbarButtonSize: "large",
     theme: "dark",
     buttons:
-      "bold,italic,underline,strikethrough,fontsize,font,brush,paragraph,|,ul,ol,|,link,hr,table,|,align,undo,redo,preview,fullscreen,lineHeight",
+      "bold,italic,underline,strikethrough,fontsize,font,brush,paragraph,|,ul,ol,|,link,hr,table,|,align,undo,redo,preview,fullscreen,lineHeight,image",
     showXPathInStatusbar: false,
   };
 
@@ -68,7 +69,16 @@ const ModifyBlog = ({ method }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+    if (content === "") {
+      setError("Content cannot be empty");
+      setLoading(false);
+      return;
+    }
+    if (!blogImage && method === "add") {
+      setError("Image is required");
+      setLoading(false);
+      return;
+    }
     const formData = new FormData();
     formData.append("title", blogTitle); // Add other event details
     formData.append("content", content);
@@ -92,13 +102,30 @@ const ModifyBlog = ({ method }) => {
       navigate("/blogs");
     } catch (error) {
       console.error("Error:", error);
-      setError("Failed to submit blog. Try again.");
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return handleSubmit(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch data:", error);
+      }
     } finally {
       setLoading(false);
     }
-
-    console.log(content);
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup on unmount
+    }
+  }, [error]);
 
   return (
     <div className="d-flex">
@@ -139,19 +166,18 @@ const ModifyBlog = ({ method }) => {
             </div>
 
             {error && (
-              <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-                <div
-                  className="alert alert-danger alert-dismissible fade show"
-                  role="alert"
-                >
-                  <strong>Error</strong> {error}
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"
-                  ></button>
-                </div>
+              <div
+                className="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                role="alert"
+                style={{ zIndex: 1050, width: "300px" }} // Ensure it stays visible on top
+              >
+                <strong>Error:</strong> {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError("")} // Hide alert when closed
+                  aria-label="Close"
+                ></button>
               </div>
             )}
           </div>
@@ -220,11 +246,18 @@ const ModifyBlog = ({ method }) => {
                     config={config}
                     value={content}
                     onBlur={(newContent) => setContent(newContent)}
+                    required
                   />
                 </div>
-                <button type="submit" className="btn btn-warning w-100">
-                  Save Blog
-                </button>
+                <div className="d-flex justify-content-center">
+                  {loading ? (
+                    <LoadingIndicator />
+                  ) : (
+                    <button type="submit" className="btn btn-warning w-100">
+                      Save Blog
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
           </div>

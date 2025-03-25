@@ -4,7 +4,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../../constants";
 import api from "../../../api";
 import Sidebar from "../../../layout/Sidebar";
 import { exportToCSV } from "../../../utils/export";
-
+import { handleTokenRefresh } from "../../../hooks/tokenRefresh";
 import useUser from "../../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
 
@@ -55,7 +55,16 @@ function NavbarItems() {
       setAllCompanies(company.data);
       setFilteredData(company.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchNavbarItems(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingItems(false);
     }
@@ -78,7 +87,7 @@ function NavbarItems() {
     return () => clearInterval(interval); // Cleanup on unmount
   }, [message]);
 
-  const handleDeactivate = async (company_id) => {
+  const handleDeactivate = async (navbaritem_id) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
@@ -87,7 +96,7 @@ function NavbarItems() {
     }
     try {
       const response = await api.patch(
-        `api/homepage/partnercompany/${company_id}/deactivate/`,
+        `api/navbar/navbar/${navbaritem_id}/deactivate/`,
         {
           headers: {
             Authorization: `Bearer ${token}`, // Add JWT Token
@@ -98,19 +107,19 @@ function NavbarItems() {
       //   alert("User activated successfully!");
       fetchNavbarItems();
     } catch (error) {
-      setError(error.response.data.message || "Error deactivating product");
+      setError(error.response.data.message || "Error deactivating Item");
     }
   };
 
-  const handleActivate = async (company_id) => {
+  const handleActivate = async (navbaritem_id) => {
     try {
       const response = await api.patch(
-        `api/homepage/partnercompany/${company_id}/activate/`
+        `api/navbar/navbar/${navbaritem_id}/activate/`
       );
       setMessage(response.data.message);
       fetchNavbarItems();
     } catch (error) {
-      setError(error.response.data.message || "Error activating product");
+      setError(error.response.data.message || "Error activating Item");
       console.log(error);
     }
   };
@@ -193,7 +202,7 @@ function NavbarItems() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"

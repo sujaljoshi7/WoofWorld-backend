@@ -66,8 +66,8 @@ const ModifyAboutUs = ({ method }) => {
       await api.patch(`/api/companydetails/aboutus/1/`, formDataWithId, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      alert("Blog Added Successfully!");
-      navigate("/blogs");
+      alert("About us Added Successfully!");
+      navigate("/companyinfo/aboutus");
     } catch (error) {
       console.error("Error:", error);
       setError("Failed to submit blog. Try again.");
@@ -87,8 +87,6 @@ const ModifyAboutUs = ({ method }) => {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
-
         <div className="container mt-4">
           <div className="row align-items-center mb-7">
             <div className="col">
@@ -97,7 +95,7 @@ const ModifyAboutUs = ({ method }) => {
                   <li className="breadcrumb-item">
                     <p
                       className="text-body-secondary"
-                      onClick={() => navigate("/blogs")}
+                      onClick={() => navigate("/companyinfo/aboutus")}
                       style={{ cursor: "pointer" }}
                     >
                       About us
@@ -142,7 +140,7 @@ const ModifyAboutUs = ({ method }) => {
                   />
                 </div>
                 <button type="submit" className="btn btn-warning w-100">
-                  Save Blog
+                  Save Aboutus
                 </button>
               </form>
             </div>

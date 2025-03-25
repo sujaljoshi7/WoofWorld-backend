@@ -7,6 +7,7 @@ import Sidebar from "../../layout/Sidebar";
 import Pagination from "../../components/Pagination"; // Import Pagination Component
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 function ViewBlogs() {
@@ -14,7 +15,7 @@ function ViewBlogs() {
 
   const { user, isLoading } = useUser();
   const [allEventCategories, setAllEventCategories] = useState([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState([]);
+  const [isLoadingEvents, setIsLoadingBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
@@ -44,8 +45,8 @@ function ViewBlogs() {
     second: "2-digit",
   };
 
-  const fetchEventCategories = async () => {
-    setIsLoadingEvents(true);
+  const fetchBlogs = async () => {
+    setIsLoadingBlogs(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
@@ -63,9 +64,18 @@ function ViewBlogs() {
       setAllEventCategories(eventCategories.data);
       setFilteredData(eventCategories.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchBlogs(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
-      setIsLoadingEvents(false);
+      setIsLoadingBlogs(false);
     }
   };
 
@@ -78,9 +88,9 @@ function ViewBlogs() {
       }
     }
 
-    fetchEventCategories();
+    fetchBlogs();
     const interval = setInterval(() => {
-      fetchEventCategories();
+      fetchBlogs();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
@@ -104,7 +114,7 @@ function ViewBlogs() {
       );
       setMessage(response.data.message);
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchBlogs();
     } catch (error) {
       setError(error.response.data.message || "Error deactivating user");
     }
@@ -114,7 +124,7 @@ function ViewBlogs() {
     try {
       const response = await api.patch(`api/blogs/blog/${blog_id}/activate/`);
       setMessage("Blog Activated Successfully");
-      fetchEventCategories();
+      fetchBlogs();
     } catch (error) {
       setError(error.response.data.message || "Error activating Event");
       console.log(error);
@@ -190,7 +200,7 @@ function ViewBlogs() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"

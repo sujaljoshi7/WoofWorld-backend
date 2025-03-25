@@ -26,7 +26,7 @@ def product_category(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'POST', 'PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def product(request, **kwargs):
     if request.method == 'GET':
         products = Product.objects.select_related("created_by").all()

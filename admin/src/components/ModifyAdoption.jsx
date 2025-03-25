@@ -138,6 +138,16 @@ const ModifyAdoption = ({ method }) => {
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup on unmount
+    }
+  }, [error]);
+
   return (
     <div className="d-flex">
       <div className="sidebar">
@@ -176,19 +186,18 @@ const ModifyAdoption = ({ method }) => {
             </div>
 
             {error && (
-              <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-                <div
-                  className="alert alert-danger alert-dismissible fade show"
-                  role="alert"
-                >
-                  <strong>Error</strong> {error}
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"
-                  ></button>
-                </div>
+              <div
+                className="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                role="alert"
+                style={{ zIndex: 1050, width: "300px" }} // Ensure it stays visible on top
+              >
+                <strong>Error:</strong> {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError("")} // Hide alert when closed
+                  aria-label="Close"
+                ></button>
               </div>
             )}
           </div>
@@ -219,6 +228,7 @@ const ModifyAdoption = ({ method }) => {
                       value={selectedBreed}
                       onChange={(e) => setSelectedBreed(e.target.value)}
                       disabled={breeds.length === 0} // Disable if breeds is empty
+                      required
                     >
                       <option value="">-- Select Category --</option>
                       {breeds.length > 0 &&
@@ -254,6 +264,7 @@ const ModifyAdoption = ({ method }) => {
                       id="gender"
                       value={gender}
                       onChange={(e) => setGender(e.target.value)}
+                      required
                     >
                       <option value="">-- Select Category --</option>
                       <option value="Male">Male</option>
@@ -314,6 +325,7 @@ const ModifyAdoption = ({ method }) => {
                       id="energy_level"
                       value={energyLevel}
                       onChange={(e) => setEnergyLevel(e.target.value)}
+                      required
                     >
                       <option value="">-- Select energy level --</option>
                       <option value="High">High</option>
@@ -349,6 +361,7 @@ const ModifyAdoption = ({ method }) => {
                       id="vaccinated_status"
                       value={vaccinatedStatus}
                       onChange={(e) => setVaccinatedStatus(e.target.value)}
+                      required
                     >
                       <option value="">-- Select vaccinated level --</option>
                       <option value="Fully Vaccinated">Fully Vaccinated</option>

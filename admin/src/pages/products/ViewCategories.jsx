@@ -6,6 +6,7 @@ import Sidebar from "../../layout/Sidebar";
 
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 function ViewProductCategories() {
   const navigate = useNavigate();
@@ -60,7 +61,16 @@ function ViewProductCategories() {
 
       setFilteredData(productCategories.data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchEventCategories(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
     } finally {
       setIsLoadingCategories(false);
     }
@@ -109,10 +119,6 @@ function ViewProductCategories() {
       setError("Error activating category" || error.response.data.message);
       console.log(error);
     }
-  };
-
-  const handleRowClick = (userId) => {
-    navigate(`/view-user/${userId}`);
   };
 
   if (isLoading) {
@@ -170,7 +176,7 @@ function ViewProductCategories() {
                   aria-atomic="true"
                 >
                   <div className="toast-header">
-                    <strong className="me-auto">TechFlow CMS</strong>
+                    <strong className="me-auto">WoofWorld Admin</strong>
                     <small>Just Now</small>
                     <button
                       type="button"
@@ -220,11 +226,7 @@ function ViewProductCategories() {
             <tbody>
               {filteredData.length > 0 ? (
                 filteredData.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => handleRowClick(item.id)}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <tr key={item.id} style={{ cursor: "pointer" }}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
                     <td>

@@ -69,7 +69,7 @@ const AdoptionDetails = () => {
               {event.image && (
                 <img
                   src={`${BASE_URL}${event.image}`}
-                  alt="Event"
+                  alt={event.name}
                   className="img-fluid mb-3 rounded shadow-sm"
                   style={{
                     maxHeight: "400px",

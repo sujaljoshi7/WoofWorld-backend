@@ -26,7 +26,7 @@ def breed(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'POST', 'PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def dogs(request, **kwargs):
     if request.method == 'GET':
         dogs = Dogs.objects.select_related("created_by").all()

@@ -56,6 +56,12 @@ const ModifyHero = ({ method }) => {
     setLoading(true);
     setError("");
 
+    if (!image && method === "add") {
+      setError("Please select Image");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("headline", headline);
     formData.append("subtext", subText);
@@ -84,6 +90,16 @@ const ModifyHero = ({ method }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 5000); // Hide after 5 seconds
+
+      return () => clearTimeout(timer); // Cleanup on unmount
+    }
+  }, [error]);
 
   return (
     <div className="d-flex">
@@ -123,19 +139,18 @@ const ModifyHero = ({ method }) => {
             </div>
 
             {error && (
-              <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-                <div
-                  className="alert alert-danger alert-dismissible fade show"
-                  role="alert"
-                >
-                  <strong>Error</strong> {error}
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"
-                  ></button>
-                </div>
+              <div
+                className="alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                role="alert"
+                style={{ zIndex: 1050, width: "300px" }} // Ensure it stays visible on top
+              >
+                <strong>Error:</strong> {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError("")} // Hide alert when closed
+                  aria-label="Close"
+                ></button>
               </div>
             )}
           </div>

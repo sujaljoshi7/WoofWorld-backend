@@ -3,6 +3,8 @@ from .models import Category, Product
 from django.utils import timezone
 from user.serializers import UserSerializer
 from django.contrib.auth.models import User
+from adoption.serializers import BreedSerializer
+from adoption.models import Breed
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -18,6 +20,12 @@ class ProductCategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only = True)
+    category = ProductCategorySerializer(source="product_category_id", read_only=True)
+    breeds = BreedSerializer(source="breed", read_only=True)
+    product_category_id = serializers.PrimaryKeyRelatedField(
+    queryset=Category.objects.all(), write_only=True)
+    breed = serializers.PrimaryKeyRelatedField(
+    queryset=Breed.objects.all(), write_only=True)
 
     class Meta:
         model = Product
@@ -25,7 +33,13 @@ class ProductSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context.get("request")
-        validated_data["created_by"] = request.user
+        category_instance = validated_data.pop("product_category_id", None)  # Use correct field name
+        breed_instance = validated_data.pop("breed", None)  # Use correct field name
+        if category_instance:
+            validated_data["product_category_id"] = category_instance
+        if breed_instance:
+            validated_data["breed"] = breed_instance
+        validated_data["created_by"] = request.user  # Ensure created_by is set
         return super().create(validated_data)
 
     def get_created_by(self, obj):

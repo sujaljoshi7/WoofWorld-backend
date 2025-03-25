@@ -16,7 +16,7 @@ class Breed(models.Model):
 class Dogs(models.Model):
     breed = models.ForeignKey(Breed, on_delete=models.CASCADE, related_name='dogs_breed')
     name = models.CharField(max_length=100)
-    age = models.IntegerField()
+    age = models.FloatField()
     gender = models.CharField(max_length=12)
     disease = models.CharField(max_length=100)
     color = models.CharField(max_length=100)

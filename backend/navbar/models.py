@@ -8,6 +8,7 @@ class NavbarItem(models.Model):
     title = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
     order = models.IntegerField(default=0)
+    component = models.CharField(max_length=100, default="")
     dropdown_parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
     status = models.IntegerField()
 

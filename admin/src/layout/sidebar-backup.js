@@ -82,7 +82,7 @@ function Sidebar({ user }) {
         to="/"
         className="d-flex align-items-center mb-3 text-white text-decoration-none"
       >
-        <span className="fs-4">TechFlow CMS</span>
+        <span className="fs-4">WoofWorld Admin</span>
       </NavLink>
       <hr />
       <ul className="nav nav-pills flex-column mb-auto">

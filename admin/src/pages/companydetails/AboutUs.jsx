@@ -12,7 +12,7 @@ const AboutUs = () => {
   const { user, isLoading } = useUser();
   const { id } = useParams();
   const navigate = useNavigate();
-  const [aboutus, setBlog] = useState(null);
+  const [aboutus, setAboutus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,11 +27,11 @@ const AboutUs = () => {
   };
 
   useEffect(() => {
-    const fetchBlogDetails = async () => {
+    const fetchAboutUs = async () => {
       try {
         const response = await api.get(`/api/companydetails/aboutus/1/`);
         if (response.data.length > 0) {
-          setBlog(response.data[0]); // ✅ Get the first item from the array
+          setAboutus(response.data[0]); // ✅ Get the first item from the array
         } else {
           setError("No data found in API response.");
         }
@@ -42,7 +42,7 @@ const AboutUs = () => {
       }
     };
 
-    fetchBlogDetails();
+    fetchAboutUs();
   }, []);
 
   return (
@@ -54,7 +54,6 @@ const AboutUs = () => {
         className="main-content flex-grow-1 ms-2"
         style={{ marginLeft: "280px", padding: "20px" }}
       >
-        <SearchBar />
         <div className="container mt-4">
           <div className="d-flex justify-content-end">
             <button

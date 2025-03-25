@@ -63,7 +63,7 @@ function Sidebar({ user }) {
 
   return (
     <div
-      className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark"
+      className="d-flex flex-column flex-shrink-0 p-3 text-light bg-dark"
       style={{ width: "280px", height: "100vh" }}
     >
       <NavLink
@@ -178,6 +178,11 @@ function Sidebar({ user }) {
           <strong>{user ? user.first_name : "Loading..."}</strong>
         </a>
         <ul className="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a className="dropdown-item" href="/logout">
+              View Profile
+            </a>
+          </li>
           <li>
             <a className="dropdown-item" href="/logout">
               Sign out

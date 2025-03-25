@@ -5,12 +5,14 @@ import { ACCESS_TOKEN } from "../constants";
 import { REFRESH_TOKEN } from "../constants";
 import "../styles/Form.css";
 import LoadingIndicator from "./LoadingIndicator";
-import bg_image from "../assets/images/signin-image.jpg";
+import bg_image from "../assets/images/signin-image.png";
+import { Eye, EyeOff } from "lucide-react";
 
 function Form({ route, method }) {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -94,16 +96,30 @@ function Form({ route, method }) {
                       <label htmlFor="password" className="form-label">
                         Password <span className="text-danger">*</span>
                       </label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        name="password"
-                        id="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
+                      <div className="position-relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          className="form-control pe-5"
+                          name="password"
+                          id="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary position-absolute end-0 top-50 translate-middle-y me-2"
+                          onClick={() => setShowPassword(!showPassword)}
+                          style={{ border: "none", background: "transparent" }}
+                        >
+                          {showPassword ? (
+                            <EyeOff size={18} />
+                          ) : (
+                            <Eye size={18} />
+                          )}
+                        </button>
+                      </div>
                     </div>
                     <div className="col-12">
                       {loading && <LoadingIndicator />}
@@ -123,12 +139,13 @@ function Form({ route, method }) {
                     <hr className="mt-5 mb-4 border-secondary-subtle" />
                     <p className="m-0 text-secondary text-center">
                       Dont have an account?{" "}
-                      <a
-                        href="/register"
+                      <span
+                        onClick={() => navigate("/register")}
+                        style={{ cursor: "pointer" }}
                         className="link-primary text-decoration-none"
                       >
                         Sign up
-                      </a>
+                      </span>
                     </p>
                   </div>
                 </div>

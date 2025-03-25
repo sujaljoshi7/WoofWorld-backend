@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'adoption',
     'homepage',
     'navbar',
+    'routes',
     'companydetails',
     'rest_framework',
     'corsheaders',

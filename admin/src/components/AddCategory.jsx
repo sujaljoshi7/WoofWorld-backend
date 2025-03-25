@@ -36,7 +36,7 @@ function AddCategory({ route, method }) {
         });
 
         alert("Category added successfully!");
-        navigate("/events/category/add"); // Redirect to categories list page
+        navigate("/events/category"); // Redirect to categories list page
       } catch (error) {
         if (error.response && error.response.data) {
           if (error.response.data.name) {

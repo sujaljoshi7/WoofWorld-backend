@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
@@ -9,28 +9,30 @@ import { useLocation } from "react-router-dom";
 import logo from "../../assets/images/logo/logo1.png";
 import down_arrow from "../../assets/images/icons/down-arrow.png";
 import image1 from "../../assets/images/hero/image1.jpg";
-import image2 from "../../assets/images/hero/image2.jpg";
-import image3 from "../../assets/images/hero/image3.jpg";
-import company1 from "../../assets/images/companies/company1.png";
-import company2 from "../../assets/images/companies/company2.png";
-import company3 from "../../assets/images/companies/company3.png";
-import company4 from "../../assets/images/companies/company4.png";
-import company5 from "../../assets/images/companies/company5.png";
-import company6 from "../../assets/images/companies/company6.png";
 import team_work from "../../assets/images/about/team-work.jpg";
 import LoadingScreen from "../../components/LoadingScreen";
+import Navbar from "../../components/common/Navbar";
 
 function Home() {
   const [user, setUser] = useState(null);
   const [allHeros, setAllHeros] = useState([]);
   const [allPartnerCompanies, setAllPartnerCompanies] = useState([]);
+  const [allServices, setAllServices] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
+  const [allAdoptions, setAllAdoptions] = useState([]);
   const [allNavbarItems, setAllNavbarItems] = useState([]);
   const [isLoadingHero, setIsLoadingHero] = useState([]);
+  const [isLoadingServices, setIsLoadingServices] = useState([]);
   const [isLoadingPartnerCompany, setIsLoadingPartnerCompany] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState([]);
+  const [isLoadingAdoption, setIsLoadingAdoption] = useState([]);
   const [isLoadingNavbarItems, setIsLoadingNavbarItems] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const BASE_URL = import.meta.env.VITE_API_URL;
   const location = useLocation(); // Get current path
+  const servicesRef = useRef(null);
 
   const fetchHero = async () => {
     setIsLoadingHero(true);
@@ -43,7 +45,6 @@ function Home() {
       }
 
       const heroes = response.data.filter((hero) => hero.status === 1);
-      console.log("Filtered Heroes:", heroes);
 
       // Wait for both requests to complete independently
       // const [hero] = await Promise.all([heroRes]);
@@ -56,6 +57,7 @@ function Home() {
       setIsLoadingHero(false);
     }
   };
+
   const fetchPartnerCompany = async () => {
     setIsLoadingPartnerCompany(true);
     try {
@@ -69,8 +71,6 @@ function Home() {
         .filter((company) => company.status === 1)
         .map((company) => company);
 
-      console.log("Filtered Companies:", partnerCompanies);
-
       // Wait for both requests to complete independently
       // const [hero] = await Promise.all([heroRes]);
 
@@ -79,7 +79,7 @@ function Home() {
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
-      setIsLoadingHero(false);
+      setIsLoadingPartnerCompany(false);
     }
   };
 
@@ -97,7 +97,6 @@ function Home() {
 
       // Process the data to create nested structure
       const structuredNavbar = processNavbarData(navbarItems);
-      console.log("Processed Navbar:", structuredNavbar);
 
       setAllNavbarItems(structuredNavbar);
     } catch (error) {
@@ -130,217 +129,143 @@ function Home() {
     return menu;
   };
 
+  const fetchServices = async () => {
+    setIsLoadingServices(true);
+
+    try {
+      // Fetch user details independently
+      const response = await api.get("/api/services/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
+
+      const services = response.data.filter(
+        (service) => service.show_on_homepage && service.status === 1
+      );
+
+      // Wait for both requests to complete independently
+      // const [hero] = await Promise.all([heroRes]);
+
+      // Update state
+      setAllServices(services);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    setIsLoadingProducts(true);
+
+    try {
+      // Fetch user details independently
+      const response = await api.get("/api/products/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
+
+      const products = response.data.filter(
+        (product) => product.show_on_homepage && product.status === 1
+      );
+
+      // Wait for both requests to complete independently
+      // const [hero] = await Promise.all([heroRes]);
+
+      // Update state
+      setAllProducts(products);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  const fetchEvents = async () => {
+    setIsLoadingEvents(true);
+
+    try {
+      // Fetch user details independently
+      const response = await api.get("/api/events/event/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
+
+      const today = new Date().toISOString().split("T")[0];
+
+      const upcomingEvents = response.data.filter(
+        (event) => event.status && event.date >= today // Only future or ongoing events
+      );
+
+      // Wait for both requests to complete independently
+      // const [hero] = await Promise.all([heroRes]);
+
+      // Update state
+      setAllEvents(upcomingEvents);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  };
+
+  const fetchAdoptions = async () => {
+    setIsLoadingEvents(true);
+
+    try {
+      // Fetch user details independently
+      const response = await api.get("/api/adoption/");
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
+      }
+
+      const adoptions = response.data.filter(
+        (adoption) => adoption.status // Only future or ongoing events
+      );
+
+      // Wait for both requests to complete independently
+      // const [hero] = await Promise.all([heroRes]);
+
+      // Update state
+      setAllAdoptions(adoptions);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  };
   useEffect(() => {
     fetchHero();
     fetchPartnerCompany();
     fetchNavbarItems();
+    fetchServices();
+    fetchProducts();
+    fetchEvents();
+    fetchAdoptions();
   }, []);
+
+  const scrollLeft = () => {
+    if (servicesRef.current) {
+      servicesRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (servicesRef.current) {
+      servicesRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
+
   if (isLoadingHero) return <LoadingScreen />;
   return (
     <div>
       <div className="main-content">
         <div className="container">
-          <nav className="navbar navbar-expand-lg">
-            <div className="container-fluid">
-              {/* Logo on the left */}
-              <a className="navbar-brand" href="#">
-                <img src={logo} alt="Logo" height={40} />
-              </a>
-
-              {/* Hamburger Menu (Opens Offcanvas) */}
-              <button
-                className="navbar-toggler"
-                type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#mobileNavbar"
-                aria-controls="mobileNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-              >
-                <span className="navbar-toggler-icon"></span>
-              </button>
-
-              {/* Desktop Navbar */}
-              <div
-                className="collapse navbar-collapse justify-content-center text-center"
-                id="navbarSupportedContent"
-              >
-                <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
-                  {allNavbarItems.map((item) => (
-                    <li
-                      key={item.id}
-                      className={`nav-item ${
-                        item.subItems.length > 0 ? "dropdown" : ""
-                      }`}
-                    >
-                      <a
-                        className={`nav-link ${
-                          location.pathname === item.url ? "active" : ""
-                        } 
-                      ${item.subItems.length > 0 ? "dropdown-toggle" : ""}`}
-                        href={item.url}
-                        role="button"
-                        data-bs-toggle={
-                          item.subItems.length > 0 ? "dropdown" : ""
-                        }
-                      >
-                        {item.title}
-                      </a>
-                      {item.subItems.length > 0 && (
-                        <ul className="dropdown-menu">
-                          {item.subItems.map((subItem) => (
-                            <li key={subItem.id}>
-                              <a
-                                className={`dropdown-item ${
-                                  location.pathname === subItem.url
-                                    ? "active"
-                                    : ""
-                                }`}
-                                href={subItem.url}
-                              >
-                                {subItem.title}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Sign In button (Desktop View) */}
-              <div className="d-none d-lg-block position-absolute top- end-0">
-                <button className="btn btn-primary">Sign In</button>
-              </div>
-              {/* Mobile Fullscreen Menu (Offcanvas) */}
-              <div
-                className="offcanvas offcanvas-end d-lg-none"
-                tabIndex="-1"
-                id="mobileNavbar"
-              >
-                <div className="offcanvas-header">
-                  {/* <h5 className="offcanvas-title">Menu</h5> */}
-                  <a className="navbar-brand" href="#">
-                    <img src={logo} alt="Logo" height={40} />
-                  </a>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="offcanvas"
-                    aria-label="Close"
-                  ></button>
-                </div>
-                <div className="offcanvas-body d-flex flex-column align-items-start w-100">
-                  <ul className="navbar-nav text-start">
-                    <li className="nav-item">
-                      <a className="nav-link active" href="#">
-                        Home
-                      </a>
-                    </li>
-
-                    <hr className="m-0" />
-                    <li className="nav-item dropdown">
-                      <a
-                        className="nav-link dropdown-toggle d-flex align-items-center justify-content-between"
-                        href="#"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        Events
-                        <img
-                          src={down_arrow}
-                          alt="Down Arrow"
-                          className="dropdown-icon"
-                        />
-                      </a>
-                      <ul className="dropdown-menu mb-2">
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Upcoming Events
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Past Events
-                          </a>
-                        </li>
-                        <li></li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Webinars
-                          </a>
-                        </li>
-                      </ul>
-                    </li>
-
-                    <hr className="m-0" />
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        Blog
-                      </a>
-                    </li>
-
-                    <hr className="m-0" />
-                    <li className="nav-item dropdown">
-                      <a
-                        className="nav-link dropdown-toggle d-flex align-items-center justify-content-between"
-                        href="#"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        Services
-                        <img
-                          src={down_arrow}
-                          alt="Down Arrow"
-                          className="dropdown-icon"
-                        />
-                      </a>
-                      <ul className="dropdown-menu mb-2">
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Web Development
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            AI/ML Solutions
-                          </a>
-                        </li>
-                        <li></li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            SaaS Products
-                          </a>
-                        </li>
-                      </ul>
-                    </li>
-
-                    <hr className="m-0" />
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        About
-                      </a>
-                    </li>
-
-                    <hr className="m-0" />
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        Contact Us
-                      </a>
-                    </li>
-
-                    <hr className="m-0" />
-                  </ul>
-
-                  {/* Sign In button (Inside Fullscreen Menu) */}
-                  <button className="btn btn-primary mt-3">Sign In</button>
-                </div>
-              </div>
-            </div>
-          </nav>
+          <Navbar />
         </div>
         <section className="hero">
           <div
@@ -457,82 +382,178 @@ function Home() {
 `}
         </style>
 
-        <section className="aboutus-section container">
-          {/* <h2 className="aboutus-heading text-center">Who We Are</h2> */}
-          <div className="row aboutus-content d-flex align-items-center">
-            <div className="col-lg-6">
-              <div
-                className="d-flex justify-content-center align-items-center"
-                style={{ height: "400px" }}
-              >
-                <svg
-                  width="500"
-                  height="500"
-                  viewBox="0 0 200 200"
-                  xmlns="http://www.w3.org/2000/svg"
+        <section className="ourservices-section container">
+          <div className="justify-content-between align-items-center">
+            <h2 className="text-center ourservices-heading">
+              Expert Care, Tailored for Your Pet! 🐶💙
+            </h2>
+          </div>
+          <p className="ourservices-content text-center text-secondary">
+            Discover our top-notch services, from grooming and training to vet
+            consultations and boarding. We ensure the best care for your furry
+            friend!
+          </p>
+          <div className="services-wrapper">
+            {allServices.length > 0 ? (
+              allServices.map((service) => (
+                <div
+                  className="p-2"
+                  key={service.id}
+                  style={{ flex: "0 0 auto" }}
                 >
-                  <defs>
-                    <clipPath id="blobClip">
-                      <path
-                        fill="#FF0066"
-                        d="M28.8,-51.5C39.3,-43.9,51.1,-40.1,60.5,-32.2C70,-24.2,77,-12.1,78.3,0.8C79.6,13.6,75.2,27.2,68.6,40.1C62.1,53,53.4,65.2,41.6,73.8C29.8,82.5,14.9,87.6,2,84.1C-10.8,80.6,-21.7,68.5,-31.8,58.8C-41.9,49.2,-51.3,42.1,-61.5,32.7C-71.7,23.3,-82.8,11.7,-83.5,-0.4C-84.3,-12.5,-74.6,-25,-67,-38.9C-59.3,-52.7,-53.7,-68,-42.9,-75.4C-32,-82.8,-16,-82.4,-3.4,-76.5C9.2,-70.6,18.4,-59.1,28.8,-51.5Z"
-                        transform="translate(100 100)"
-                      />
-                    </clipPath>
-                  </defs>
-
-                  <image
-                    href={team_work}
-                    width="300"
-                    className="aboutus-image"
-                    clipPath="url(#blobClip)"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div className="col-lg-6">
-              <h2 className="aboutus-header">
-                Innovating the Future with Technology
-              </h2>
-              <p className="aboutus-content">
-                Transforming businesses with cutting-edge technology! At
-                TechVerse, we specialize in designing and developing
-                next-generation software solutions tailored to your unique
-                needs. Whether you require AI-driven innovations, scalable cloud
-                computing solutions, or advanced web and mobile applications,
-                our expert team is committed to bringing your vision to life.
-                With a passion for technology and a focus on excellence, we help
-                businesses stay ahead in the digital era. Partner with us to
-                build intelligent, scalable, and future-ready solutions that
-                drive success and innovation.
-              </p>
-              <button className="aboutus-cta">Explore</button>
-            </div>
+                  <div className="card">
+                    <img
+                      src={`${BASE_URL}${service.image}`}
+                      className="card-img-top"
+                      alt={service.name}
+                    />
+                    <div className="card-body d-flex flex-column">
+                      <h5 className="card-title text-wrap">{service.name}</h5>
+                      <a href="#" className="btn btn-primary mt-auto">
+                        Explore More
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>Loading service content...</p>
+            )}
           </div>
         </section>
-        <section className="ourservices-section container">
-          <h2 className="text-center ourservices-heading">Our Services</h2>
-          <p className="ourservices-content text-justify">
-            We provide innovative and scalable technology solutions designed to
-            enhance efficiency, optimize operations, and drive sustainable
-            business growth. Our expertise spans custom software development,
-            cloud computing, AI, IoT, and cybersecurity, ensuring businesses
-            stay ahead in the digital era. 🚀
+
+        <section className="featuredproducts-section container">
+          <div className="justify-content-between align-items-center">
+            <h2 className="text-center ourservices-heading">
+              Top Picks for Your Furry Friend 🐾
+            </h2>
+          </div>
+          <p className="products-content text-center text-secondary">
+            Explore our best-selling pet essentials, from nutritious treats to
+            comfy beds—handpicked for your dog's happiness and well-being! 🐶✨
           </p>
-          <div className="services-cards">
-            <div className="card" style={{ width: "350px" }}>
-              <img src={image1} className="card-img-top" alt="..." />
-              <div className="card-body">
-                <h5 className="card-title">Card title</h5>
-                <p className="card-text">
-                  Some quick example text to build on the card title and make up
-                  the bulk of the card's content.
-                </p>
-                <a href="#" className="btn btn-primary">
-                  Go somewhere
-                </a>
-              </div>
-            </div>
+          <div className="products-wrapper">
+            {allProducts.length > 0 ? (
+              allProducts.map((product) => (
+                <div
+                  className="p-2"
+                  key={product.id}
+                  style={{ flex: "0 0 auto" }}
+                >
+                  <div className="card">
+                    <img
+                      src={`${BASE_URL}${product.image}`}
+                      className="card-img-top"
+                      alt={product.name}
+                    />
+                    <div className="card-body">
+                      <h3 className="card-title text-wrap">{product.name}</h3>
+                      <p className="card-text text-wrap text-secondary">
+                        {product.description.split(" ").slice(0, 10).join(" ") +
+                          (product.description.split(" ").length > 50
+                            ? "..."
+                            : "")}
+                      </p>
+                      <h5 className="card-title">₹{product.price}/-</h5>
+                      <a href="#" className="btn btn-primary">
+                        Add to Cart
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>Loading service content...</p>
+            )}
+          </div>
+        </section>
+
+        <section className="adoption-section container">
+          <div className="justify-content-between align-items-center">
+            <h2 className="text-center upcomingevents-heading">
+              ✨ From Woofs to Wonders: Upcoming Happenings! 🏆
+            </h2>
+          </div>
+          <p className="events-content text-center text-secondary">
+            Get ready for tail-wagging fun, exciting activities, and
+            unforgettable moments with your furry friends! 🐾🎉
+          </p>
+          <div className="events-wrapper">
+            {allEvents.length > 0 ? (
+              allEvents.map((event) => (
+                <div
+                  className="p-2"
+                  key={event.id}
+                  style={{ flex: "0 0 auto" }}
+                >
+                  <div className="card">
+                    <img
+                      src={`${BASE_URL}${event.image}`}
+                      className="card-img-top"
+                      alt={event.name}
+                    />
+                    <div className="card-body">
+                      <h3 className="card-title text-wrap">{event.name}</h3>
+                      <p className="card-text text-wrap text-secondary">
+                        {event.description.split(" ").slice(0, 10).join(" ") +
+                          (event.description.split(" ").length > 50
+                            ? "..."
+                            : "")}
+                      </p>
+                      <a href="#" className="btn btn-primary">
+                        Buy Tickets
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>Loading service content...</p>
+            )}
+          </div>
+        </section>
+
+        <section className="adoption-section container">
+          <div className="justify-content-between align-items-center">
+            <h2 className="text-center adoption-heading">
+              🐶 Find Your Furry Best Friend Today! 🏡❤️
+            </h2>
+          </div>
+          <p className="adoption-content text-center text-secondary">
+            Give a loving home to a dog in need! Browse our adoption listings
+            and find your perfect match. 🐾💕
+          </p>
+          <div className="adoption-wrapper">
+            {allAdoptions.length > 0 ? (
+              allAdoptions.map((adoption) => (
+                <div
+                  className="p-2"
+                  key={adoption.id}
+                  style={{ flex: "0 0 auto" }}
+                >
+                  <div className="card">
+                    <img
+                      src={`${BASE_URL}${adoption.image}`}
+                      className="card-img-top"
+                      alt={adoption.name}
+                    />
+                    <div className="card-body">
+                      <h3 className="card-title text-wrap">{adoption.name}</h3>
+                      <p className="p-0 m-0">Age: {adoption.age}</p>
+                      <p>Year(s) Breed: {adoption.breed.name}</p>
+                      <p className="bg-warning text-wrap p-1 rounded">
+                        {adoption.personality}
+                      </p>
+                      <a href="#" className="btn btn-primary">
+                        View More
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>Loading service content...</p>
+            )}
           </div>
         </section>
       </div>

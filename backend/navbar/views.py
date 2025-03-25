@@ -52,6 +52,29 @@ class Navbar(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users
+def activate_navbar_item(request, navbaritem_id):
+    try:
+        navbar_item = NavbarItem.objects.get(id=navbaritem_id)
+        navbar_item.status = True
+        navbar_item.save(update_fields=["status"])
+        return Response({"message": "Item activated successfully!"}, status=status.HTTP_200_OK)
+    except NavbarItem.DoesNotExist:
+        return Response({"error": "Item not found!"}, status=status.HTTP_404_NOT_FOUND)
+
+    
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users
+def deactivate_navbar_item(request, navbaritem_id):
+    try:
+        navbar_item = NavbarItem.objects.get(id=navbaritem_id)
+        navbar_item.status = False
+        navbar_item.save(update_fields=["status"])
+        return Response({"message": "Item deactivated successfully!"}, status=status.HTTP_200_OK)
+    except NavbarItem.DoesNotExist:
+        return Response({"error": "Item not found!"}, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_specific_navbar_item(request, navbaritem_id):

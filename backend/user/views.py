@@ -11,8 +11,13 @@ import uuid
 
 
 def check_email(request, email):
+    print("Received email:", email)
     exists = User.objects.filter(email=email).exists()
-    return JsonResponse({"exists": exists})
+
+    if exists:
+        return JsonResponse({"message": "Email already exists", "can_register": False}, status=409)
+    
+    return JsonResponse({"message": "Email is available", "can_register": True}, status=200)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
