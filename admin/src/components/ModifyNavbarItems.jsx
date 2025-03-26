@@ -13,6 +13,8 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const availableComponents = [
   "Home",
+  "Events",
+  "Past Events",
   "Upcoming Events",
   "Services",
   "WebDevelopment",

@@ -312,6 +312,7 @@ const ModifyProduct = ({ method }) => {
                         <option value={"Mature (7 - 12 Years)"}>
                           Mature (7 - 12 Years)
                         </option>
+                        <option value={"All Age"}>For All Age</option>
                       </select>
                     </div>
                   </div>

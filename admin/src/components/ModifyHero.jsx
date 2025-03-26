@@ -16,7 +16,7 @@ const ModifyHero = ({ method }) => {
   const { user, isLoading } = useUser();
   const [headline, setHeadline] = useState("");
   const [subText, setSubText] = useState("");
-  const [cta, setCta] = useState("");
+  const [cta, setCta] = useState("Explore WoofWorld");
   const [image, setProductImage] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);

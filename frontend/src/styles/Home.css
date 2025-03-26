@@ -16,6 +16,20 @@ html {
     }
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.hide-scrollbar {
+    scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE and Edge */
+.hide-scrollbar {
+    -ms-overflow-style: none;
+}
+
 .primary-btn {
     background-color: #FF8C42;
 }
@@ -23,6 +37,10 @@ html {
 .main-content {
     display: flex;
     flex-direction: column;
+}
+
+.text-bold {
+    font-weight: bold;
 }
 
 .navbar {
@@ -44,8 +62,18 @@ html {
 
 .navbar-nav {
     position: absolute;
+    width: 100%;
+    justify-content: center;
+    gap: 30px;
+    /* Ensures equal spacing */
     left: 50%;
+    z-index: 10;
     transform: translateX(-50%);
+}
+
+.navbar-expand-lg hr {
+    margin-top: 0.5rem;
+    /* Reduce the gap */
 }
 
 .hero {
@@ -205,9 +233,6 @@ html {
     object-fit: cover;
 }
 
-.products-wrapper .card .card-body {
-    min-height: 200px;
-}
 
 .products-wrapper .card .card-body .card-text {
     flex-grow: 1;
@@ -246,12 +271,16 @@ html {
     object-fit: cover;
 }
 
-.events-wrapper .card .card-body {
-    min-height: 200px;
-}
-
 .events-wrapper .card .card-body .card-text {
     flex-grow: 1;
+}
+
+.event-title {
+    display: flex;
+    max-height: 50px;
+    height: 50%;
+    justify-content: left;
+    align-items: center;
 }
 
 /* Upcoming Events Section */
@@ -300,6 +329,8 @@ html {
 
 @media (min-width: 992px) {
 
+
+
     .nav-item.dropdown:hover .dropdown-menu {
         display: block;
         animation: fadeIn 0.3s ease-in-out;
@@ -322,6 +353,7 @@ html {
         opacity: 1;
         pointer-events: auto;
     }
+
 }
 
 @keyframes fadeIn {

@@ -3,6 +3,8 @@ import axios from "axios";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import { motion } from "framer-motion";
+import calender from "../../assets/images/icons/calendar.png";
+import location_pin from "../../assets/images/icons/location.png";
 import "../../styles/Home.css";
 import { useLocation } from "react-router-dom";
 
@@ -12,6 +14,7 @@ import image1 from "../../assets/images/hero/image1.jpg";
 import team_work from "../../assets/images/about/team-work.jpg";
 import LoadingScreen from "../../components/LoadingScreen";
 import Navbar from "../../components/common/Navbar";
+import Footer from "../../components/common/Footer";
 
 function Home() {
   const [user, setUser] = useState(null);
@@ -30,6 +33,8 @@ function Home() {
   const [isLoadingAdoption, setIsLoadingAdoption] = useState([]);
   const [isLoadingNavbarItems, setIsLoadingNavbarItems] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
+
+  const scrollRef = useRef(null);
   const BASE_URL = import.meta.env.VITE_API_URL;
   const location = useLocation(); // Get current path
   const servicesRef = useRef(null);
@@ -238,6 +243,24 @@ function Home() {
       setIsLoadingEvents(false);
     }
   };
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -350, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 350, behavior: "smooth" });
+    }
+  };
+
+  const date_format = {
+    month: "long", // "short" for abbreviated months
+    day: "2-digit",
+  };
+
   useEffect(() => {
     fetchHero();
     fetchPartnerCompany();
@@ -248,25 +271,12 @@ function Home() {
     fetchAdoptions();
   }, []);
 
-  const scrollLeft = () => {
-    if (servicesRef.current) {
-      servicesRef.current.scrollBy({ left: -300, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (servicesRef.current) {
-      servicesRef.current.scrollBy({ left: 300, behavior: "smooth" });
-    }
-  };
-
   if (isLoadingHero) return <LoadingScreen />;
   return (
     <div>
       <div className="main-content">
-        <div className="container">
-          <Navbar />
-        </div>
+        <Navbar />
+
         <section className="hero">
           <div
             id="carouselExampleAutoplaying"
@@ -393,7 +403,7 @@ function Home() {
             consultations and boarding. We ensure the best care for your furry
             friend!
           </p>
-          <div className="services-wrapper">
+          <div className="services-wrapper hide-scrollbar">
             {allServices.length > 0 ? (
               allServices.map((service) => (
                 <div
@@ -432,7 +442,7 @@ function Home() {
             Explore our best-selling pet essentials, from nutritious treats to
             comfy beds—handpicked for your dog's happiness and well-being! 🐶✨
           </p>
-          <div className="products-wrapper">
+          <div className="products-wrapper hide-scrollbar" ref={scrollRef}>
             {allProducts.length > 0 ? (
               allProducts.map((product) => (
                 <div
@@ -446,16 +456,15 @@ function Home() {
                       className="card-img-top"
                       alt={product.name}
                     />
-                    <div className="card-body">
-                      <h3 className="card-title text-wrap">{product.name}</h3>
-                      <p className="card-text text-wrap text-secondary">
-                        {product.description.split(" ").slice(0, 10).join(" ") +
-                          (product.description.split(" ").length > 50
-                            ? "..."
-                            : "")}
-                      </p>
-                      <h5 className="card-title">₹{product.price}/-</h5>
-                      <a href="#" className="btn btn-primary">
+                    <div className="card-body d-flex flex-column">
+                      <h5 className="card-title text-wrap">
+                        {product.name.length > 30
+                          ? product.name.substring(0, 30) + "..."
+                          : product.name}
+                      </h5>
+                      <p className="text-secondary">{product.category.name}</p>
+                      <h5>₹{product.price}/-</h5>
+                      <a href="#" className="btn btn-primary mt-3">
                         Add to Cart
                       </a>
                     </div>
@@ -468,7 +477,7 @@ function Home() {
           </div>
         </section>
 
-        <section className="adoption-section container">
+        <section className="upcomingevents-section container">
           <div className="justify-content-between align-items-center">
             <h2 className="text-center upcomingevents-heading">
               ✨ From Woofs to Wonders: Upcoming Happenings! 🏆
@@ -493,16 +502,33 @@ function Home() {
                       alt={event.name}
                     />
                     <div className="card-body">
-                      <h3 className="card-title text-wrap">{event.name}</h3>
-                      <p className="card-text text-wrap text-secondary">
-                        {event.description.split(" ").slice(0, 10).join(" ") +
-                          (event.description.split(" ").length > 50
-                            ? "..."
-                            : "")}
+                      <div className="event-title">
+                        <h5 className="card-title text-wrap text-bold">
+                          {event.name}
+                        </h5>
+                      </div>
+                      <p className="text-secondary mb-0">
+                        <img src={calender} alt="Event Date" height={18} />
+                        <span className="ms-2 text-bold">
+                          {event.date
+                            ? new Date(event.date).toLocaleDateString(
+                                undefined,
+                                date_format
+                              )
+                            : "N/A"}
+                        </span>
                       </p>
-                      <a href="#" className="btn btn-primary">
-                        Buy Tickets
-                      </a>
+
+                      <p className="text-secondary">
+                        <img src={location_pin} alt="Event Date" height={18} />
+                        <span className="ms-2 text-bold">{event.location}</span>
+                      </p>
+                      <div className="price-section d-flex justify-content-between align-items-center">
+                        <p className="text-bold">₹500/-</p>
+                        <button className="btn btn-primary mb-4">
+                          Buy Tickets
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -538,9 +564,13 @@ function Home() {
                       alt={adoption.name}
                     />
                     <div className="card-body">
-                      <h3 className="card-title text-wrap">{adoption.name}</h3>
-                      <p className="p-0 m-0">Age: {adoption.age}</p>
-                      <p>Year(s) Breed: {adoption.breed.name}</p>
+                      <h5 className="card-title text-wrap">{adoption.name}</h5>
+                      <p className="p-0 m-0 text-secondary">
+                        Age: {adoption.age} Year(s)
+                      </p>
+                      <p className="text-secondary">
+                        Breed: {adoption.breed.name}
+                      </p>
                       <p className="bg-warning text-wrap p-1 rounded">
                         {adoption.personality}
                       </p>
@@ -556,6 +586,7 @@ function Home() {
             )}
           </div>
         </section>
+        <Footer />
       </div>
     </div>
   );
