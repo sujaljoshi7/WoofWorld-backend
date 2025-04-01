@@ -64,7 +64,6 @@ function ViewServices() {
       // Update state
       setAllServices(services.data);
       setFilteredData(services.data);
-      console.log(services.data);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");

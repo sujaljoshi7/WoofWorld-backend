@@ -11,8 +11,9 @@ from django.shortcuts import get_object_or_404
 
 class ServiceCategory(APIView):
     def get_permissions(self):
-        
-        return [AllowAny()]
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request):
         categories = Category.objects.all()

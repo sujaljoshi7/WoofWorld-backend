@@ -1,11 +1,11 @@
 from django.urls import path
-from .views import product_category,product, activate_category, deactivate_category, activate_product, deactivate_product, get_specific_product_data
+from .views import ProductCategoryView,ProductView, activate_category, deactivate_category, activate_product, deactivate_product, get_specific_product_data
 
 
 urlpatterns = [
-   path("category/", product_category, name="save-product-category"),
-   path("", product, name="save-product"),
-   path("product/<int:id>/", product, name="edit-product"),
+   path("category/", ProductCategoryView.as_view(), name="save-product-category"),
+   path("", ProductView.as_view(), name="save-product"),
+   path("product/<int:id>/", ProductView.as_view(), name="edit-product"),
     path("product/<int:product_id>/activate/", activate_product, name="activate_product"),
     path("product/<int:product_id>/deactivate/", deactivate_product, name="deactivate_product"),
     path("<int:product_id>/", get_specific_product_data, name="get_specific_product_data"),

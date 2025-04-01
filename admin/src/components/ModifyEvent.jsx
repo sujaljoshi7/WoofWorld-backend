@@ -12,12 +12,14 @@ function AddEvent({ route, method }) {
   const [eventDescription, setEventDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
-  const [eventLocation, setEventLocation] = useState("");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [mapsLink, setMapsLink] = useState("");
   const [eventPrice, setEventPrice] = useState("");
-  const [eventDuration, setEventDuration] = useState("0 hours 0 minutes");
+  const [eventDuration, setEventDuration] = useState("0 hours");
   const [eventContactName, setEventContactName] = useState("");
   const [eventContactNumber, setEventContactNumber] = useState("");
-  const [eventStatus, setEventStatus] = useState(0);
+  const [eventStatus, setEventStatus] = useState(1);
   const [eventImage, setEventImage] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
   const today = new Date().toISOString().split("T")[0]; // Get today's date
@@ -26,7 +28,6 @@ function AddEvent({ route, method }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const { id } = useParams();
@@ -60,22 +61,20 @@ function AddEvent({ route, method }) {
       setEventDuration(data.duration);
       setEventContactName(data.contact_name);
       setEventContactNumber(data.contact_number);
-      setEventLocation(data.location);
+      setAddressLine1(data.address_line_1);
+      setAddressLine2(data.address_line_2);
+      setMapsLink(data.maps_link);
       setSelectedCategory(data.event_category_id);
       setEventStatus(data.status);
       const duration = data.duration; // Example: "2 Hours 30 Minutes"
       if (duration) {
-        const match = duration.match(/(\d+)\s*hours?\s*(\d*)\s*minutes?/);
+        const match = duration.match(/(\d+)\s*hours/);
         if (match) {
           if (match[1]) {
             setHours(Number(match[1])); // 2 Hours
           }
-          if (match[2]) {
-            setMinutes(Number(match[2])); // 30 Minutes
-          }
         }
       }
-      console.log(`${BASE_URL}${data.image}`);
       setPreviewImage(`${BASE_URL}${data.image}`); // Show existing image
     } catch (err) {
       console.error("Failed to fetch event details:", err);
@@ -84,11 +83,9 @@ function AddEvent({ route, method }) {
 
   const handleDurationChange = (type, value) => {
     const newHours = type === "hours" ? value : hours;
-    const newMinutes = type === "minutes" ? value : minutes;
 
     setHours(newHours);
-    setMinutes(newMinutes);
-    setEventDuration(`${newHours} hours ${newMinutes} minutes`);
+    setEventDuration(`${newHours} hours`);
   };
 
   const handleImageChange = (e) => {
@@ -109,16 +106,22 @@ function AddEvent({ route, method }) {
     formData.append("description", eventDescription);
     formData.append("date", eventDate);
     formData.append("time", eventTime);
-    formData.append("location", eventLocation);
+    formData.append("address_line_1", addressLine1);
+    formData.append("address_line_2", addressLine2);
+    formData.append("maps_link", mapsLink);
     formData.append("price", eventPrice);
     formData.append("duration", eventDuration);
     formData.append("contact_name", eventContactName);
     formData.append("contact_number", eventContactNumber);
-    formData.append("status", eventStatus);
+    formData.append("status", 1);
     formData.append("created_by", 1);
     formData.append("event_category_id", selectedCategory);
     if (eventImage) {
-      formData.append("image", eventImage); // Append image
+      const fileExtension = eventImage.name.split(".").pop();
+      const uniqueFileName = `event_${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 8)}.${fileExtension}`;
+      formData.append("image", eventImage, uniqueFileName); // Append image
     }
     // Proceed with storing event category
 
@@ -308,7 +311,7 @@ function AddEvent({ route, method }) {
                   <div className="col-6 mb-4">
                     <label className="form-label">Duration:</label>
                     <div className="row">
-                      <div className="col-6">
+                      <div className="col-12">
                         <select
                           className="form-select"
                           value={hours}
@@ -319,21 +322,6 @@ function AddEvent({ route, method }) {
                           {[...Array(24).keys()].map((h) => (
                             <option key={h} value={h}>
                               {h} Hours
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="col-6">
-                        <select
-                          className="form-select"
-                          value={minutes}
-                          onChange={(e) =>
-                            handleDurationChange("minutes", e.target.value)
-                          }
-                        >
-                          {[0, 15, 30, 45].map((m) => (
-                            <option key={m} value={m}>
-                              {m} Minutes
                             </option>
                           ))}
                         </select>
@@ -373,33 +361,45 @@ function AddEvent({ route, method }) {
                 </div>
                 <div className="row">
                   <div className="col-6 mb-4">
-                    <label className="form-label" htmlFor="status">
-                      Status
+                    <label className="form-label" htmlFor="address_line_1">
+                      Address line 1
                     </label>
-                    <div className="mb-4">
-                      <select
-                        id="status"
-                        className="form-select"
-                        value={eventStatus}
-                        onChange={(e) => setEventStatus(e.target.value)}
+                    <div>
+                      <input
+                        id="address_line_1"
+                        className="form-control"
+                        value={addressLine1}
+                        onChange={(e) => setAddressLine1(e.target.value)}
                         required
-                      >
-                        <option value={1}>Active</option>
-                        <option value={0}>Inactive</option>
-                      </select>
+                      />
                     </div>
                   </div>
-
                   <div className="col-6 mb-4">
-                    <label className="form-label" htmlFor="location">
-                      Location
+                    <label className="form-label" htmlFor="address_line_2">
+                      Address line 2
+                    </label>
+                    <div>
+                      <input
+                        id="address_line_2"
+                        className="form-control"
+                        value={addressLine2}
+                        onChange={(e) => setAddressLine2(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-lg-12">
+                    <label className="form-label" htmlFor="address_line_2">
+                      Maps Link
                     </label>
                     <div className="mb-4">
                       <input
-                        id="location"
+                        id="address_line_2"
                         className="form-control"
-                        value={eventLocation}
-                        onChange={(e) => setEventLocation(e.target.value)}
+                        value={mapsLink}
+                        onChange={(e) => setMapsLink(e.target.value)}
                         required
                       />
                     </div>

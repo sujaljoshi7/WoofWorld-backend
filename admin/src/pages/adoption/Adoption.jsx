@@ -8,6 +8,8 @@ import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import useUser from "../../hooks/useUser";
 import { data, useNavigate } from "react-router-dom";
 
+import { exportToCSV } from "../../utils/export";
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 function ViewWebinars() {
   const navigate = useNavigate();
@@ -53,7 +55,6 @@ function ViewWebinars() {
       // Update state
       setAllDogs(dogs.data);
       setFilteredData(dogs.data);
-      console.log(dogs.data);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -136,6 +137,73 @@ function ViewWebinars() {
     setCurrentPage(selected);
   };
 
+  const handleExport = () => {
+    const formattedData = filteredData.map((item) => ({
+      id: item.id,
+      image: item.image,
+      name: item.name,
+      looking_for: item.looking_for,
+      created_at: new Date(item.created_at).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }),
+      breed: item.breed.name,
+      age: item.age,
+      gender: item.gender,
+      color: item.color,
+      personality: item.personality,
+      weight: item.weight,
+      energy_level: item.energy_level,
+      disease: item.disease,
+      vaccinated_status: item.vaccinated_status,
+      status: item.status ? "Active" : "Inactive",
+      created_by: item.created_by
+        ? `${item.created_by.first_name} ${item.created_by.last_name} [${item.created_by.email}]`
+        : "",
+    }));
+    exportToCSV(
+      formattedData,
+      [
+        "ID",
+        "Image",
+        "Name",
+        "Breed",
+        "Age",
+        "Gender",
+        "Color",
+        "Personality",
+        "Weight",
+        "Energy Level",
+        "Disease",
+        "Vaccinated Status",
+        "Looking For",
+        "Status",
+        "Created At",
+        "Created By",
+      ], // Headers
+      [
+        "id",
+        "image",
+        "name",
+        "breed",
+        "age",
+        "gender",
+        "color",
+        "personality",
+        "weight",
+        "energy_level",
+        "disease",
+        "vaccinated_status",
+        "looking_for",
+        "status",
+        "created_at",
+        "created_by",
+      ], // Fields
+      "WoofWorld_adoptions.csv"
+    );
+  };
+
   if (isLoading) {
     return (
       <div
@@ -207,12 +275,17 @@ function ViewWebinars() {
           )}
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Adoption</h2>
-            <button
-              className="btn btn-warning"
-              onClick={() => navigate("/adoption/add")}
-            >
-              + Add Adoption Listing
-            </button>
+            <div>
+              <button className="btn btn-primary me-2" onClick={handleExport}>
+                Export to CSV
+              </button>
+              <button
+                className="btn btn-warning"
+                onClick={() => navigate("/adoption/add")}
+              >
+                + Add Adoption Listing
+              </button>
+            </div>
           </div>
           <div className="input-group mb-3 mt-3">
             <span className="input-group-text bg-light border-0">

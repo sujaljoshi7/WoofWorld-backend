@@ -2,7 +2,7 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import LoadingIndicator from "./LoadingIndicator";
-import bg_image from "../assets/images/signin-image.png";
+import bg_image from "../assets/images/signin-image.webp";
 import { useEffect } from "react";
 
 const ACCESS_TOKEN = "access_token";
@@ -55,8 +55,6 @@ function RegisterForm(route) {
         first_name: firstName,
         last_name: lastName,
       });
-
-      console.log("Registration Success:", res.data); // Log successful registration
 
       // 🔹 Store tokens
       localStorage.setItem(ACCESS_TOKEN, res.data.access);
@@ -122,6 +120,9 @@ function RegisterForm(route) {
                   loading="lazy"
                   src={bg_image}
                   alt="BootstrapBrain Logo"
+                  style={{
+                    height: "100%",
+                  }}
                 />
               </div>
             </div>

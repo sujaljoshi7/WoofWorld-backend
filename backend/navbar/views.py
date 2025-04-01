@@ -11,10 +11,9 @@ from django.shortcuts import get_object_or_404
 
 class Navbar(APIView):
     def get_permissions(self):
-        # if self.request.method == 'GET':
-        #     return [AllowAny()]
-        # return [IsAuthenticated()]
-        return [AllowAny()]
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request):
         items = NavbarItem.objects.all().order_by("id")

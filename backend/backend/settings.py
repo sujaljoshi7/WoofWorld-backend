@@ -49,7 +49,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
@@ -73,7 +73,10 @@ INSTALLED_APPS = [
     'homepage',
     'navbar',
     'routes',
+    'otp',
     'companydetails',
+    'payments',
+    'cart',
     'rest_framework',
     'corsheaders',
 ]
@@ -121,6 +124,9 @@ DATABASES = {
         'PASSWORD': 'Sujal@8194',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
+         'OPTIONS': {
+            'charset': 'utf8mb4',  # Add this line
+        },
     }
 }
 
@@ -168,3 +174,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = "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"
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_HOST_USER = "apikey"  # This is the fixed value
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+RAZORPAY_API_KEY = 'rzp_test_RJaa2N22UrDs5b'
+RAZORPAY_API_SECRET = 'zBApnWkjqqGKqWdByfsDG7Uj'

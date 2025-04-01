@@ -7,33 +7,39 @@ from .serializers import BreedSerializer, DogsSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 
 
+class BreedView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def breed(request):
-    if request.method == 'GET':
+    def get(self, request):
         breeds = Breed.objects.all()
         serializer = BreedSerializer(breeds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == 'POST':
+    def post(self, request):
         serializer = BreedSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'POST', 'PATCH'])
-@permission_classes([AllowAny])
-def dogs(request, **kwargs):
-    if request.method == 'GET':
+class DogsView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get(self, request):
         dogs = Dogs.objects.select_related("created_by").all()
         serializer = DogsSerializer(dogs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == 'POST':
+    def post(self, request):
         data = request.data.copy()
         data['created_by'] = request.user.id
         serializer = DogsSerializer(data=data, context={'request': request})
@@ -42,7 +48,7 @@ def dogs(request, **kwargs):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.method == 'PATCH':
+    def patch(self, request, **kwargs):
         id = kwargs.get("id")
         data = request.data.copy()
         data['created_by'] = request.user.id
@@ -103,9 +109,8 @@ def deactivate_dog(request, dog_id):
     except Dogs.DoesNotExist:
         return Response({"error": "Dog not found!"}, status=status.HTTP_404_NOT_FOUND)
     
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_specific_dog_data(request, dog_id):
-    dogs = get_object_or_404(Dogs.objects.select_related("breed"), id=dog_id)
-    serializer = DogsSerializer(dogs)  # Use your serializer directly
-    return Response(serializer.data, status=status.HTTP_200_OK)
+class GetSpecificDogData(APIView):
+    def get(request, dog_id):
+        dogs = get_object_or_404(Dogs.objects.select_related("breed"), id=dog_id)
+        serializer = DogsSerializer(dogs)  # Use your serializer directly
+        return Response(serializer.data, status=status.HTTP_200_OK)

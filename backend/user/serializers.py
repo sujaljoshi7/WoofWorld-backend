@@ -3,11 +3,14 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class UserSerializer(serializers.ModelSerializer):
+    access = serializers.SerializerMethodField()
+    refresh = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ["id","username","password", "first_name", "last_name", "email", "is_staff"]
+        fields = ["id","username","password", "first_name", "last_name", "email", "is_staff", "access", "refresh"]
         extra_kwargs = {"password":{"write_only": True}}
 
     def validate_email(self, value):
@@ -19,6 +22,13 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
     
+    def get_access(self, obj):
+        refresh = RefreshToken.for_user(obj)
+        return str(refresh.access_token)
+
+    def get_refresh(self, obj):
+        refresh = RefreshToken.for_user(obj)
+        return str(refresh)
     
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):

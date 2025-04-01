@@ -5,7 +5,7 @@ import { ACCESS_TOKEN } from "../constants";
 import { REFRESH_TOKEN } from "../constants";
 import "../styles/Form.css";
 import LoadingIndicator from "./LoadingIndicator";
-import bg_image from "../assets/images/signin-image.png";
+import bg_image from "../assets/images/signin-image.webp";
 import { Eye, EyeOff } from "lucide-react";
 
 function Form({ route, method }) {
@@ -53,17 +53,21 @@ function Form({ route, method }) {
       <div className="container">
         <div className="card border-light-subtle shadow-sm">
           <div className="row g-0">
-            <div className="col-12 col-md-6">
-              <div className="d-flex justify-content-center align-items-center h-100">
+            <div className="col-12 col-md-5">
+              <div className="d-flex align-items-start h-100">
                 <img
-                  className="img-fluid rounded-start w-80 object-fit-cover"
+                  className="img-fluid rounded-start w-80 object-fit-cover me-auto"
                   loading="lazy"
                   src={bg_image}
                   alt="BootstrapBrain Logo"
+                  style={{
+                    height: "550px",
+                  }}
                 />
               </div>
             </div>
-            <div className="col-12 col-md-6">
+
+            <div className="col-12 col-md-7">
               <div className="card-body p-3 p-md-4 p-xl-5">
                 <div className="row">
                   <div className="col-12">

@@ -58,7 +58,7 @@ function ViewServiceCategories() {
 
       // Update state
       setAllServiceCategories(serviceCategories.data);
-
+      console.log(serviceCategories.data);
       setFilteredData(serviceCategories.data);
     } catch (error) {
       if (error.response?.status === 401) {

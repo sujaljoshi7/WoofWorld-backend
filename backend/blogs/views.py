@@ -7,34 +7,42 @@ from .serializers import BlogSerializer, BlogCategorySerializer, BlogCommentSeri
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 
 
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def blog_category(request):
-    if request.method == 'GET':
+class BlogCategoryView(APIView):
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get(self, request):
         categories = Category.objects.all()
         serializer = BlogCategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == 'POST':
+    def post(self, request):
         serializer = BlogCategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class BlogView(APIView):
 
-@api_view(['GET', 'POST', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def blog(request, **kwargs):
-    if request.method == 'GET':
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get(self, request):
         blogs = Blog.objects.select_related("created_by").all()
         serializer = BlogSerializer(blogs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == 'POST':
+    def post(self, request):
         data = request.data.copy()
         data['created_by'] = request.user.id
         serializer = BlogSerializer(data=data, context={'request': request})
@@ -43,7 +51,7 @@ def blog(request, **kwargs):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.method == 'PATCH':
+    def patch(self, request, **kwargs):
         id = kwargs.get("id")
         data = request.data.copy()
         data['created_by'] = request.user.id
@@ -104,9 +112,8 @@ def deactivate_blog(request, blog_id):
     except Category.DoesNotExist:
         return Response({"error": "Blog not found!"}, status=status.HTTP_404_NOT_FOUND)
     
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_specific_blog_data(request, blog_id):
-    blog = get_object_or_404(Blog, id=blog_id)
-    serializer = BlogSerializer(blog)  # Use your serializer directly
-    return Response(serializer.data, status=status.HTTP_200_OK)
+class GetSpecificBlogData(APIView):
+    def get(self, request, blog_id):
+        blog = get_object_or_404(Blog, id=blog_id)
+        serializer = BlogSerializer(blog)  # Use your serializer directly
+        return Response(serializer.data, status=status.HTTP_200_OK)

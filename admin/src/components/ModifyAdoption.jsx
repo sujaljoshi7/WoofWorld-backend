@@ -80,7 +80,7 @@ const ModifyAdoption = ({ method }) => {
         data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
       );
     } catch (err) {
-      console.error("Failed to fetch webinar details:", err);
+      console.error("Failed to fetch adoption details:", err);
     }
   };
 
@@ -165,7 +165,7 @@ const ModifyAdoption = ({ method }) => {
                   <li className="breadcrumb-item">
                     <p
                       className="text-body-secondary"
-                      onClick={() => navigate("/webinars")}
+                      onClick={() => navigate("/adoption")}
                       style={{ cursor: "pointer" }}
                     >
                       Adoption

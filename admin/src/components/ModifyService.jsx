@@ -6,7 +6,8 @@ import { useLocation } from "react-router-dom";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
 import "../styles/Styles.css";
-
+import { handleTokenRefresh } from "../hooks/tokenRefresh";
+import LoadingIndicator from "./LoadingIndicator";
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -111,7 +112,16 @@ const ModifyService = ({ method }) => {
       navigate("/services");
     } catch (error) {
       console.error("Error:", error);
-      setError("Failed to submit service. Try again.");
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return handleSubmit(); // Retry after refreshing
+        }
+      } else {
+        setError("Failed to submit service. Try again.");
+      }
     } finally {
       setLoading(false);
     }

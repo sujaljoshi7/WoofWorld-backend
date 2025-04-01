@@ -18,7 +18,6 @@ function ViewProductCategories() {
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
@@ -42,7 +41,7 @@ function ViewProductCategories() {
     second: "2-digit",
   };
 
-  const fetchEventCategories = async () => {
+  const fetchProductCategories = async () => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
@@ -51,14 +50,14 @@ function ViewProductCategories() {
     }
     try {
       // Fetch user details independently
-      const productCategoriesRes = api.get("/api/products/category");
+      const productCategoriesRes = api.get("/api/products/category/");
 
       // Wait for both requests to complete independently
       const [productCategories] = await Promise.all([productCategoriesRes]);
 
       // Update state
       setAllProductCategories(productCategories.data);
-
+      console.log(productCategories.data);
       setFilteredData(productCategories.data);
     } catch (error) {
       if (error.response?.status === 401) {
@@ -66,7 +65,7 @@ function ViewProductCategories() {
 
         const refreshed = await handleTokenRefresh();
         if (refreshed) {
-          return fetchEventCategories(); // Retry after refreshing
+          return fetchProductCategories(); // Retry after refreshing
         }
       } else {
         console.error("Failed to fetch user data:", error);
@@ -85,10 +84,10 @@ function ViewProductCategories() {
       }
     }
 
-    fetchEventCategories();
+    fetchProductCategories();
 
     const interval = setInterval(() => {
-      fetchEventCategories();
+      fetchProductCategories();
     }, 60000);
 
     return () => clearInterval(interval); // Cleanup on unmount
@@ -101,7 +100,7 @@ function ViewProductCategories() {
       );
       setMessage("Category Dectivated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchProductCategories();
     } catch (error) {
       setError("Error deactivating category" || error.response.data.message);
     }
@@ -114,14 +113,14 @@ function ViewProductCategories() {
       );
       setMessage("Category Activated Successfully");
       //   alert("User activated successfully!");
-      fetchEventCategories();
+      fetchProductCategories();
     } catch (error) {
       setError("Error activating category" || error.response.data.message);
       console.log(error);
     }
   };
 
-  if (isLoading) {
+  if (isLoading && isLoadingCategories) {
     return (
       <div
         style={{

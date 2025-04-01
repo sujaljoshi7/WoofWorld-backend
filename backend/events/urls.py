@@ -1,11 +1,11 @@
 from django.urls import path
-from .views import event_category,event, activate_category, deactivate_category, activate_event, deactivate_event, get_specific_event_data
+from .views import EventCategoryView,EventView, activate_category, deactivate_category, activate_event, deactivate_event, get_specific_event_data
 
 
 urlpatterns = [
-   path("category/", event_category, name="save-event-category"),
-   path("event/", event, name="save-event"),
-   path("event/<int:id>/", event, name="edit-event"),
+   path("category/", EventCategoryView.as_view(), name="save-event-category"),
+   path("event/", EventView.as_view(), name="save-event"),
+   path("event/<int:id>/", EventView.as_view(), name="edit-event"),
     path("event/<int:event_id>/activate/", activate_event, name="activate_category"),
     path("event/<int:event_id>/deactivate/", deactivate_event, name="deactivate_category"),
     path("<int:event_id>/", get_specific_event_data, name="get_specific_event_data"),

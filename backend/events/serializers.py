@@ -18,6 +18,9 @@ class EventCategorySerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only = True)
+    category = EventCategorySerializer(source="event_category_id", read_only=True)
+    product_category_id = serializers.PrimaryKeyRelatedField(
+    queryset=Category.objects.all(), write_only=True)
 
     class Meta:
         model = Event
@@ -25,7 +28,10 @@ class EventSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context.get("request")
-        validated_data["created_by"] = request.user
+        category_instance = validated_data.pop("event_category_id", None)  # Use correct field name
+        if category_instance:
+            validated_data["product_category_id"] = category_instance
+        validated_data["created_by"] = request.user  # Ensure created_by is set
         return super().create(validated_data)
 
     def get_created_by(self, obj):

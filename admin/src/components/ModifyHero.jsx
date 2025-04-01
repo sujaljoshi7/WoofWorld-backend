@@ -68,7 +68,11 @@ const ModifyHero = ({ method }) => {
     formData.append("cta", cta);
     formData.append("status", 1);
     if (image) {
-      formData.append("image", image);
+      const fileExtension = image.name.split(".").pop();
+      const uniqueFileName = `hero_${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 8)}.${fileExtension}`;
+      formData.append("image", image, uniqueFileName);
     }
     try {
       if (method === "edit") {

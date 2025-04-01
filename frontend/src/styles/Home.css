@@ -16,6 +16,10 @@ html {
     }
 }
 
+.yellow-bg {
+    background-color: #ffd919;
+}
+
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
@@ -119,14 +123,13 @@ html {
     width: fit-content;
     border-radius: 0px;
     padding: 20px;
-    background-color: #5017ac;
     color: white;
     text-transform: uppercase;
     margin-top: 30px;
 }
 
 .hero-btn:hover {
-    background-color: #3a1379;
+    background-color: #000000;
 }
 
 .carousel,
@@ -230,7 +233,7 @@ html {
 
 .products-wrapper .card .card-img-top {
     height: 250px;
-    object-fit: cover;
+    object-fit: fill;
 }
 
 
@@ -262,12 +265,12 @@ html {
 }
 
 .events-wrapper .card {
-    width: 300px;
+    width: 500px;
     height: 100%;
 }
 
 .events-wrapper .card .card-img-top {
-    height: 250px;
+    height: 300px;
     object-fit: cover;
 }
 
@@ -307,12 +310,12 @@ html {
 }
 
 .adoption-wrapper .card {
-    width: 300px;
+    width: 350px;
     height: 100%;
 }
 
 .adoption-wrapper .card .card-img-top {
-    height: 250px;
+    height: 300px;
     object-fit: cover;
 }
 
@@ -432,4 +435,35 @@ html {
         transform: rotate(180deg);
     }
 
+}
+
+.counter-container {
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    gap: 200px;
+    border-radius: 10px;
+}
+
+.counter-box {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0 10px;
+}
+
+.counter-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.counter-title {
+    font-size: 1rem;
+    color: #555;
 }

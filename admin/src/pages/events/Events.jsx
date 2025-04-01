@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
-
+import { exportToCSV } from "../../utils/export";
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
 import ReactPaginate from "react-paginate";
@@ -67,6 +67,7 @@ function ViewEvents() {
       // Update state
       setAllEvents(event.data);
       setFilteredData(event.data);
+      console.log(event.data);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -162,6 +163,67 @@ function ViewEvents() {
     );
   }
 
+  const handleExport = () => {
+    const formattedData = filteredData.map((item) => ({
+      id: item.id,
+      image: item.image,
+      name: item.name,
+      description: item.description,
+      date:
+        new Date(item.date).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }) +
+        " at " +
+        item.time,
+      duration: item.duration,
+      contact_name: item.contact_name,
+      contact_number: item.contact_number,
+      location: item.location,
+      price: item.price === 0 ? "Free" : item.price,
+      status: item.status ? "Active" : "Inactive",
+      category: item.category.name,
+      created_by: item.created_by
+        ? `${item.created_by.first_name} ${item.created_by.last_name} [${item.created_by.email}]`
+        : "",
+    }));
+    exportToCSV(
+      formattedData,
+      [
+        "ID",
+        "Image",
+        "Title",
+        "Description",
+        "Price",
+        "Date",
+        "Duration",
+        "Contact Name",
+        "Contact Number",
+        "Location",
+        "Status",
+        "Category",
+        "Created By",
+      ], // Headers
+      [
+        "id",
+        "image",
+        "name",
+        "description",
+        "price",
+        "date",
+        "duration",
+        "contact_name",
+        "contact_number",
+        "location",
+        "status",
+        "category",
+        "created_by",
+      ], // Fields
+      "WoofWorld_events.csv"
+    );
+  };
+
   return (
     <div className="d-flex">
       <div className="sidebar">
@@ -218,12 +280,17 @@ function ViewEvents() {
           )}
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Event Categories</h2>
-            <button
-              className="btn btn-warning"
-              onClick={() => navigate("/events/add")}
-            >
-              + Create Event
-            </button>
+            <div>
+              <button className="btn btn-primary me-2" onClick={handleExport}>
+                Export to CSV
+              </button>
+              <button
+                className="btn btn-warning"
+                onClick={() => navigate("/events/add")}
+              >
+                + Create Event
+              </button>
+            </div>
           </div>
           <div className="input-group mb-3 mt-3">
             <span className="input-group-text bg-light border-0">
@@ -244,8 +311,8 @@ function ViewEvents() {
                 <th>ID</th>
                 <th>Image</th>
                 <th>Name</th>
+                <th>Category</th>
                 <th>Status</th>
-                <th>Created At</th>
                 <th>Created By</th>
                 <th>Action</th>
               </tr>
@@ -273,20 +340,13 @@ function ViewEvents() {
                       />
                     </td>
                     <td>{item.name}</td>
+                    <td>{item.category.name}</td>
                     <td>
                       {item.status ? (
                         <span className="badge text-bg-success">Active</span>
                       ) : (
                         <span className="badge text-bg-danger">Inactive</span>
                       )}
-                    </td>
-                    <td>
-                      {item.created_at
-                        ? new Date(item.created_at).toLocaleDateString(
-                            undefined,
-                            date_format
-                          )
-                        : "N/A"}
                     </td>
                     <td>
                       {item.created_by.first_name} {item.created_by.last_name}

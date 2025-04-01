@@ -1,246 +1,165 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
+import { useNavigate } from "react-router-dom";
 import api from "../../api";
-import { motion } from "framer-motion";
 import calender from "../../assets/images/icons/calendar.png";
 import location_pin from "../../assets/images/icons/location.png";
 import "../../styles/Home.css";
-import { useLocation } from "react-router-dom";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
-import logo from "../../assets/images/logo/logo1.png";
-import down_arrow from "../../assets/images/icons/down-arrow.png";
-import image1 from "../../assets/images/hero/image1.jpg";
-import team_work from "../../assets/images/about/team-work.jpg";
 import LoadingScreen from "../../components/LoadingScreen";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
 
 function Home() {
-  const [user, setUser] = useState(null);
-  const [allHeros, setAllHeros] = useState([]);
-  const [allPartnerCompanies, setAllPartnerCompanies] = useState([]);
-  const [allServices, setAllServices] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
-  const [allEvents, setAllEvents] = useState([]);
-  const [allAdoptions, setAllAdoptions] = useState([]);
-  const [allNavbarItems, setAllNavbarItems] = useState([]);
-  const [isLoadingHero, setIsLoadingHero] = useState([]);
-  const [isLoadingServices, setIsLoadingServices] = useState([]);
-  const [isLoadingPartnerCompany, setIsLoadingPartnerCompany] = useState([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState([]);
-  const [isLoadingAdoption, setIsLoadingAdoption] = useState([]);
-  const [isLoadingNavbarItems, setIsLoadingNavbarItems] = useState([]);
-  const [openDropdown, setOpenDropdown] = useState(null);
+  const navigate = useNavigate();
+  const [data, setData] = useState({
+    heroes: [],
+    partnerCompanies: [],
+    services: [],
+    products: [],
+    events: [],
+    adoptions: [],
+  });
+
+  const [loading, setLoading] = useState({
+    heroes: true,
+    partnerCompanies: true,
+    services: true,
+    products: true,
+    events: true,
+    adoptions: true,
+  });
 
   const scrollRef = useRef(null);
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
   const BASE_URL = import.meta.env.VITE_API_URL;
-  const location = useLocation(); // Get current path
-  const servicesRef = useRef(null);
 
-  const fetchHero = async () => {
-    setIsLoadingHero(true);
+  const staticData = {
+    totalEvents: 50,
+    totalServices: 20,
+    happyClients: 200,
+    adoptedDogs: 30,
+  };
+
+  // Generic fetch function to reduce code duplication
+  const fetchData = async (endpoint, filterFn, stateKey) => {
+    setLoading((prev) => ({ ...prev, [stateKey]: true }));
+
     try {
-      // Fetch user details independently
-      const response = await api.get("/api/homepage/hero/");
+      const response = await api.get(endpoint);
+
       if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
+        console.error(
+          `Unexpected response format for ${stateKey}:`,
+          response.data
+        );
         return;
       }
 
-      const heroes = response.data.filter((hero) => hero.status === 1);
+      const filteredData = filterFn ? filterFn(response.data) : response.data;
 
-      // Wait for both requests to complete independently
-      // const [hero] = await Promise.all([heroRes]);
-
-      // Update state
-      setAllHeros(heroes);
+      setData((prev) => ({ ...prev, [stateKey]: filteredData }));
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setIsLoadingHero(false);
-    }
-  };
-
-  const fetchPartnerCompany = async () => {
-    setIsLoadingPartnerCompany(true);
-    try {
-      // Fetch user details independently
-      const response = await api.get("/api/homepage/partnercompany/");
-      if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
-        return;
-      }
-      const partnerCompanies = response.data
-        .filter((company) => company.status === 1)
-        .map((company) => company);
-
-      // Wait for both requests to complete independently
-      // const [hero] = await Promise.all([heroRes]);
-
-      // Update state
-      setAllPartnerCompanies(partnerCompanies);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setIsLoadingPartnerCompany(false);
-    }
-  };
-
-  const fetchNavbarItems = async () => {
-    setIsLoadingNavbarItems(true);
-    try {
-      const response = await api.get("/api/navbar/");
-      if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
-        return;
-      }
-      const navbarItems = response.data.filter(
-        (navItem) => navItem.status === 1
-      );
-
-      // Process the data to create nested structure
-      const structuredNavbar = processNavbarData(navbarItems);
-
-      setAllNavbarItems(structuredNavbar);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setIsLoadingNavbarItems(false);
-    }
-  };
-
-  const processNavbarData = (items) => {
-    const menu = [];
-    const itemMap = {};
-
-    // Pehle sab items ko ek object ke andar store karo
-    items.forEach((item) => {
-      itemMap[item.id] = { ...item, subItems: [] };
-    });
-
-    // Ab parent-child relation create karo
-    items.forEach((item) => {
-      if (item.dropdown_parent) {
-        if (itemMap[item.dropdown_parent]) {
-          itemMap[item.dropdown_parent].subItems.push(itemMap[item.id]);
+      if (error.response?.status === 401) {
+        try {
+          const refreshed = await handleTokenRefresh();
+          if (refreshed) {
+            // Retry after refreshing
+            return fetchData(endpoint, filterFn, stateKey);
+          } else {
+            console.error("Token refresh failed.");
+            localStorage.clear();
+            window.location.reload();
+          }
+        } catch (refreshError) {
+          console.error("Error during token refresh:", refreshError);
+          localStorage.clear();
+          window.location.reload();
         }
       } else {
-        menu.push(itemMap[item.id]); // Ye parent hai, direct menu me daal do
+        console.error(`Failed to fetch ${stateKey}:`, error);
       }
-    });
-
-    return menu;
-  };
-
-  const fetchServices = async () => {
-    setIsLoadingServices(true);
-
-    try {
-      // Fetch user details independently
-      const response = await api.get("/api/services/");
-      if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
-        return;
-      }
-
-      const services = response.data.filter(
-        (service) => service.show_on_homepage && service.status === 1
-      );
-
-      // Wait for both requests to complete independently
-      // const [hero] = await Promise.all([heroRes]);
-
-      // Update state
-      setAllServices(services);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
     } finally {
-      setIsLoadingServices(false);
+      setLoading((prev) => ({ ...prev, [stateKey]: false }));
     }
   };
 
-  const fetchProducts = async () => {
-    setIsLoadingProducts(true);
+  useEffect(() => {
+    // Fetch all data on component mount
+    fetchData(
+      "/api/homepage/hero/",
+      (data) => data.filter((hero) => hero.status === 1),
+      "heroes"
+    );
 
-    try {
-      // Fetch user details independently
-      const response = await api.get("/api/products/");
-      if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
-        return;
-      }
+    fetchData(
+      "/api/homepage/partnercompany/",
+      (data) => data.filter((company) => company.status === 1),
+      "partnerCompanies"
+    );
 
-      const products = response.data.filter(
-        (product) => product.show_on_homepage && product.status === 1
-      );
+    fetchData(
+      "/api/services/",
+      (data) =>
+        data.filter(
+          (service) => service.show_on_homepage && service.status === 1
+        ),
+      "services"
+    );
 
-      // Wait for both requests to complete independently
-      // const [hero] = await Promise.all([heroRes]);
+    fetchData(
+      "/api/products/",
+      (data) =>
+        data.filter(
+          (product) => product.show_on_homepage && product.status === 1
+        ),
+      "products"
+    );
 
-      // Update state
-      setAllProducts(products);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setIsLoadingProducts(false);
+    fetchData(
+      "/api/events/event/",
+      (data) => {
+        const today = new Date().toISOString().split("T")[0];
+        return data
+          .filter((event) => event.status && event.date > today)
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+      },
+      "events"
+    );
+
+    fetchData(
+      "/api/adoption/",
+      (data) => data.filter((adoption) => adoption.status),
+      "adoptions"
+    );
+  }, []);
+
+  // Setup intersection observer for animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
-  };
 
-  const fetchEvents = async () => {
-    setIsLoadingEvents(true);
-
-    try {
-      // Fetch user details independently
-      const response = await api.get("/api/events/event/");
-      if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
-        return;
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
       }
+    };
+  }, []);
 
-      const today = new Date().toISOString().split("T")[0];
-
-      const upcomingEvents = response.data.filter(
-        (event) => event.status && event.date >= today // Only future or ongoing events
-      );
-
-      // Wait for both requests to complete independently
-      // const [hero] = await Promise.all([heroRes]);
-
-      // Update state
-      setAllEvents(upcomingEvents);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setIsLoadingEvents(false);
-    }
-  };
-
-  const fetchAdoptions = async () => {
-    setIsLoadingEvents(true);
-
-    try {
-      // Fetch user details independently
-      const response = await api.get("/api/adoption/");
-      if (!response.data || !Array.isArray(response.data)) {
-        console.error("Unexpected response format:", response.data);
-        return;
-      }
-
-      const adoptions = response.data.filter(
-        (adoption) => adoption.status // Only future or ongoing events
-      );
-
-      // Wait for both requests to complete independently
-      // const [hero] = await Promise.all([heroRes]);
-
-      // Update state
-      setAllAdoptions(adoptions);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setIsLoadingEvents(false);
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 350, behavior: "smooth" });
     }
   };
 
@@ -250,33 +169,51 @@ function Home() {
     }
   };
 
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 350, behavior: "smooth" });
-    }
-  };
-
   const date_format = {
-    month: "long", // "short" for abbreviated months
+    month: "long",
     day: "2-digit",
   };
 
-  useEffect(() => {
-    fetchHero();
-    fetchPartnerCompany();
-    fetchNavbarItems();
-    fetchServices();
-    fetchProducts();
-    fetchEvents();
-    fetchAdoptions();
-  }, []);
+  // Extracted counter component to improve readability
+  const Counter = ({ title, target }) => {
+    const [count, setCount] = useState(0);
 
-  if (isLoadingHero) return <LoadingScreen />;
+    useEffect(() => {
+      let start = 0;
+      const duration = 2000;
+      const increment = target / (duration / 50);
+
+      const counterInterval = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+          start = target;
+          clearInterval(counterInterval);
+        }
+        setCount(Math.ceil(start));
+      }, 50);
+
+      return () => clearInterval(counterInterval);
+    }, [target]);
+
+    return (
+      <div className="flex flex-col items-center bg-white shadow-md p-4 rounded-lg w-1/4">
+        <h2 className="text-3xl font-bold text-blue-600">{count}+</h2>
+        <p className="text-gray-600">{title}</p>
+      </div>
+    );
+  };
+
+  // Check if all data is still loading
+  const isLoading = Object.values(loading).some((status) => status);
+
+  if (isLoading) return <LoadingScreen />;
+
   return (
     <div>
       <div className="main-content">
         <Navbar />
 
+        {/* Hero Section */}
         <section className="hero">
           <div
             id="carouselExampleAutoplaying"
@@ -285,8 +222,8 @@ function Home() {
             data-bs-interval="5000"
           >
             <div className="carousel-inner">
-              {allHeros.length > 0 ? (
-                allHeros.map((hero, index) => (
+              {data.heroes.length > 0 ? (
+                data.heroes.map((hero, index) => (
                   <div
                     key={hero.id}
                     className={`carousel-item ${index === 0 ? "active" : ""}`}
@@ -295,13 +232,16 @@ function Home() {
                       <div className="hero-text-overlay container">
                         <h1 className="hero-text-header">{hero.headline}</h1>
                         <p className="hero-text-body">{hero.subtext}</p>
-                        <button className="btn hero-btn">{hero.cta}</button>
+                        <button className="btn hero-btn btn-dark">
+                          {hero.cta}
+                        </button>
                       </div>
                       <div className="black-overlay"></div>
                       <img
                         src={`${BASE_URL}${hero.image}`}
                         alt={`Hero ${index + 1}`}
                         className="hero-image"
+                        style={{ objectFit: "cover" }}
                       />
                     </div>
                   </div>
@@ -311,7 +251,6 @@ function Home() {
               )}
             </div>
 
-            {/* Carousel Controls (Optional) */}
             <button
               className="carousel-control-prev"
               type="button"
@@ -339,59 +278,74 @@ function Home() {
           </div>
         </section>
 
+        {/* Partner Companies Section */}
         <section className="partner-companies">
           <h4 className="text-center">Trusted by great companies</h4>
           <div className="overflow-hidden bg-gray-100 py-4 relative w-full mt-3">
             <div className="scrolling-wrapper">
               <div className="logos">
-                {/* Rendered twice for seamless looping */}
-                {[...allPartnerCompanies, ...allPartnerCompanies].map(
-                  (company, index) => (
-                    <img
-                      key={index}
-                      title={company.name}
-                      src={`${BASE_URL}${company.image}`}
-                      alt="Company Logo"
-                      className="logo"
-                    />
+                {data.partnerCompanies.length > 0 ? (
+                  [...data.partnerCompanies, ...data.partnerCompanies].map(
+                    (company, index) => (
+                      <img
+                        key={index}
+                        title={company.name}
+                        src={`${BASE_URL}${company.image}`}
+                        alt="Company Logo"
+                        className="logo"
+                      />
+                    )
                   )
+                ) : (
+                  <p>No partner companies available</p>
                 )}
               </div>
             </div>
           </div>
         </section>
 
+        {/* Counters Section */}
+        <section>
+          <div ref={sectionRef} className="counter-container text-center">
+            <Counter title="Total Events" target={staticData.totalEvents} />
+            <Counter title="Total Services" target={staticData.totalServices} />
+            <Counter title="Happy Clients" target={staticData.happyClients} />
+            <Counter title="Adopted Dogs" target={staticData.adoptedDogs} />
+          </div>
+        </section>
+
         <style>
           {`
-  .scrolling-wrapper {
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-  }
+            .scrolling-wrapper {
+              width: 100%;
+              overflow: hidden;
+              white-space: nowrap;
+              position: relative;
+            }
 
-  .logos {
-    display: flex;
-    gap: 150px;
-    animation: scroll 30s linear infinite;
-  }
+            .logos {
+              display: flex;
+              gap: 150px;
+              animation: scroll 30s linear infinite;
+            }
 
-  .logo {
-    height: 100px;
-    width: auto;
-  }
+            .logo {
+              height: 100px;
+              width: auto;
+            }
 
-  @keyframes scroll {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-`}
+            @keyframes scroll {
+              from {
+                transform: translateX(0);
+              }
+              to {
+                transform: translateX(-50%);
+              }
+            }
+          `}
         </style>
 
+        {/* Services Section */}
         <section className="ourservices-section container">
           <div className="justify-content-between align-items-center">
             <h2 className="text-center ourservices-heading">
@@ -404,8 +358,8 @@ function Home() {
             friend!
           </p>
           <div className="services-wrapper hide-scrollbar">
-            {allServices.length > 0 ? (
-              allServices.map((service) => (
+            {data.services.length > 0 ? (
+              data.services.map((service) => (
                 <div
                   className="p-2"
                   key={service.id}
@@ -419,7 +373,7 @@ function Home() {
                     />
                     <div className="card-body d-flex flex-column">
                       <h5 className="card-title text-wrap">{service.name}</h5>
-                      <a href="#" className="btn btn-primary mt-auto">
+                      <a href="#" className="btn btn-dark mt-auto">
                         Explore More
                       </a>
                     </div>
@@ -427,11 +381,12 @@ function Home() {
                 </div>
               ))
             ) : (
-              <p>Loading service content...</p>
+              <p>No services available</p>
             )}
           </div>
         </section>
 
+        {/* Products Section */}
         <section className="featuredproducts-section container">
           <div className="justify-content-between align-items-center">
             <h2 className="text-center ourservices-heading">
@@ -443,8 +398,8 @@ function Home() {
             comfy beds—handpicked for your dog's happiness and well-being! 🐶✨
           </p>
           <div className="products-wrapper hide-scrollbar" ref={scrollRef}>
-            {allProducts.length > 0 ? (
-              allProducts.map((product) => (
+            {data.products.length > 0 ? (
+              data.products.map((product) => (
                 <div
                   className="p-2"
                   key={product.id}
@@ -464,7 +419,7 @@ function Home() {
                       </h5>
                       <p className="text-secondary">{product.category.name}</p>
                       <h5>₹{product.price}/-</h5>
-                      <a href="#" className="btn btn-primary mt-3">
+                      <a href="#" className="btn btn-dark mt-3">
                         Add to Cart
                       </a>
                     </div>
@@ -472,11 +427,12 @@ function Home() {
                 </div>
               ))
             ) : (
-              <p>Loading service content...</p>
+              <p>No products available</p>
             )}
           </div>
         </section>
 
+        {/* Events Section */}
         <section className="upcomingevents-section container">
           <div className="justify-content-between align-items-center">
             <h2 className="text-center upcomingevents-heading">
@@ -487,13 +443,14 @@ function Home() {
             Get ready for tail-wagging fun, exciting activities, and
             unforgettable moments with your furry friends! 🐾🎉
           </p>
-          <div className="events-wrapper">
-            {allEvents.length > 0 ? (
-              allEvents.map((event) => (
+          <div className="events-wrapper hide-scrollbar">
+            {data.events.length > 0 ? (
+              data.events.map((event) => (
                 <div
                   className="p-2"
                   key={event.id}
-                  style={{ flex: "0 0 auto" }}
+                  style={{ flex: "0 0 auto", cursor: "pointer" }}
+                  onClick={() => navigate(`/events/${event.id}`)}
                 >
                   <div className="card">
                     <img
@@ -521,11 +478,17 @@ function Home() {
 
                       <p className="text-secondary">
                         <img src={location_pin} alt="Event Date" height={18} />
-                        <span className="ms-2 text-bold">{event.location}</span>
+                        <span className="ms-2 text-bold">
+                          {event.address_line_1}
+                        </span>
                       </p>
                       <div className="price-section d-flex justify-content-between align-items-center">
-                        <p className="text-bold">₹500/-</p>
-                        <button className="btn btn-primary mb-4">
+                        {event.price === 0 ? (
+                          <p className="text-bold">Free</p>
+                        ) : (
+                          <p className="text-bold">₹{event.price}/-</p>
+                        )}
+                        <button className="btn btn-dark mb-4">
                           Buy Tickets
                         </button>
                       </div>
@@ -534,11 +497,12 @@ function Home() {
                 </div>
               ))
             ) : (
-              <p>Loading service content...</p>
+              <p>No upcoming events</p>
             )}
           </div>
         </section>
 
+        {/* Adoption Section */}
         <section className="adoption-section container">
           <div className="justify-content-between align-items-center">
             <h2 className="text-center adoption-heading">
@@ -549,9 +513,9 @@ function Home() {
             Give a loving home to a dog in need! Browse our adoption listings
             and find your perfect match. 🐾💕
           </p>
-          <div className="adoption-wrapper">
-            {allAdoptions.length > 0 ? (
-              allAdoptions.map((adoption) => (
+          <div className="adoption-wrapper hide-scrollbar">
+            {data.adoptions.length > 0 ? (
+              data.adoptions.map((adoption) => (
                 <div
                   className="p-2"
                   key={adoption.id}
@@ -564,51 +528,33 @@ function Home() {
                       alt={adoption.name}
                     />
                     <div className="card-body">
-                      <h5 className="card-title text-wrap">{adoption.name}</h5>
+                      <h5 className="card-title text-wrap">
+                        Hi, I am {adoption.name}
+                      </h5>
                       <p className="p-0 m-0 text-secondary">
                         Age: {adoption.age} Year(s)
                       </p>
-                      <p className="text-secondary">
+                      <p className="p-0 m-0 text-secondary">
                         Breed: {adoption.breed.name}
                       </p>
-                      <p className="bg-warning text-wrap p-1 rounded">
-                        {adoption.personality}
+                      <p className="text-secondary">
+                        {adoption.vaccinated_status}
                       </p>
-                      <a href="#" className="btn btn-primary">
-                        View More
-                      </a>
+                      <button className="btn btn-dark w-100">View More</button>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p>Loading service content...</p>
+              <p>No adoptions available</p>
             )}
           </div>
         </section>
+
         <Footer />
       </div>
     </div>
   );
 }
-
-const DashboardCard = ({ title, count, image }) => (
-  <div className="col-3">
-    <div className="card bg-dark" style={{ maxWidth: "250px", margin: "10px" }}>
-      <div className="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <h6 className="card-title text-secondary fs-6 fw-light">{title}</h6>
-          <h6 className="card-text fw-semibold text-light fs-2">{count}</h6>
-        </div>
-        <img
-          src={image}
-          alt={title}
-          className="rounded-circle"
-          style={{ width: "50px", height: "50px" }}
-        />
-      </div>
-    </div>
-  </div>
-);
 
 export default Home;

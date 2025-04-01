@@ -1,27 +1,48 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import api from "../../api";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo/logo1.png";
 import cart from "../../assets/images/icons/cart.png";
+import { ACCESS_TOKEN } from "../../constants";
+import profileIcon from "../../assets/images/icons/user.png";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
+import api from "../../api";
 
 const Navbar = () => {
-  const [navbarItems, setNavbarItems] = useState([]);
-  const location = useLocation();
+  const navigate = useNavigate();
   const [placeholder, setPlaceholder] = useState("");
   const [index, setIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const placeholderTexts = [
-    "Search for dog food...",
-    "Find adoption centers...",
-    "Explore grooming services...",
-    "Discover training tips...",
+    "dog food...",
+    "adoption centers...",
+    "grooming services...",
+    "training tips...",
   ];
+
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  // Fetch cart items and calculate the total count
+  const fetchCartItemCount = async () => {
+    try {
+      const response = await api.get("/api/cart/");
+      // Count distinct items in the cart
+      const distinctItems = new Set(response.data.map((item) => item.item)); // Assuming `item` is the unique identifier for each item
+      setCartItemCount(distinctItems.size); // Set the number of unique items
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
+  };
+
+  // Fetch the cart item count when the component mounts
+  useEffect(() => {
+    fetchCartItemCount();
+  }, []);
 
   useEffect(() => {
     const currentText = placeholderTexts[index];
-
-    if (!currentText) return; // Prevent undefined issues
+    if (!currentText) return;
 
     const updateText = () => {
       if (!isDeleting) {
@@ -29,7 +50,7 @@ const Navbar = () => {
           setPlaceholder(currentText.substring(0, charIndex + 1));
           setCharIndex((prev) => prev + 1);
         } else {
-          setTimeout(() => setIsDeleting(true), 1000); // Pause before deleting
+          setTimeout(() => setIsDeleting(true), 1000);
         }
       } else {
         if (charIndex > 0) {
@@ -37,45 +58,14 @@ const Navbar = () => {
           setCharIndex((prev) => prev - 1);
         } else {
           setIsDeleting(false);
-          setIndex((prev) => (prev + 1) % placeholderTexts.length); // Move to next text
+          setIndex((prev) => (prev + 1) % placeholderTexts.length);
         }
       }
     };
 
-    const interval = setTimeout(updateText, isDeleting ? 50 : 100); // Typing & deleting speed
-
+    const interval = setTimeout(updateText, isDeleting ? 30 : 50);
     return () => clearTimeout(interval);
   }, [charIndex, index, isDeleting]);
-
-  useEffect(() => {
-    const fetchNavbarItems = async () => {
-      try {
-        const { data } = await api.get("/api/navbar/");
-        if (Array.isArray(data)) {
-          const structuredNavbar = processNavbarData(
-            data.filter((item) => item.status === 1)
-          );
-          setNavbarItems(structuredNavbar);
-        }
-      } catch (error) {
-        console.error("Failed to fetch navbar items:", error);
-      }
-    };
-    fetchNavbarItems();
-  }, []);
-
-  const processNavbarData = (items) => {
-    const itemMap = {};
-    items.forEach((item) => (itemMap[item.id] = { ...item, subItems: [] }));
-    return items.reduce((menu, item) => {
-      if (item.dropdown_parent && itemMap[item.dropdown_parent]) {
-        itemMap[item.dropdown_parent].subItems.push(itemMap[item.id]);
-      } else {
-        menu.push(itemMap[item.id]);
-      }
-      return menu;
-    }, []);
-  };
 
   return (
     <div>
@@ -90,12 +80,12 @@ const Navbar = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder={placeholder}
+                placeholder={`Search for ${placeholder}`}
                 style={{ height: "45px" }}
               />
               <span
                 className="input-group-text"
-                style={{ backgroundColor: "#fed91a" }}
+                style={{ backgroundColor: "#ffec00" }}
               >
                 <i
                   className="fa-solid fa-magnifying-glass"
@@ -104,9 +94,48 @@ const Navbar = () => {
               </span>
             </div>
           </div>
-          <div className="d-none d-lg-block position-absolute end-0">
-            <img src={cart} alt="Cart" height={30} className="me-4" />
-            <button className="btn btn-primary">Sign In</button>
+
+          <div className="d-none d-lg-block position-relative">
+            <img
+              src={cart}
+              alt="Cart"
+              height={30}
+              className="me-4"
+              onClick={() => navigate("/cart")}
+              style={{ cursor: "pointer" }}
+            />
+            {/* {cartItemCount > 0 && (
+              <span
+                className="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger p-1"
+                style={{
+                  fontSize: "10px",
+                  width: "18px",
+                  height: "18px",
+                  transform: "translate(50%, -50%)",
+                }}
+              >
+                {cartItemCount}
+              </span>
+            )} */}
+            {localStorage.getItem(ACCESS_TOKEN) ? (
+              // If token exists, show profile icon
+              <img
+                src={profileIcon}
+                alt="Profile"
+                height={30}
+                className="me-4"
+                onClick={() => navigate("/profile")}
+                style={{ cursor: "pointer" }}
+              />
+            ) : (
+              // If token does not exist, show Sign In button
+              <button
+                onClick={() => navigate("/login")}
+                className="btn btn-primary"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -118,46 +147,110 @@ const Navbar = () => {
         />
         <div className="collapse navbar-collapse w-100 mt-4 d-flex justify-content-center">
           <ul className="navbar-nav mx-auto">
-            {navbarItems.map((item) => {
-              const isActive = location.pathname === item.url;
-              return (
-                <li
-                  key={item.id}
-                  className={`nav-item ${
-                    item.subItems.length ? "dropdown" : ""
-                  }`}
-                >
-                  <Link
-                    className={`nav-link ${isActive ? "active" : ""} ${
-                      item.subItems.length ? "dropdown-toggle" : ""
-                    }`}
-                    to={item.url}
-                    role="button"
-                    onMouseEnter={(e) => (e.target.style.color = "#fed91a")}
-                    onMouseLeave={(e) => (e.target.style.color = "")}
-                    data-bs-toggle={item.subItems.length ? "dropdown" : ""}
-                  >
-                    {item.title}
+            <li className="nav-item">
+              <Link className="nav-link active" to="/">
+                Home
+              </Link>
+            </li>
+            <li className="nav-item dropdown">
+              <Link
+                className="nav-link dropdown-toggle"
+                to="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Events
+              </Link>
+              <ul className="dropdown-menu">
+                <li>
+                  <Link className="dropdown-item" to="/events/upcoming">
+                    Upcoming Events
                   </Link>
-                  {item.subItems.length > 0 && (
-                    <ul className="dropdown-menu">
-                      {item.subItems.map((subItem) => (
-                        <li key={subItem.id}>
-                          <Link
-                            className={`dropdown-item ${
-                              location.pathname === subItem.url ? "active" : ""
-                            }`}
-                            to={subItem.url}
-                          >
-                            {subItem.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </li>
-              );
-            })}
+                <li>
+                  <Link className="dropdown-item" to="/events/past">
+                    Past Events
+                  </Link>
+                </li>
+              </ul>
+            </li>
+            <li className="nav-item dropdown">
+              <Link
+                className="nav-link dropdown-toggle"
+                to="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Store Locator
+              </Link>
+              <ul className="dropdown-menu">
+                <li>
+                  <Link className="dropdown-item" to="#">
+                    Coming Soon .....
+                  </Link>
+                </li>
+              </ul>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link active" to="#">
+                Adoption
+              </Link>
+            </li>
+            <li className="nav-item dropdown">
+              <Link
+                className="nav-link dropdown-toggle"
+                to="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Shop by Dog
+              </Link>
+              <ul className="dropdown-menu">
+                <li>
+                  <Link className="dropdown-item" to="#">
+                    Dry food
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="#">
+                    Wet food
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="#">
+                    Treats
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="#">
+                    Accessories
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="#">
+                    Health Suppliment
+                  </Link>
+                </li>
+              </ul>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link active" to="#">
+                Blog
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link active" to="#">
+                Services
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link active" to="#">
+                About us
+              </Link>
+            </li>
           </ul>
         </div>
       </nav>

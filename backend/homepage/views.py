@@ -8,25 +8,29 @@ from .serializers import HeroSerializer, PartnerCompanySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 
 
+class HeroView(APIView):
 
-@api_view(['GET', 'POST', 'PATCH'])
-@permission_classes([AllowAny])
-def hero(request, **kwargs):
-    if request.method == 'GET':
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get(self, request):
         hero = Hero.objects.all()
         serializer = HeroSerializer(hero, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    if request.method == 'POST':
+    def post(self,request):
         serializer = HeroSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    if request.method == 'PATCH':
+    def patch(self, request, **kwargs):
         id = kwargs.get("id")
         data = request.data.copy()
         data['created_by'] = request.user.id
@@ -64,7 +68,7 @@ def deactivate_hero(request, hero_id):
         return Response({"error": "Hero not found!"}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_specific_hero_data(request, hero_id):
     hero = get_object_or_404(Hero, id=hero_id)
     serializer = HeroSerializer(hero)  # Use your serializer directly
@@ -73,35 +77,6 @@ def get_specific_hero_data(request, hero_id):
 
 # Partner Companies
 
-# @api_view(['GET', 'POST', 'PATCH'])
-# def partnercompany(request, **kwargs):
-#     if request.method == 'GET':
-#         permission_classes = [AllowAny]
-#     else:
-#         print("Here")
-#         permission_classes = [IsAuthenticated]
-
-
-#     if request.method == 'GET':
-#         partnercompany = PartnerCompany.objects.all()
-#         serializer = PartnerCompanySerializer(partnercompany, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-#     if request.method == 'POST':
-#         serializer = PartnerCompanySerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-#     if request.method == 'PATCH':
-#         id = kwargs.get("id")
-#         data = request.data.copy()
-#         data['created_by'] = request.user.id
-#         try:
-#             partnercompany = PartnerCompany.objects.get(id=id)
-#         except PartnerCompany.DoesNotExist:
-#             return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class PartnerCompanyView(APIView):
     def get_permissions(self):
