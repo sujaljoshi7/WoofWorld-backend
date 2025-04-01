@@ -5,12 +5,14 @@ import image from "../../assets/images/hero/image1.jpg";
 import api from "../../api";
 import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import { ACCESS_TOKEN } from "../../constants";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const [isLoadingCart, setIsLoadingCart] = useState(false);
   const [allCartItems, setAllCartItems] = useState([]);
   const BASE_URL = import.meta.env.VITE_API_URL;
   const TAX_RATE = 0.18; // 18% tax rate
+  const navigate = useNavigate();
 
   const fetchCart = async () => {
     setIsLoadingCart(true);
@@ -57,15 +59,34 @@ const Cart = () => {
     );
 
     // You may want to update the quantity on the server as well
-    // updateCartItemQuantity(id, updatedQuantity);
+    updateCartItemQuantity(id, updatedQuantity);
   };
 
   // Optionally add a function to update the quantity on the server
-  const updateCartItemQuantity = async (id, quantity) => {
+  const updateCartItemQuantity = async (id, newQuantity) => {
+    const updatedQuantity = Math.max(1, newQuantity);
     try {
-      await api.patch(`/api/cart/${id}/`, { quantity });
+      const response = await api.patch(
+        "api/cart/",
+        {
+          item_id: id,
+          quantity: updatedQuantity,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${ACCESS_TOKEN}`, // Replace with actual token
+          },
+        }
+      );
+
+      setAllCartItems(
+        allCartItems.map((item) =>
+          item.id === id ? { ...item, quantity: response.data.quantity } : item
+        )
+      );
     } catch (error) {
-      console.error("Failed to update quantity on server:", error);
+      console.error("Error updating quantity:", error);
     }
   };
 
@@ -104,6 +125,125 @@ const Cart = () => {
 
   const getTotal = () => {
     return getSubtotal() + getTaxAmount();
+  };
+
+  const generateOrderId = () => {
+    const timestamp = Date.now(); // Current timestamp in milliseconds
+    const randomNumber = Math.floor(Math.random() * 10000); // Random number between 0 and 9999
+    return `ORD${timestamp}${randomNumber}`; // Combine timestamp and random number to form a unique order ID
+  };
+
+  // const handlePayment = async () => {
+  //   try {
+  //     // Request order creation from backend
+  //     const orderId = generateOrderId();
+  //     const response = await api.post("/api/payments/order/", {
+  //       event_id: item.id,
+  //       amount: getTotal(), // Ensure event.price is defined
+  //     });
+
+  //     const { order_id, amount, currency } = response.data;
+
+  //     const options = {
+  //       key: import.meta.env.VITE_RAZORPAY_API_KEY, // Public Razorpay key
+  //       amount,
+  //       currency,
+  //       name: "WoofWorld",
+  //       description: "Order",
+  //       order_id: orderId,
+  //       handler: function (response) {
+  //         // alert(
+  //         //   "Payment Successful! Payment ID: " + response.razorpay_payment_id
+  //         // );
+  //         // TODO: Send payment success details to backend
+  //         try {
+  //           const payment_id = response.razorpay_payment_id;
+  //           const payment_status = 1; // Assuming 1 means success
+
+  //           // Send payment success details to the backend
+  //           const paymentSuccessResponse = await api.post("/api/order/checkout/", {
+  //             payment_id: payment_id,
+  //             payment_status: payment_status,
+  //           });
+
+  //           if (paymentSuccessResponse.status === 201) {
+  //             alert("Payment successful! Order has been placed.");
+  //             // Optionally, navigate to order confirmation page or clear cart
+  //           } else {
+  //             alert("Failed to place order after payment.");
+  //           }
+  //         } catch (error) {
+  //           console.error("Error sending payment details to backend:", error);
+  //           alert("Payment failed, please try again.");
+  //         }
+  //       },
+  //       theme: {
+  //         color: "#3399cc",
+  //       },
+  //     };
+
+  //     const rzp1 = new window.Razorpay(options);
+  //     rzp1.open();
+  //   } catch (error) {
+  //     console.error("Error creating Razorpay order:", error);
+  //   }
+  // };
+
+  const handlePayment = async () => {
+    try {
+      // Request order creation from backend
+      const orderId = generateOrderId();
+      console.log(orderId);
+      const response = await api.post("/api/payments/order/", {
+        event_id: orderId,
+        amount: getTotal(), // Ensure event.price is defined
+      });
+
+      const { order_id, amount, currency } = response.data;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_API_KEY, // Public Razorpay key
+        amount,
+        currency,
+        name: "WoofWorld",
+        description: "Order",
+        order_id,
+        handler: async function (response) {
+          // Make handler async
+          try {
+            const payment_id = response.razorpay_payment_id;
+            const payment_status = 1; // Assuming 1 means success
+
+            // Send payment success details to the backend
+            const paymentSuccessResponse = await api.post("/api/order/", {
+              payment_id: payment_id,
+              payment_status: payment_status,
+              order_id: order_id,
+              total_price: amount / 100,
+            });
+
+            if (paymentSuccessResponse.status === 201) {
+              localStorage.setItem("order_id", order_id);
+              navigate("/orderplaced");
+              // Optionally, navigate to order confirmation page or clear cart
+            } else {
+              alert("Failed to place order after payment.");
+            }
+          } catch (error) {
+            console.error("Error sending payment details to backend:", error);
+            alert("Payment failed, please try again.");
+          }
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } catch (error) {
+      console.error("Error creating Razorpay order:", error);
+    }
   };
 
   useEffect(() => {
@@ -233,7 +373,10 @@ const Cart = () => {
                 </div>
 
                 {allCartItems.length > 0 && (
-                  <button className="btn btn-success w-100 mb-3 mt-3 py-2 fw-bold">
+                  <button
+                    className="btn btn-success w-100 mb-3 mt-3 py-2 fw-bold"
+                    onClick={handlePayment}
+                  >
                     Proceed to Checkout
                   </button>
                 )}

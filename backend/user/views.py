@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework import generics, status
-from .serializers import UserSerializer, CustomTokenObtainPairSerializer
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer, AddressSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -17,6 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from otp.utils import generate_otp, send_otp_email
 from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Address
+from rest_framework.views import APIView
 
 
 def check_email(request, email):
@@ -60,6 +62,109 @@ def get_specific_user_data(request, user_id):
         "last_login": user.last_login,
     }
     return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])  # Ensures the user is logged in
+# def get_logged_in_user_data(request):
+#     user = request.user  # Get the currently authenticated user
+#     data = {
+#         "id": user.id,
+#         "first_name": user.first_name,
+#         "last_name": user.last_name,
+#         "email": user.email,
+#         "last_login": user.last_login,
+        
+#         "member_since": user.date_joined,
+#     }
+#     return Response(data)
+
+def get_logged_in_user_data(request):
+    user = request.user  # Get the currently authenticated user
+
+    # Fetch the single address for the user (if exists)
+    address = Address.objects.filter(user_id=user).first()  
+
+    # Prepare the address data
+    address_data = None
+    if address:
+        address_data = {
+            "name": address.name,
+            "address_line_1": address.address_line_1,
+            "address_line_2": address.address_line_2,
+            "postal_code": address.postal_code,
+            "city": address.city,
+            "state": address.state,
+            "country": address.country,
+            "phone": address.phone,
+            "created_at": address.created_at,
+        }
+
+    data = {
+        "id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "last_login": user.last_login,
+        "member_since": user.date_joined,
+        "address": address_data  # Now it's a single object, not a list
+    }
+    
+    return Response(data)
+
+
+class AddressView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Retrieve the user's address."""
+        address = Address.objects.filter(user=request.user).first()
+        if address:
+            serializer = AddressSerializer(address)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"detail": "No address found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request):
+        print("post")
+        """Create an address only if the user doesn't have one."""
+        user = request.user
+        if Address.objects.filter(user=user).exists():
+            print("Here")
+            return Response({"detail": "User already has an address. Please update it instead."}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = AddressSerializer(data=request.data)
+        print("YEs")
+        if serializer.is_valid():
+            # Use user instead of user_id
+            print("user")
+            serializer.save(user=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # Add this to see validation errors
+            print("Validation errors:", serializer.errors)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request):
+        print("put")
+        """Update the existing address if it exists."""
+        user = request.user
+        
+        # Use user instead of user_id
+        address = Address.objects.filter(user=user).first()
+        
+        if not address:
+            return Response({"detail": "No address found. Please create one first."}, 
+                        status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AddressSerializer(address, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save(user=user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class CreateUserView(generics.CreateAPIView):

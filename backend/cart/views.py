@@ -33,6 +33,22 @@ class CartView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def patch(self, request):
+        item_id = request.data.get('item_id')
+        quantity = request.data.get('quantity')
+        
+        if not item_id or quantity is None:
+            return Response({'error': 'item_id and quantity are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            item = Cart.objects.get(id=item_id, user_id=request.user.id)
+            item.quantity = quantity  # Update quantity
+            item.save()
+            serializer = CartSerializer(item)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Cart.DoesNotExist:
+            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+    
 
     def delete(self, request):
         item_id = request.data.get('item_id')  # Extract from request body
