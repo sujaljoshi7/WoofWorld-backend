@@ -7,6 +7,7 @@ class Order(models.Model):
     total = models.FloatField()
     payment_status = models.IntegerField()
     payment_id = models.CharField(max_length=255, blank=True, null=True)
+    order_status = models.IntegerField(default=1)
     order_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(default=now, editable=False)
 

@@ -87,10 +87,7 @@ const Navbar = () => {
                 className="input-group-text"
                 style={{ backgroundColor: "#ffec00" }}
               >
-                <i
-                  className="fa-solid fa-magnifying-glass"
-                  style={{ color: "#fff" }}
-                ></i>
+                <i className="fa-solid fa-magnifying-glass bg-yellow"></i>
               </span>
             </div>
           </div>
@@ -131,7 +128,7 @@ const Navbar = () => {
               // If token does not exist, show Sign In button
               <button
                 onClick={() => navigate("/login")}
-                className="btn btn-primary"
+                className="btn btn-dark"
               >
                 Sign In
               </button>
@@ -194,7 +191,7 @@ const Navbar = () => {
               </ul>
             </li>
             <li className="nav-item">
-              <Link className="nav-link active" to="#">
+              <Link className="nav-link active" to="/adoption">
                 Adoption
               </Link>
             </li>
@@ -247,7 +244,7 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link active" to="#">
+              <Link className="nav-link active" to="/about">
                 About us
               </Link>
             </li>

@@ -1,25 +1,31 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import dogImage from "/puppy.png"; // Ensure correct path
+// import dogImage from "../assets/images/loading/loading.gif"; // Ensure correct path
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ fadeOut }) {
   const [text, setText] = useState("");
   const loadingText = "Fetching the best treats for your pup...";
 
   useEffect(() => {
     let i = 0;
     const interval = setInterval(() => {
-      setText(loadingText.slice(0, i)); // Properly slice the string
+      setText(loadingText.slice(0, i));
       i++;
 
       if (i > loadingText.length) clearInterval(interval);
-    }, 20); // Slightly slower for a smooth effect
+    }, 20);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen w-screen bg-white text-center relative overflow-hidden">
+    <motion.div
+      className="flex flex-col items-center justify-center h-screen w-screen bg-white text-center relative overflow-hidden"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: fadeOut ? 0 : 1 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       {/* Background Floating Dots Animation */}
       <motion.div
         className="absolute inset-0 w-full h-full"
@@ -48,6 +54,6 @@ export default function LoadingScreen() {
       >
         {text}
       </motion.p>
-    </div>
+    </motion.div>
   );
 }

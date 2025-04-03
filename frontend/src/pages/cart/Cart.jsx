@@ -49,8 +49,8 @@ const Cart = () => {
   };
 
   const updateQuantity = (id, newQuantity) => {
-    // Ensure quantity doesn't go below 1
-    const updatedQuantity = Math.max(1, newQuantity);
+    // Ensure quantity stays between 1 and 10
+    const updatedQuantity = Math.min(10, Math.max(1, newQuantity));
 
     setAllCartItems(
       allCartItems.map((item) =>
@@ -58,7 +58,7 @@ const Cart = () => {
       )
     );
 
-    // You may want to update the quantity on the server as well
+    // Update the quantity on the server
     updateCartItemQuantity(id, updatedQuantity);
   };
 

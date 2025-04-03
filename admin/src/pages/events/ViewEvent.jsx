@@ -123,7 +123,9 @@ const EventDetails = () => {
                     </tr>
                     <tr>
                       <th>Location</th>
-                      <td>{event.location}</td>
+                      <td>
+                        {event.address_line_1}, {event.address_line_2}
+                      </td>
                     </tr>
                     <tr>
                       <th>Price</th>

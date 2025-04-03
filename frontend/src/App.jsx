@@ -11,7 +11,12 @@ import RazorpayCheckout from "./components/payment/razorpay";
 import Cart from "./pages/cart/Cart";
 import OrderConfirmation from "./pages/order/OrderConfirmation";
 import UserProfile from "./pages/profile/Profile";
-
+import EventPass from "./components/event/pass";
+import PastEvents from "./pages/events/PastEvents";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import DogListing from "./pages/adoption/AllDogs";
+import AllDogs from "./pages/adoption/AllDogs";
+import AboutUs from "./pages/aboutus/AboutUs";
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -31,13 +36,31 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTPVerification />} />
         <Route path="/pay" element={<RazorpayCheckout />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/orderplaced" element={<OrderConfirmation />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/events/upcoming" element={<UpcomingEvents />} />
-        <Route path="/events/past" element={<EventDetails />} />
-        <Route path="/events/:id" element={<EventDetails />} />
 
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/pass" element={<EventPass />} />
+        <Route path="/events/upcoming" element={<UpcomingEvents />} />
+        <Route path="/events/past" element={<PastEvents />} />
+        <Route path="/events/:id" element={<EventDetails />} />
+        <Route path="/adoption" element={<AllDogs />} />
+        <Route path="/about" element={<AboutUs />} />
         {/* <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} /> */}

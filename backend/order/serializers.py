@@ -4,7 +4,7 @@ from .models import Order, OrderItems
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['id', 'user_id', 'total', 'payment_status', 'payment_id', 'created_at']
+        fields = ['id', 'user_id', 'total', 'payment_status', 'payment_id', 'created_at', 'order_id', 'order_status']
         read_only_fields = ['id', 'created_at']  # Prevent users from modifying these fields
 
 

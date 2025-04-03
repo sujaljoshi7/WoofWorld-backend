@@ -4,14 +4,28 @@ import man from "../../assets/images/icons/man.png";
 import AddressForm from "../../components/profile/AddressForm";
 import api from "../../api";
 import Navbar from "../../components/common/Navbar";
+import TicketButton from "../../components/event/TicketButton";
+import { QRCodeCanvas } from "qrcode.react";
+import logo from "../../assets/images/logo/logo1.png";
+import LoadingScreen from "../../components/LoadingScreen";
 
 const UserProfile = () => {
+  const navigate = useNavigate();
+  const [qrData, setQrData] = useState("https://example.com/event");
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [user, setUser] = useState([]);
+  const [allOrders, setAllOrders] = useState([]);
+  const [allUpcomingEvents, setAllUpcomingEvents] = useState([]);
+  const [allPastEvents, setAllPastEvents] = useState([]);
+  const [totalOrders, setTotalOrders] = useState([]);
+  const [totalEvents, setTotalEvents] = useState([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+  const [showLoading, setShowLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
+  const BASE_URL = import.meta.env.VITE_API_URL;
   // Mock user data - in a real app, this would come from props or a context
   const userData = {
     name: user.first_name + " " + user.last_name,
@@ -70,56 +84,287 @@ const UserProfile = () => {
     fetchUser();
   }, [id]);
 
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`api/order/`);
+      console.log("API Response:", response.data);
+
+      // Format order data, only including orders with type 1 items
+      const formattedOrders = response.data
+        .map((orderData) => {
+          const order = orderData.order;
+
+          // Filter order items to only count type 1
+          const type1Items = orderData.order_items.filter(
+            (item) => item.type === 1
+          );
+
+          // If no type 1 items, exclude the order
+          if (type1Items.length === 0) return null;
+
+          const totalItems = type1Items.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
+
+          return {
+            id: order.id,
+            date: new Date(order.created_at).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            }),
+            order_id: order.order_id,
+            status: getStatus(order.order_status),
+            statusColor: getStatusColor(order.order_status),
+            totalItems,
+          };
+        })
+        .filter(Boolean); // Remove null values (orders without type 1 items)
+
+      // Count total orders
+      const totalOrders = formattedOrders.length;
+
+      // Extract all order_items where type is 2
+      const type2OrderItems = response.data.flatMap((orderData) =>
+        orderData.order_items.filter((item) => item.type === 2)
+      );
+      console.log("Filtered type2OrderItems:", type2OrderItems);
+
+      if (type2OrderItems.length === 0) {
+        setAllOrders(formattedOrders);
+        setAllUpcomingEvents([]);
+        setAllPastEvents([]);
+        setTotalOrders(totalOrders);
+        setTotalEvents(0);
+        return;
+      }
+
+      // Fetch event details for each unique event ID
+      const eventIds = [...new Set(type2OrderItems.map((item) => item.item))]; // Get unique event IDs
+      const eventResponses = await Promise.all(
+        eventIds.map((id) => api.get(`api/events/${id}/`))
+      );
+
+      // Map event data
+      const eventsData = eventResponses.map((res) => res.data);
+      console.log("Fetched Events Data:", eventsData);
+
+      // Count total events
+      const totalEvents = eventsData.length;
+
+      // Get today's date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize for date-only comparison
+
+      // Map order items to event data
+      const type2OrderItemsWithEvents = type2OrderItems.map((item) => {
+        const event = eventsData.find((event) => event.id === item.item);
+        return event ? { ...item, event } : { ...item, event: null };
+      });
+
+      // Separate upcoming and past events
+      const upcomingEvents = type2OrderItemsWithEvents.filter(
+        (item) => item.event && new Date(item.event.date) >= today
+      );
+      const pastEvents = type2OrderItemsWithEvents.filter(
+        (item) => item.event && new Date(item.event.date) < today
+      );
+
+      console.log("Upcoming Events:", upcomingEvents);
+      console.log("Past Events:", pastEvents);
+
+      // Update state
+      setAllOrders(formattedOrders);
+      setAllUpcomingEvents(upcomingEvents);
+      setAllPastEvents(pastEvents);
+      setTotalOrders(totalOrders);
+      setTotalEvents(totalEvents);
+    } catch (error) {
+      console.error("Error fetching orders or events:", error);
+      if (error.response?.status === 401) {
+        try {
+          const refreshed = await handleTokenRefresh();
+          if (refreshed) {
+            // Retry after refreshing
+            return fetchData(endpoint, filterFn, stateKey);
+          } else {
+            console.error("Token refresh failed.");
+            localStorage.clear();
+            window.location.reload();
+          }
+        } catch (refreshError) {
+          console.error("Error during token refresh:", refreshError);
+          localStorage.clear();
+          window.location.reload();
+        }
+      } else {
+        console.error(`Failed to fetch ${stateKey}:`, error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // const fetchOrders = async () => {
+  //   try {
+  //     const response = await api.get(`api/order/`);
+  //     console.log("API Response:", response.data);
+
+  //     // Format order data
+  //     const formattedOrders = response.data.map((orderData) => {
+  //       const order = orderData.order;
+  //       const totalItems = orderData.order_items.reduce(
+  //         (sum, item) => sum + item.quantity,
+  //         0
+  //       );
+  //       return {
+  //         id: order.id,
+  //         date: new Date(order.created_at).toLocaleDateString("en-US", {
+  //           month: "long",
+  //           day: "numeric",
+  //           year: "numeric",
+  //         }),
+  //         order_id: order.order_id,
+  //         status: getStatus(order.order_status),
+  //         statusColor: getStatusColor(order.order_status),
+  //         totalItems,
+  //       };
+  //     });
+
+  //     // Extract all order_items where type is 2
+  //     const type2OrderItems = response.data.flatMap((orderData) =>
+  //       orderData.order_items.filter((item) => item.type === 2)
+  //     );
+  //     console.log("Filtered type2OrderItems:", type2OrderItems);
+
+  //     if (type2OrderItems.length === 0) {
+  //       setAllOrders(formattedOrders);
+  //       setAllUpcomingEvents([]);
+  //       setAllPastEvents([]);
+  //       return;
+  //     }
+
+  //     // Fetch event details for each unique event ID
+  //     const eventIds = [...new Set(type2OrderItems.map((item) => item.item))]; // Get unique event IDs
+  //     const eventResponses = await Promise.all(
+  //       eventIds.map((id) => api.get(`api/events/${id}/`))
+  //     );
+
+  //     // Map event data
+  //     const eventsData = eventResponses.map((res) => res.data);
+  //     console.log("Fetched Events Data:", eventsData);
+
+  //     // Get today's date
+  //     const today = new Date();
+  //     today.setHours(0, 0, 0, 0); // Normalize for date-only comparison
+
+  //     // Map order items to event data
+  //     const type2OrderItemsWithEvents = type2OrderItems.map((item) => {
+  //       const event = eventsData.find((event) => event.id === item.item);
+  //       return event ? { ...item, event } : { ...item, event: null };
+  //     });
+
+  //     // Separate upcoming and past events
+  //     const upcomingEvents = type2OrderItemsWithEvents.filter(
+  //       (item) => item.event && new Date(item.event.date) >= today
+  //     );
+  //     const pastEvents = type2OrderItemsWithEvents.filter(
+  //       (item) => item.event && new Date(item.event.date) < today
+  //     );
+
+  //     console.log("Upcoming Events:", upcomingEvents);
+  //     console.log("Past Events:", pastEvents);
+
+  //     // Update state
+  //     setAllOrders(formattedOrders);
+  //     setAllUpcomingEvents(upcomingEvents);
+  //     setAllPastEvents(pastEvents);
+  //   } catch (error) {
+  //     console.error("Error fetching orders or events:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Helper functions to get status text and color
+  const getStatus = (order_status) => {
+    switch (order_status) {
+      case 1:
+        return "Placed";
+      case 2:
+        return "Confirmed";
+      case 3:
+        return "Packed";
+      case 4:
+        return "In Transit";
+      case 5:
+        return "Out for delivery";
+      case 6:
+        return "Delivered";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const getStatusColor = (order_status) => {
+    switch (order_status) {
+      case 1: // Placed
+        return "#3498db"; // Blue
+      case 2: // Confirmed
+        return "#9b59b6"; // Purple
+      case 3: // Packed
+        return "#f39c12"; // Orange
+      case 4: // In Transit
+        return "#e67e22"; // Dark Orange
+      case 5: // Out for delivery
+        return "#e74c3c"; // Red
+      case 6: // Delivered
+        return "#2ecc71"; // Green
+      default:
+        return "#95a5a6"; // Gray for Unknown
+    }
+  };
+
+  // Function to open modal from OrdersTable
+
   const handleAddressSubmit = (addressData) => {
-    // In a real app, you would send this data to your backend
-    console.log("Address submitted:", addressData);
+    //   // In a real app, you would send this data to your backend
+    //   console.log("Address submitted:", addressData);
 
     // Hide the form and reset the editing state
     setShowAddressForm(false);
     setEditingAddress(null);
+    window.location.reload();
 
-    // Show success message (you can implement this as needed)
-    alert("Address saved successfully!");
+    //   // Show success message (you can implement this as needed)
+    //   // alert("Address saved successfully!");
   };
 
-  const orders = [
-    {
-      id: "ORD-12345",
-      date: "March 1, 2025",
-      status: "Shipped",
-      statusColor: "#2ecc71",
-    },
-    {
-      id: "ORD-12346",
-      date: "March 15, 2025",
-      status: "Delivered",
-      statusColor: "#3498db",
-    },
-    {
-      id: "ORD-12347",
-      date: "March 25, 2025",
-      status: "Processing",
-      statusColor: "#f39c12",
-    },
-  ];
+  const eventData = {
+    eventName: "Dog Lovers Meetup",
+    date: "April 10, 2025",
+    time: "4:00 PM - 7:00 PM",
+    location: "Central Park, NYC",
+    qrCodeUrl:
+      "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://woofworld.com/event",
+  };
 
-  const eventTickets = [
-    {
-      id: 1,
-      name: "Annual Tech Conference",
-      date: "April 10, 2025",
-      location: "Convention Center, Downtown",
-      image: "path/to/image.jpg",
-    },
-    {
-      id: 2,
-      name: "Music Festival 2025",
-      date: "April 15, 2025",
-      location: "Central Park Amphitheater",
-      image: "path/to/image2.jpg",
-    },
-  ];
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => {
+        setFadeOut(true);
+        setTimeout(() => setShowLoading(false), 500); // Wait for fade-out to finish
+      }, 3000);
+    }
+  }, [loading]);
 
+  if (showLoading) return <LoadingScreen fadeOut={fadeOut} />;
   return (
     <div>
       <div className="main-content">
@@ -146,11 +391,6 @@ const UserProfile = () => {
                       width="100"
                       height="100"
                     />
-                    <span
-                      className="position-absolute bottom-0 end-0 bg-success rounded-circle p-1 border border-white"
-                      style={{ width: "16px", height: "16px" }}
-                      title="Online"
-                    ></span>
                   </div>
                   <div className="ms-3">
                     <h4 className="mb-1 fw-bold">{userData.name}</h4>
@@ -173,7 +413,7 @@ const UserProfile = () => {
                       >
                         <div className="text-center">
                           <i className="fas fa-ticket-alt fs-3 mb-2 text-primary"></i>
-                          <h5 className="mb-0">{userData.totalEvents}</h5>
+                          <h5 className="mb-0">{totalEvents}</h5>
                           <p className="mb-0 small text-muted">Total Events</p>
                         </div>
                       </div>
@@ -185,7 +425,7 @@ const UserProfile = () => {
                       >
                         <div className="text-center">
                           <i className="fas fa-shopping-bag fs-3 mb-2 text-primary"></i>
-                          <h5 className="mb-0">{userData.totalOrders}</h5>
+                          <h5 className="mb-0">{totalOrders}</h5>
                           <p className="mb-0 small text-muted">Total Orders</p>
                         </div>
                       </div>
@@ -197,42 +437,22 @@ const UserProfile = () => {
 
             <div className="card-body p-0">
               {/* Edit Profile Button */}
-              <div className="px-4 py-3 bg-light d-flex justify-content-between align-items-center border-bottom">
-                <button className="btn btn-primary rounded-pill">
-                  <i className="fas fa-pencil-alt me-2"></i>
-                  Edit Profile
+              <div className="px-4 py-3 bg-light d-flex justify-content-start align-items-center border-bottom">
+                <button
+                  className="btn btn-warning rounded-pill me-2"
+                  onClick={() => {
+                    localStorage.clear(); // Clears all local storage data
+                    window.location.href = "/"; // Redirects to the homepage
+                  }}
+                >
+                  <i className="fas fa-trash-alt me-2"></i>
+                  Logout
                 </button>
-                <div className="dropdown">
-                  <button
-                    className="btn btn-light rounded-circle"
-                    type="button"
-                    id="dropdownMenuButton"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="fas fa-ellipsis-v"></i>
-                  </button>
-                  <ul
-                    className="dropdown-menu"
-                    aria-labelledby="dropdownMenuButton"
-                  >
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <i className="fas fa-download me-2"></i>Download Data
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <i className="fas fa-trash me-2"></i>Delete Account
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <i className="fas fa-sign-out-alt me-2"></i>Log Out
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+
+                <button className="btn btn-danger rounded-pill">
+                  <i className="fas fa-trash-alt me-2"></i>
+                  Delete Account
+                </button>
               </div>
 
               {/* Navigation Tabs */}
@@ -378,7 +598,7 @@ const UserProfile = () => {
                                   className="btn btn-outline-primary me-2"
                                   onClick={() => {
                                     setEditingAddress({
-                                      name: userData.name,
+                                      name: userData.address.name,
                                       addressLine1:
                                         userData.address.addressLine1,
                                       addressLine2:
@@ -435,18 +655,22 @@ const UserProfile = () => {
                       <table className="table table-hover">
                         <thead className="bg-light">
                           <tr>
-                            <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Status</th>
+                            <th className="px-4 py-2 text-left">Order ID</th>
+                            <th className="px-4 py-2 text-left">Date</th>
+                            <th className="px-4 py-2 text-left">Total Items</th>
+                            <th className="px-4 py-2 text-left">Status</th>
                             <th className="text-end">Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {orders.map((order) => (
+                          {allOrders.map((order) => (
                             <tr key={order.id}>
-                              <td className="fw-bold">{order.id}</td>
-                              <td>{order.date}</td>
-                              <td>
+                              <td className="fw-bold px-4 py-2">
+                                {order.order_id}
+                              </td>
+                              <td className="px-4 py-2">{order.date}</td>
+                              <td className="px-4 py-2">{order.totalItems}</td>
+                              <td className="px-4 py-2">
                                 <span
                                   className="badge rounded-pill px-3 py-2"
                                   style={{
@@ -477,42 +701,83 @@ const UserProfile = () => {
                       <i className="fas fa-ticket-alt me-2"></i>Event Tickets
                     </h5>
                     <div className="row g-4">
-                      {eventTickets.map((ticket) => (
-                        <div className="col-lg-4 col-md-6" key={ticket.id}>
-                          <div className="card h-100 border-0 shadow-sm overflow-hidden">
-                            <div className="position-relative">
-                              <img
-                                src={ticket.image || "/api/placeholder/400/200"}
-                                className="card-img-top"
-                                alt={ticket.name}
-                                style={{ height: "180px", objectFit: "cover" }}
-                              />
-                              <div className="position-absolute top-0 end-0 m-2">
-                                <span className="badge bg-primary rounded-pill px-3 py-2">
-                                  Active
-                                </span>
+                      {allUpcomingEvents.length > 0 ? (
+                        allUpcomingEvents.map((ticket) => (
+                          <div className="col-lg-4 col-md-6" key={ticket.id}>
+                            <div className="card h-100 border-0 shadow-sm overflow-hidden">
+                              <div className="position-relative">
+                                <img
+                                  src={`${BASE_URL}${ticket.event?.image}`}
+                                  className="card-img-top"
+                                  alt={ticket.event.name}
+                                  style={{
+                                    height: "180px",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                                <div className="position-absolute top-0 end-0 m-2">
+                                  <span className="badge bg-primary rounded-pill px-3 py-2">
+                                    Upcoming
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                            <div className="card-body">
-                              <h5 className="card-title mb-3">{ticket.name}</h5>
-                              <div className="mb-2 d-flex align-items-center">
-                                <i className="fas fa-calendar-day text-primary me-2"></i>
-                                <span>{ticket.date}</span>
-                              </div>
-                              <div className="mb-3 d-flex align-items-center">
-                                <i className="fas fa-map-marker-alt text-danger me-2"></i>
-                                <span>{ticket.location}</span>
-                              </div>
-                              <div className="d-grid">
-                                <button className="btn btn-primary rounded-pill">
-                                  <i className="fas fa-qrcode me-2"></i>View
-                                  Ticket
-                                </button>
+                              <div className="card-body">
+                                <h5 className="card-title mb-3">
+                                  {ticket.event.name}
+                                </h5>
+                                <div className="mb-2 d-flex align-items-center">
+                                  <i className="fas fa-calendar-day text-primary me-2"></i>
+                                  <span>
+                                    {new Date(
+                                      ticket.event.date
+                                    ).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "long",
+                                      year: "numeric",
+                                    })}{" "}
+                                    at {ticket.event.time}
+                                  </span>
+                                </div>
+                                <div className="mb-3 d-flex align-items-center">
+                                  <i className="fas fa-map-marker-alt text-danger me-2"></i>
+                                  <span>{ticket.event.address_line_1}</span>
+                                </div>
+                                <div className="d-grid">
+                                  {/* <button className="btn btn-primary rounded-pill">
+                                    <i className="fas fa-qrcode me-2"></i>View
+                                    Ticket
+                                  </button> */}
+                                  <TicketButton
+                                    eventData={{
+                                      attendeeName: userData.first_name,
+                                      eventName: ticket.event.name,
+                                      date: `${new Date(
+                                        ticket.event.date
+                                      ).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "long",
+                                        year: "numeric",
+                                      })} at ${ticket.event.time}`,
+                                      location:
+                                        ticket.event.address_line_1 +
+                                          " " +
+                                          ticket.event.address_line_2 || "",
+                                      qrCodeUrl:
+                                        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://woofworld.com/event",
+                                      quantity: ticket.quantity,
+                                      logoUrl: `${BASE_URL}/media/logo/logo.png`,
+                                      mapsUrl: ticket.event.maps_link,
+                                    }}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <p>No upcoming events found.</p>
+                      )}
+
                       <div className="col-lg-4 col-md-6">
                         <div
                           className="card h-100 border-0 shadow-sm border-dashed d-flex align-items-center justify-content-center"
@@ -528,7 +793,13 @@ const UserProfile = () => {
                               style={{ fontSize: "48px" }}
                             ></i>
                             <h5 className="text-muted">Browse More Events</h5>
-                            <button className="btn btn-outline-primary mt-3 rounded-pill">
+                            <button
+                              className="btn btn-outline-primary mt-3 rounded-pill"
+                              onClick={() => {
+                                navigate("/events/upcoming");
+                                window.scrollTo(0, 0);
+                              }}
+                            >
                               Explore Events
                             </button>
                           </div>

@@ -1,6 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
-from datetime import datetime
 from django.core.exceptions import ValidationError
 
 def validate_image_size(value):

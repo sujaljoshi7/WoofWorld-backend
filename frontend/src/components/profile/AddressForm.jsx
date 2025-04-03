@@ -5,6 +5,7 @@ const AddressForm = ({ onSubmit, onCancel, existingAddress = null }) => {
   const BASE_URL = import.meta.env.VITE_API_URL;
 
   // Initialize form state with existing address data or empty values
+  console.log(existingAddress);
   const [formData, setFormData] = useState({
     name: existingAddress?.name || "",
     addressLine1: existingAddress?.addressLine1 || "",

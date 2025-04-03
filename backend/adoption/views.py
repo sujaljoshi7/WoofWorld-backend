@@ -110,7 +110,7 @@ def deactivate_dog(request, dog_id):
         return Response({"error": "Dog not found!"}, status=status.HTTP_404_NOT_FOUND)
     
 class GetSpecificDogData(APIView):
-    def get(request, dog_id):
+    def get(self,request, dog_id):
         dogs = get_object_or_404(Dogs.objects.select_related("breed"), id=dog_id)
         serializer = DogsSerializer(dogs)  # Use your serializer directly
         return Response(serializer.data, status=status.HTTP_200_OK)
