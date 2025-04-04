@@ -317,7 +317,7 @@ const AllDogs = () => {
                   <i className="bi bi-filter me-2"></i>Filters
                 </h5>
                 <button
-                  className="btn btn-sm text-primary p-0"
+                  className="btn btn-sm btn-outline-dark"
                   onClick={clearFilters}
                 >
                   Clear all

@@ -184,7 +184,7 @@ const Navbar = () => {
               </Link>
               <ul className="dropdown-menu">
                 <li>
-                  <Link className="dropdown-item" to="#">
+                  <Link className="dropdown-item" to="/storelocator">
                     Coming Soon .....
                   </Link>
                 </li>
@@ -195,7 +195,12 @@ const Navbar = () => {
                 Adoption
               </Link>
             </li>
-            <li className="nav-item dropdown">
+            <li className="nav-item">
+              <Link className="nav-link active" to="/shop">
+                Shop
+              </Link>
+            </li>
+            {/* <li className="nav-item dropdown">
               <Link
                 className="nav-link dropdown-toggle"
                 to="#"
@@ -207,39 +212,39 @@ const Navbar = () => {
               </Link>
               <ul className="dropdown-menu">
                 <li>
-                  <Link className="dropdown-item" to="#">
+                  <Link className="dropdown-item" to="/dog">
                     Dry food
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="#">
+                  <Link className="dropdown-item" to="/dog">
                     Wet food
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="#">
+                  <Link className="dropdown-item" to="/dog">
                     Treats
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="#">
+                  <Link className="dropdown-item" to="/dog">
                     Accessories
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="#">
+                  <Link className="dropdown-item" to="/dog">
                     Health Suppliment
                   </Link>
                 </li>
               </ul>
-            </li>
+            </li> */}
             <li className="nav-item">
-              <Link className="nav-link active" to="#">
-                Blog
+              <Link className="nav-link active" to="/blogs">
+                Blogs
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link active" to="#">
+              <Link className="nav-link active" to="/dog">
                 Services
               </Link>
             </li>

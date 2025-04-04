@@ -30,6 +30,8 @@ function Home() {
     adoptions: true,
   });
 
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const carouselRef = useRef(null);
   const scrollRef = useRef(null);
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -135,6 +137,31 @@ function Home() {
     );
   }, []);
 
+  useEffect(() => {
+    // Auto-scroll carousel
+    const interval = setInterval(() => {
+      if (data.heroes.length > 0) {
+        setCurrentSlide((prev) => (prev + 1) % data.heroes.length);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [data.heroes.length]);
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  const goToPrevSlide = () => {
+    setCurrentSlide(
+      (prev) => (prev - 1 + data.heroes.length) % data.heroes.length
+    );
+  };
+
+  const goToNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % data.heroes.length);
+  };
+
   // Setup intersection observer for animation
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -175,30 +202,46 @@ function Home() {
   };
 
   // Extracted counter component to improve readability
-  const Counter = ({ title, target }) => {
+  const Counter = ({ title, target, icon }) => {
     const [count, setCount] = useState(0);
+    const hasCounted = useRef(false);
+    const counterInterval = useRef(null);
 
     useEffect(() => {
+      // Only run if we haven't counted yet
+      if (hasCounted.current) return;
+
       let start = 0;
       const duration = 2000;
       const increment = target / (duration / 50);
 
-      const counterInterval = setInterval(() => {
+      counterInterval.current = setInterval(() => {
         start += increment;
         if (start >= target) {
           start = target;
-          clearInterval(counterInterval);
+          clearInterval(counterInterval.current);
+          counterInterval.current = null;
+          hasCounted.current = true;
         }
         setCount(Math.ceil(start));
       }, 50);
 
-      return () => clearInterval(counterInterval);
-    }, [target]);
+      // Cleanup function
+      return () => {
+        if (counterInterval.current) {
+          clearInterval(counterInterval.current);
+          counterInterval.current = null;
+        }
+      };
+    }, []); // Empty dependency array to ensure it only runs once
 
     return (
-      <div className="flex flex-col items-center bg-white shadow-md p-4 rounded-lg w-1/4">
-        <h2 className="text-3xl font-bold text-blue-600">{count}+</h2>
-        <p className="text-gray-600">{title}</p>
+      <div className="counter-card">
+        <div className="counter-icon">{icon}</div>
+        <div className="counter-content">
+          <h2 className="counter-number">{count}+</h2>
+          <p className="counter-title">{title}</p>
+        </div>
       </div>
     );
   };
@@ -215,24 +258,31 @@ function Home() {
 
         {/* Hero Section */}
         <section className="hero">
-          <div
-            id="carouselExampleAutoplaying"
-            className="carousel slide"
-            data-bs-ride="carousel"
-            data-bs-interval="5000"
-          >
+          <div className="carousel" ref={carouselRef}>
             <div className="carousel-inner">
               {data.heroes.length > 0 ? (
                 data.heroes.map((hero, index) => (
                   <div
                     key={hero.id}
-                    className={`carousel-item ${index === 0 ? "active" : ""}`}
+                    className={`carousel-item ${
+                      index === currentSlide ? "active" : ""
+                    }`}
+                    style={{
+                      transform: `translateX(${(index - currentSlide) * 100}%)`,
+                      transition: "transform 0.5s ease-in-out",
+                      position: "absolute",
+                      width: "100%",
+                      height: "100%",
+                    }}
                   >
                     <div className="hero-content">
                       <div className="hero-text-overlay container">
                         <h1 className="hero-text-header">{hero.headline}</h1>
                         <p className="hero-text-body">{hero.subtext}</p>
-                        <button className="btn hero-btn btn-dark">
+                        <button
+                          className="btn hero-btn btn-dark"
+                          onClick={() => navigate(hero.url)}
+                        >
                           {hero.cta}
                         </button>
                       </div>
@@ -241,7 +291,6 @@ function Home() {
                         src={`${BASE_URL}${hero.image}`}
                         alt={`Hero ${index + 1}`}
                         className="hero-image"
-                        style={{ objectFit: "cover" }}
                       />
                     </div>
                   </div>
@@ -254,8 +303,7 @@ function Home() {
             <button
               className="carousel-control-prev"
               type="button"
-              data-bs-target="#carouselExampleAutoplaying"
-              data-bs-slide="prev"
+              onClick={goToPrevSlide}
             >
               <span
                 className="carousel-control-prev-icon"
@@ -266,8 +314,7 @@ function Home() {
             <button
               className="carousel-control-next"
               type="button"
-              data-bs-target="#carouselExampleAutoplaying"
-              data-bs-slide="next"
+              onClick={goToNextSlide}
             >
               <span
                 className="carousel-control-next-icon"
@@ -305,17 +352,90 @@ function Home() {
         </section>
 
         {/* Counters Section */}
-        <section>
-          <div ref={sectionRef} className="counter-container text-center">
-            <Counter title="Total Events" target={staticData.totalEvents} />
-            <Counter title="Total Services" target={staticData.totalServices} />
-            <Counter title="Happy Clients" target={staticData.happyClients} />
-            <Counter title="Adopted Dogs" target={staticData.adoptedDogs} />
+        <section className="stats-section">
+          <div className="container">
+            <div className="stats-grid">
+              <Counter
+                title="Happy Clients"
+                target={staticData.happyClients}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                }
+              />
+              <Counter
+                title="Adopted Dogs"
+                target={staticData.adoptedDogs}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10 5.172C10 3.782 8.884 2.667 7.495 2.667S4.99 3.782 4.99 5.172c0 1.39 1.116 2.505 2.505 2.505S10 6.562 10 5.172z"></path>
+                    <path d="M16.5 8.5c0 1.933-1.567 3.5-3.5 3.5s-3.5-1.567-3.5-3.5"></path>
+                    <path d="M9.5 14.5c-2.5 0-4.5 2-4.5 4.5v1.5h13v-1.5c0-2.5-2-4.5-4.5-4.5z"></path>
+                    <path d="M16.5 14.5c-2.5 0-4.5 2-4.5 4.5v1.5h13v-1.5c0-2.5-2-4.5-4.5-4.5z"></path>
+                  </svg>
+                }
+              />
+              <Counter
+                title="Total Events"
+                target={staticData.totalEvents}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                }
+              />
+            </div>
           </div>
         </section>
 
         <style>
           {`
+
+          
             .scrolling-wrapper {
               width: 100%;
               overflow: hidden;

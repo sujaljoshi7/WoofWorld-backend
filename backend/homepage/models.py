@@ -11,6 +11,7 @@ class Hero(models.Model):
     headline = models.CharField(max_length=100)
     subtext = models.CharField(max_length=201)
     cta = models.CharField(max_length=50)
+    url = models.CharField(max_length=100, default="")
     status = models.IntegerField()
 
 class PartnerCompany(models.Model):

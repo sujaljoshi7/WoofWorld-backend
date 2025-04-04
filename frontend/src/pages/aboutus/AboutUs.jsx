@@ -495,7 +495,11 @@ const AboutUs = () => {
                 <Link to="/shop" className="btn btn-outline-dark btn-lg px-4">
                   Shop Products
                 </Link>
-                <Link to="/blog" className="btn btn-outline-dark btn-lg px-4">
+                <Link
+                  to="/blogs"
+                  onClick={() => window.scrollTo(0, 0)}
+                  className="btn btn-outline-dark btn-lg px-4"
+                >
                   Read Our Blog
                 </Link>
               </div>

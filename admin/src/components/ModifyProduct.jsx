@@ -22,6 +22,7 @@ const ModifyProduct = ({ method }) => {
   const [productStatus, setProductStatus] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const [company, setCompany] = useState([]);
   const [productImage, setProductImage] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState("");
   const [breeds, setBreeds] = useState([]);
@@ -76,6 +77,7 @@ const ModifyProduct = ({ method }) => {
       setProductDescription(data.description);
       setSelectedCategory(data.category.id);
       setProductPrice(data.price);
+      setCompany(data.company);
       setSelectedBreed(data.breeds.id);
       setProductAge(data.age);
       setPreviewImage(
@@ -112,6 +114,7 @@ const ModifyProduct = ({ method }) => {
     formData.append("age", productAge);
     formData.append("price", productPrice);
     formData.append("breed", selectedBreed);
+    formData.append("company", company);
     formData.append("status", 1);
     formData.append("product_category_id", selectedCategory);
     if (productImage) {
@@ -314,6 +317,39 @@ const ModifyProduct = ({ method }) => {
                         </option>
                         <option value={"All Age"}>For All Age</option>
                       </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-mg-12">
+                    <div className={"col-12 mb-4"}>
+                      <label className="form-label" htmlFor="type">
+                        Company
+                      </label>
+                      <div className="mb-6">
+                        <select
+                          id="type"
+                          className="form-select"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          required
+                        >
+                          <option value="">-- Select Company --</option>
+                          <option value={"Royal Canin"}>Royal Canin</option>
+                          <option value={"Drools"}>Drools</option>
+                          <option value={"Himalaya"}>Himalaya</option>
+                          <option value={"Snackers"}>Snackers</option>
+                          <option value={"JerHigh"}>JerHigh</option>
+                          <option value={"Pedigree"}>Pedigree</option>
+                          <option value={"BarkButler"}>BarkButler</option>
+                          <option value={"DogaHolic"}>DogaHolic</option>
+                          <option value={"FirstBark"}>FirstBark</option>
+                          <option value={"Zeedog"}>Zeedog</option>
+                          <option value={"TropiClean"}>TropiClean</option>
+                          <option value={"PurePet"}>PurePet</option>
+                          <option value={"Rena"}>Rena</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -21,6 +21,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     description = models.TextField()
     price = models.IntegerField()
+    company = models.CharField(max_length=255, default="")
     age = models.CharField(max_length=100, default="")
     image = models.ImageField(upload_to='products/', validators=[validate_image_size])
     status = models.IntegerField()

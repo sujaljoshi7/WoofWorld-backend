@@ -52,7 +52,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="text-dark py-5" style={{ backgroundColor: "#ffec00" }}>
+    <footer className="text-dark py-3" style={{ backgroundColor: "#ffec00" }}>
       <div className="container">
         <div className="row">
           {/* Left Section (30%) - Branding */}
@@ -144,7 +144,7 @@ const Footer = () => {
 
               {/* Quick Links Section */}
               <div className="col-md-12">
-                <h3 className="mt-5 text-center">About Company</h3>
+                <h3 className="mt-5 text-center">Quick Links</h3>
                 <hr
                   style={{
                     height: "2px",
@@ -153,55 +153,119 @@ const Footer = () => {
                     width: "100%",
                   }}
                 />
-                <p className="text-justify" style={{ textAlign: "justify" }}>
-                  Welcome to <b>WoofWorld</b>, your one-stop destination for
-                  everything your furry friend needs! We offer{" "}
-                  <b>
-                    premium dog food, accessories, toys, apparel, and training
-                    gear
-                  </b>
-                  , along with{" "}
-                  <b>daycare, walking, spa, grooming, and events</b>. Our
-                  services ensure your pup stays happy, active, and pampered. We
-                  also provide{" "}
-                  <b>
-                    cozy dog couches, food accessories, training equipment,
-                    treats, and chews
-                  </b>{" "}
-                  to keep tails wagging. At WoofWorld, we believe every dog
-                  deserves the best care, comfort, and fun. Whether you're
-                  shopping for essentials or indulging your pet, we’re here for
-                  you. <br />
-                  <b>🐶 WoofWorld – Because Your Dog Deserves the Best! 🐶</b>
-                </p>
-                {/* <h5>Quick Links</h5>
-                <ul className="list-unstyled mt-2">
-                  <li>
-                    <a href="#" className="text-black text-decoration-none">
-                      About Us
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-black text-decoration-none">
-                      Services
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-black text-decoration-none">
-                      Adoption
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-black text-decoration-none">
-                      Events
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-black text-decoration-none">
-                      FAQs
-                    </a>
-                  </li>
-                </ul> */}
+                <div className="row">
+                  <div className="col-md-4">
+                    <h5>Services</h5>
+                    <ul className="list-unstyled mt-2">
+                      <li>
+                        <a
+                          href="/services"
+                          className="text-black text-decoration-none"
+                        >
+                          Grooming
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/services"
+                          className="text-black text-decoration-none"
+                        >
+                          Training
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/services"
+                          className="text-black text-decoration-none"
+                        >
+                          Boarding
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/services"
+                          className="text-black text-decoration-none"
+                        >
+                          Daycare
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="col-md-4">
+                    <h5>Products</h5>
+                    <ul className="list-unstyled mt-2">
+                      <li>
+                        <a
+                          href="/products"
+                          className="text-black text-decoration-none"
+                        >
+                          Food & Treats
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/products"
+                          className="text-black text-decoration-none"
+                        >
+                          Accessories
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/products"
+                          className="text-black text-decoration-none"
+                        >
+                          Toys
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/products"
+                          className="text-black text-decoration-none"
+                        >
+                          Apparel
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="col-md-4">
+                    <h5>Company</h5>
+                    <ul className="list-unstyled mt-2">
+                      <li>
+                        <a
+                          href="/about"
+                          className="text-black text-decoration-none"
+                        >
+                          About Us
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/contact"
+                          className="text-black text-decoration-none"
+                        >
+                          Contact Us
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/faq"
+                          className="text-black text-decoration-none"
+                        >
+                          FAQs
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/privacy"
+                          className="text-black text-decoration-none"
+                        >
+                          Privacy Policy
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

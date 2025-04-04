@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     borderColor: "#f0fdf4",
   },
   termsSection: {
-    marginTop: 25,
+    marginTop: 50,
   },
   termsContainer: {
     padding: 20,

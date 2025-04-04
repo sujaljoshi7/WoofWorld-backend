@@ -17,6 +17,12 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import DogListing from "./pages/adoption/AllDogs";
 import AllDogs from "./pages/adoption/AllDogs";
 import AboutUs from "./pages/aboutus/AboutUs";
+import Blogs from "./pages/blogs/Blogs";
+import ComingSoon from "./pages/coming-soon/ComingSoon";
+import Shop from "./pages/shop/Shop";
+import BlogDetail from "./pages/blogs/BlogDetail";
+import ProductDetail from "./pages/shop/ProductDetail";
+
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -36,6 +42,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTPVerification />} />
         <Route path="/pay" element={<RazorpayCheckout />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<BlogDetail />} />
         <Route
           path="/cart"
           element={
@@ -60,11 +68,13 @@ function App() {
         <Route path="/events/past" element={<PastEvents />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/adoption" element={<AllDogs />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/shop/product/:id" element={<ProductDetail />} />
         <Route path="/about" element={<AboutUs />} />
         {/* <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} /> */}
-        <Route path="*" element={<NotFound />}></Route>
+        <Route path="*" element={<ComingSoon />}></Route>
       </Routes>
     </BrowserRouter>
   );
