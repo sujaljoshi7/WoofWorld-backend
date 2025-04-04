@@ -23,6 +23,7 @@ class Product(models.Model):
     price = models.IntegerField()
     company = models.CharField(max_length=255, default="")
     age = models.CharField(max_length=100, default="")
+    weight = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='products/', validators=[validate_image_size])
     status = models.IntegerField()
     show_on_homepage = models.BooleanField(default=False)
