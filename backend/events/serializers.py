@@ -30,7 +30,7 @@ class EventSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         category_instance = validated_data.pop("event_category_id", None)  # Use correct field name
         if category_instance:
-            validated_data["product_category_id"] = category_instance
+            validated_data["event_category_id"] = category_instance
         validated_data["created_by"] = request.user  # Ensure created_by is set
         return super().create(validated_data)
 
