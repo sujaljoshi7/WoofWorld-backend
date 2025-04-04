@@ -14,9 +14,9 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
+import dj_database_url
 
 load_dotenv()
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,12 +32,15 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f*fs(cn0&tfks(5xz!gt_84l*t&-uoiqmc#*h@q-1e02(f$!yi'
+# SECRET_KEY = 'django-insecure-f*fs(cn0&tfks(5xz!gt_84l*t&-uoiqmc#*h@q-1e02(f$!yi'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = os.environ.get("DEBUG","False").lower() == "true"
 
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -125,10 +128,18 @@ DATABASES = {
         'PASSWORD': 'Sujal@8194',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
-         'OPTIONS': {
+            'OPTIONS': {
             'charset': 'utf8mb4',  # Add this line
         },
-    }
+     }
+ }
+
+# postgresql://woofworld_user:WjeU3enY3DGWyO2Sp1OBL13LbVhy4g5j@dpg-cvnu8149c44c73fgmuug-a.oregon-postgres.render.com/woofworld
+database_url = os.environ.get("DATABASE_URL")
+DATABASES = {
+    'default': dj_database_url.config(
+        default=(database_url)
+    )
 }
 
 
