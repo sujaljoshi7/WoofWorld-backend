@@ -39,6 +39,7 @@ const ProductDetails = () => {
       try {
         const response = await api.get(`/api/products/${id}/`);
         setEvent(response.data);
+        console.log(response.data);
       } catch (err) {
         setError("Failed to fetch event details");
       } finally {
@@ -66,6 +67,7 @@ const ProductDetails = () => {
             </div>
           ) : event ? (
             <div className="card bg-dark text-light shadow-lg p-4 rounded">
+              {console.log(`${BASE_URL}${event.image}`)}
               {event.image && (
                 <img
                   src={`${BASE_URL}${event.image}`}
