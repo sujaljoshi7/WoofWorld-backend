@@ -20,8 +20,17 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dztxbvyk5',
+    'API_KEY': '529884246122424',
+    'API_SECRET': 'Ik66pAn8RKZRORsW6gC_Vl4BUYQ',
+}
+
 
 # Increase file upload size limit
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
@@ -83,6 +92,9 @@ INSTALLED_APPS = [
     'order',
     'rest_framework',
     'corsheaders',
+    'cloudinary',
+    'cloudinary_storage',
+    # 'django.contrib.staticfiles', 
 ]
 
 MIDDLEWARE = [

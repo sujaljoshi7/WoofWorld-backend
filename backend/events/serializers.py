@@ -19,8 +19,9 @@ class EventCategorySerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only = True)
     category = EventCategorySerializer(source="event_category_id", read_only=True)
-    product_category_id = serializers.PrimaryKeyRelatedField(
+    event_category_id = serializers.PrimaryKeyRelatedField(
     queryset=Category.objects.all(), write_only=True)
+
 
     class Meta:
         model = Event
