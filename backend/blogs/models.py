@@ -18,7 +18,7 @@ class Blog(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_author')
     title = models.CharField(max_length=100, default="")
     content = models.TextField()
-    image = models.ImageField(upload_to='blogs/', default="", validators=[validate_image_size])
+    image = models.URLField(max_length=500)
     status = models.IntegerField()
     created_at = models.DateTimeField(default=datetime.now(), editable=False)
 

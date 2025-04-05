@@ -25,7 +25,7 @@ class Event(models.Model):
     address_line_2 = models.CharField(max_length=100, null=True, blank=True)
     maps_link = models.CharField(max_length=255, null=True, blank=True)
     price = models.FloatField()
-    image = models.ImageField(upload_to='uploads/', validators=[validate_image_size])
+    image = models.URLField(max_length=500)
     duration = models.CharField(max_length=100)
     contact_name = models.CharField(max_length=100)
     contact_number = models.CharField(max_length=12)

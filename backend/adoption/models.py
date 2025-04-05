@@ -21,7 +21,7 @@ class Dogs(models.Model):
     disease = models.CharField(max_length=100)
     color = models.CharField(max_length=100)
     personality = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='dogs/', validators=[validate_image_size])
+    image = models.URLField(max_length=500)
     looking_for = models.TextField()
     weight = models.FloatField()
     energy_level = models.CharField(max_length=10)
