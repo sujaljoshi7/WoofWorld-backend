@@ -50,7 +50,7 @@ function ViewBreeds() {
     }
     try {
       // Fetch user details independently
-      const breedsRes = api.get("/api/adoption/breed");
+      const breedsRes = api.get("/api/adoption/breed/");
 
       // Wait for both requests to complete independently
       const [breeds] = await Promise.all([breedsRes]);

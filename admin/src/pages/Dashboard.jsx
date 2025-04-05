@@ -82,7 +82,7 @@ function Dashboard() {
           api.get("/api/blogs/", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          api.get("/api/events/event", {
+          api.get("/api/events/event/", {
             headers: { Authorization: `Bearer ${token}` },
           }),
           api.get("/api/adoption/", {

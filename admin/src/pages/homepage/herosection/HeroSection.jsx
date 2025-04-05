@@ -48,7 +48,7 @@ function HeroSection() {
     }
     try {
       // Fetch user details independently
-      const heroRes = api.get("/api/homepage/hero");
+      const heroRes = api.get("/api/homepage/hero/");
 
       // Wait for both requests to complete independently
       const [hero] = await Promise.all([heroRes]);

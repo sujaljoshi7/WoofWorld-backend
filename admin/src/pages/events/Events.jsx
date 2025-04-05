@@ -59,7 +59,7 @@ function ViewEvents() {
     }
     try {
       // Fetch user details independently
-      const eventRes = api.get("/api/events/event");
+      const eventRes = api.get("/api/events/event/");
 
       // Wait for both requests to complete independently
       const [event] = await Promise.all([eventRes]);

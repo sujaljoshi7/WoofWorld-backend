@@ -20,16 +20,10 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dztxbvyk5',
-    'API_KEY': '529884246122424',
-    'API_SECRET': 'Ik66pAn8RKZRORsW6gC_Vl4BUYQ',
-}
 
 
 # Increase file upload size limit
@@ -146,14 +140,6 @@ DATABASES = {
      }
  }
 
-# postgresql://woofworld_user:WjeU3enY3DGWyO2Sp1OBL13LbVhy4g5j@dpg-cvnu8149c44c73fgmuug-a.oregon-postgres.render.com/woofworld
-database_url = os.environ.get("DATABASE_URL")
-# database_url = 'postgresql://woofworld_user:WjeU3enY3DGWyO2Sp1OBL13LbVhy4g5j@dpg-cvnu8149c44c73fgmuug-a.oregon-postgres.render.com/woofworld'
-DATABASES = {
-     'default': dj_database_url.config(
-         default=(database_url)
-     )
- }
 
 
 # Password validation

@@ -201,6 +201,39 @@ function ProductDetail() {
                     </li>
                   </ul>
                 </div>
+
+                <div className="product-meta">
+                  <span className="meta-item">
+                    <i className="fas fa-tag"></i>
+                    {product.category?.name}
+                  </span>
+                  <span className="meta-item">
+                    <i className="fas fa-paw"></i>
+                    {product.breeds?.name}
+                  </span>
+                  {product.weight && (
+                    <span className="meta-item">
+                      <i className="fas fa-weight-hanging"></i>
+                      {product.weight} kg
+                    </span>
+                  )}
+                </div>
+
+                <div className="product-details">
+                  <div className="detail-item">
+                    <span className="label">Company:</span>
+                    <span className="value">{product.company}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label">Age Group:</span>
+                    <span className="value">{product.age}</span>
+                  </div>
+                </div>
+
+                <div className="product-description">
+                  <h3>Description</h3>
+                  <p>{product.description}</p>
+                </div>
               </div>
             </div>
           </div>
