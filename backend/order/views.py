@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from cart.models import Cart
 from products.models import Product
+from rest_framework.permissions import IsAdminUser
+
 
 class OrderCheckoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -82,3 +84,24 @@ def get_item_price(item_id):
     from products.models import Product  # Replace with your actual Product model
     product = Product.objects.filter(id=item_id).first()
     return product.price if product else 0
+
+class AllOrdersAdminView(APIView):
+    permission_classes = [IsAdminUser]  # Only admin users can access this
+
+    def get(self, request):
+        """
+        Fetch all orders (admin only), including order items and product details.
+        """
+        orders = Order.objects.all().order_by("-created_at")
+        order_data = []
+
+        for order in orders:
+            order_items = OrderItems.objects.filter(order_id=order)
+            order_items_serialized = OrderItemsSerializer(order_items, many=True).data
+
+            order_data.append({
+                "order": OrderSerializer(order).data,
+                "order_items": order_items_serialized
+            })
+
+        return Response(order_data, status=status.HTTP_200_OK)
