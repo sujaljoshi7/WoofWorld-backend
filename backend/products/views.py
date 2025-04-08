@@ -114,6 +114,6 @@ def deactivate_product(request, product_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_specific_product_data(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, name=product_id)
     serializer = ProductSerializer(product)  # Use your serializer directly
     return Response(serializer.data, status=status.HTTP_200_OK)

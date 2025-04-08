@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from user.views import get_user_data, get_all_users, CustomTokenObtainPairView
+from user.views import  CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static

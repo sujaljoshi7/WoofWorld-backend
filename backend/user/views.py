@@ -15,7 +15,7 @@ from otp.views import send_otp
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 import json
-from otp.utils import generate_otp, send_otp_email
+from otp.utils import generate_otp, send_email_to_client
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Address
 from rest_framework.views import APIView
@@ -175,33 +175,16 @@ class CreateUserView(generics.CreateAPIView):
         return [AllowAny()]
 
     def perform_create(self, serializer):
-        user = serializer.save()  # Save the user
-        otp = str(random.randint(100000, 999999))  # Generate OTP
-
-        # Store OTP in OTPModel
-        OTPModel.objects.update_or_create(
-            email=user.email,
-            defaults={"otp": otp, "expires_at": now() + timedelta(minutes=5)}
-        )
-
-        # Get email from self.request.data
-        email = self.request.data.get("email")
-
-        if not email:
-            raise ValueError("Email is required")
-
-        # Send OTP Email
-        if send_otp_email(email, otp):
-            print(f"OTP {otp} sent to {email}")
-        else:
-            print("Failed to send OTP email")
-
+        # Create the user
+        user = serializer.save()
+        
+        # Generate tokens
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
-        print(refresh.access_token)
+        
         return Response(
-           {
-                "message": "User registered successfully! OTP sent.",
+            {
+                "message": "User registered successfully!",
                 "access": access_token,
                 "refresh": str(refresh),
                 "email": user.email,

@@ -16,7 +16,7 @@ class Category(models.Model):
     created_by = models.CharField(max_length=100)
 
 class Product(models.Model):
-    product_category_id = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product')
+    product_category_id = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product', default="")
     breed = models.ForeignKey(Breed, on_delete=models.CASCADE, related_name='product_breed', default=1)
     name = models.CharField(max_length=100, null=False, blank=False)
     description = models.TextField()
@@ -24,8 +24,8 @@ class Product(models.Model):
     company = models.CharField(max_length=255, default="")
     age = models.CharField(max_length=100, default="")
     weight = models.CharField(max_length=100, null=True, blank=True)
-    image = models.URLField(max_length=500)
+    image = models.URLField(max_length=500, default="")
     status = models.IntegerField()
     show_on_homepage = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=datetime.now(), editable=False)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='product_user')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='product_user', default="")

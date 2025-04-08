@@ -35,15 +35,15 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-f*fs(cn0&tfks(5xz!gt_84l*t&-uoiqmc#*h@q-1e02(f$!yi'
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = 'django-insecure-f*fs(cn0&tfks(5xz!gt_84l*t&-uoiqmc#*h@q-1e02(f$!yi'
+# SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = os.environ.get("DEBUG","False").lower() == "true"
+DEBUG = True
+# DEBUG = os.environ.get("DEBUG","False").lower() == "true"
 
-# ALLOWED_HOSTS = ["*"]
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -129,7 +129,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'techverse',
+        'NAME': 'woofworld',
         'USER': 'root',
         'PASSWORD': 'Sujal@8194',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
@@ -141,12 +141,12 @@ DATABASES = {
  }
 
 # database_url = "postgresql://woofworld_user:WjeU3enY3DGWyO2Sp1OBL13LbVhy4g5j@dpg-cvnu8149c44c73fgmuug-a.oregon-postgres.render.com/woofworld"
-database_url = os.environ.get("DATABASE_URL")
-DATABASES = {
-    'default': dj_database_url.config(
-        default=(database_url)
-    )
-}
+# database_url = os.environ.get("DATABASE_URL")
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=(database_url)
+#     )
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -192,13 +192,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = "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"
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_HOST_USER = "apikey"  # This is the fixed value
-EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+# SENDGRID_API_KEY = "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"
+# EMAIL_HOST = "smtp.sendgrid.net"
+# EMAIL_HOST_USER = "apikey"  # This is the fixed value
+# EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
 
 RAZORPAY_API_KEY = 'rzp_test_RJaa2N22UrDs5b'
 RAZORPAY_API_SECRET = 'zBApnWkjqqGKqWdByfsDG7Uj'
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "gamerzzone710@gmail.com"
+EMAIL_HOST_PASSWORD= "rjjl szkd niug toqq"

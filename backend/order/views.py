@@ -7,13 +7,14 @@ from .serializers import OrderSerializer, OrderItemsSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from cart.models import Cart
+from products.models import Product
 
 class OrderCheckoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
-        Fetch all orders of the authenticated user along with order items.
+        Fetch all orders of the authenticated user along with order items and product details.
         """
         user = request.user
         orders = Order.objects.filter(user_id=user).order_by("-created_at")  # Latest orders first
@@ -38,18 +39,23 @@ class OrderCheckoutView(APIView):
         if not cart_items.exists():
             return Response({"error": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Calculate total price (assuming price is retrieved based on `item` ID)
-        total_price = 0
-        for cart_item in cart_items:
-            total_price += cart_item.quantity * get_item_price(cart_item.item)  # Implement `get_item_price`
+        # Calculate total price
+        # total_price = 0
+        # for cart_item in cart_items:
+        #     if cart_item.type == 1:  # If it's a product
+        #         try:
+        #             product = Product.objects.get(id=cart_item.item)
+        #             total_price += cart_item.quantity * product.price
+        #         except Product.DoesNotExist:
+        #             return Response({"error": f"Product with ID {cart_item.item} not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create Order
         order = Order.objects.create(
             user_id=user,
             total=request.data.get("total_price"),
-            payment_id = request.data.get("payment_id"),
-            payment_status = request.data.get("payment_status"),
-            order_id = request.data.get("order_id")
+            payment_id=request.data.get("payment_id"),
+            payment_status=request.data.get("payment_status"),
+            order_id=request.data.get("order_id")
         )
 
         # Move cart items to order items
