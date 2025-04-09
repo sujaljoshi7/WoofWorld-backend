@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const [isLoadingCart, setIsLoadingCart] = useState(false);
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [allCartItems, setAllCartItems] = useState([]);
   const BASE_URL = import.meta.env.VITE_API_URL;
   const TAX_RATE = 0.18; // 18% tax rate
@@ -133,67 +134,11 @@ const Cart = () => {
     return `ORD${timestamp}${randomNumber}`; // Combine timestamp and random number to form a unique order ID
   };
 
-  // const handlePayment = async () => {
-  //   try {
-  //     // Request order creation from backend
-  //     const orderId = generateOrderId();
-  //     const response = await api.post("/api/payments/order/", {
-  //       event_id: item.id,
-  //       amount: getTotal(), // Ensure event.price is defined
-  //     });
-
-  //     const { order_id, amount, currency } = response.data;
-
-  //     const options = {
-  //       key: import.meta.env.VITE_RAZORPAY_API_KEY, // Public Razorpay key
-  //       amount,
-  //       currency,
-  //       name: "WoofWorld",
-  //       description: "Order",
-  //       order_id: orderId,
-  //       handler: function (response) {
-  //         // alert(
-  //         //   "Payment Successful! Payment ID: " + response.razorpay_payment_id
-  //         // );
-  //         // TODO: Send payment success details to backend
-  //         try {
-  //           const payment_id = response.razorpay_payment_id;
-  //           const payment_status = 1; // Assuming 1 means success
-
-  //           // Send payment success details to the backend
-  //           const paymentSuccessResponse = await api.post("/api/order/checkout/", {
-  //             payment_id: payment_id,
-  //             payment_status: payment_status,
-  //           });
-
-  //           if (paymentSuccessResponse.status === 201) {
-  //             alert("Payment successful! Order has been placed.");
-  //             // Optionally, navigate to order confirmation page or clear cart
-  //           } else {
-  //             alert("Failed to place order after payment.");
-  //           }
-  //         } catch (error) {
-  //           console.error("Error sending payment details to backend:", error);
-  //           alert("Payment failed, please try again.");
-  //         }
-  //       },
-  //       theme: {
-  //         color: "#3399cc",
-  //       },
-  //     };
-
-  //     const rzp1 = new window.Razorpay(options);
-  //     rzp1.open();
-  //   } catch (error) {
-  //     console.error("Error creating Razorpay order:", error);
-  //   }
-  // };
-
   const handlePayment = async () => {
+    setIsLoadingPayment(true);
     try {
       // Request order creation from backend
       const orderId = generateOrderId();
-      console.log(orderId);
       const response = await api.post("/api/payments/order/", {
         event_id: orderId,
         amount: getTotal(), // Ensure event.price is defined
@@ -219,7 +164,7 @@ const Cart = () => {
               payment_id: payment_id,
               payment_status: payment_status,
               order_id: order_id,
-              total_price: amount / 100,
+              total_price: getTotal(),
             });
 
             if (paymentSuccessResponse.status === 201) {
@@ -243,6 +188,8 @@ const Cart = () => {
       rzp1.open();
     } catch (error) {
       console.error("Error creating Razorpay order:", error);
+    } finally {
+      setIsLoadingPayment(false);
     }
   };
 
@@ -273,7 +220,7 @@ const Cart = () => {
                   >
                     <div className="d-flex align-items-center w-100">
                       <img
-                        src={`${BASE_URL}${item.item_data?.image}`}
+                        src={item.item_data?.image}
                         alt={item.id}
                         className="me-3 rounded"
                         style={{
@@ -372,13 +319,21 @@ const Cart = () => {
                   </div>
                 </div>
 
-                {allCartItems.length > 0 && (
+                {allCartItems.length > 0 && !isLoadingPayment && (
                   <button
                     className="btn btn-success w-100 mb-3 mt-3 py-2 fw-bold"
                     onClick={handlePayment}
                   >
                     Proceed to Checkout
                   </button>
+                )}
+
+                {isLoadingPayment && (
+                  <div className="text-center mb-3 mt-3">
+                    <div className="spinner-border text-success" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

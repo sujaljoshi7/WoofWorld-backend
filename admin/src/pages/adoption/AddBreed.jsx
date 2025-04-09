@@ -167,7 +167,7 @@ function AddBreed({ route, method }) {
                   </div>
                 </div>
                 <button type="submit" className="btn btn-warning w-100">
-                  Save Category
+                  Save Breed
                 </button>
               </form>
             </div>

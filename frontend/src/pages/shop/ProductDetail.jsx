@@ -6,6 +6,7 @@ import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import LoadingScreen from "../../components/LoadingScreen";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
+import { ACCESS_TOKEN } from "../../constants";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -18,15 +19,25 @@ function ProductDetail() {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const BASE_URL = import.meta.env.VITE_API_URL;
 
+  const [error, setError] = useState("");
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await api.get(`/api/products/${id}/`);
+        const response = await api.get(
+          `/api/products/${decodeURIComponent(id)}/`
+        );
         if (response.data) {
           setProduct(response.data);
           // Fetch related products
-          const relatedResponse = await api.get(`/api/products/?category=${response.data.category.id}`);
-          setRelatedProducts(relatedResponse.data.filter(p => p.id !== response.data.id).slice(0, 4));
+          const relatedResponse = await api.get(
+            `/api/products/?category=${response.data.category.id}`
+          );
+          setRelatedProducts(
+            relatedResponse.data
+              .filter((p) => p.id !== response.data.id)
+              .slice(0, 4)
+          );
         }
       } catch (error) {
         if (error.response?.status === 401) {
@@ -55,18 +66,35 @@ function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+  const handleAddToCart = async (e) => {
+    if (!localStorage.getItem(ACCESS_TOKEN)) {
+      localStorage.setItem("redirectAfterLogin", location.pathname);
+      navigate("/login");
+    } else {
+      setLoading(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append("type", 1);
+      formData.append("item", product.id);
+
+      try {
+        await api.post(`/api/cart/`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        alert("Cart Added Successfully!");
+
+        navigate("/cart");
+      } catch (error) {
+        if (error.response && error.response.data.image) {
+          setError(error.response.data.image[0]); // Display the error message
+        } else {
+          setError("Something went wrong. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-      return [...prevCart, { ...product, quantity }];
-    });
+    }
   };
 
   const handleQuantityChange = (e) => {
@@ -80,20 +108,34 @@ function ProductDetail() {
   if (!product) return <div>Product not found</div>;
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100">
       <Navbar />
-      
+
       {/* Breadcrumb */}
       <div className="container py-3">
         <nav aria-label="breadcrumb">
           <ol className="breadcrumb">
             <li className="breadcrumb-item">
-              <a href="/" className="text-decoration-none">Home</a>
+              <a
+                href="#"
+                className="text-decoration-none"
+                onClick={() => navigate(`/`)}
+              >
+                Home
+              </a>
             </li>
             <li className="breadcrumb-item">
-              <a href="/shop" className="text-decoration-none">Shop</a>
+              <a
+                href="#"
+                className="text-decoration-none"
+                onClick={() => navigate(`/shop`)}
+              >
+                Shop
+              </a>
             </li>
-            <li className="breadcrumb-item active" aria-current="page">{product.name}</li>
+            <li className="breadcrumb-item active" aria-current="page">
+              {product.name}
+            </li>
           </ol>
         </nav>
       </div>
@@ -103,20 +145,21 @@ function ProductDetail() {
         <div className="row">
           {/* Product Image Gallery */}
           <div className="col-md-6 mb-4">
-            <div className="card shadow-sm">
+            <div className="card shadow hover-shadow">
               <div className="product-gallery">
                 <img
-                  src={`${BASE_URL}${product.image}`}
+                  src={product.image}
                   className="card-img-top product-detail-image"
                   alt={product.name}
                   onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/600x600?text=No+Image";
+                    e.target.src =
+                      "https://via.placeholder.com/600x600?text=No+Image";
                   }}
                 />
                 <div className="product-thumbnails mt-3">
                   {/* Add more thumbnails if available */}
                   <img
-                    src={`${BASE_URL}${product.image}`}
+                    src={product.image}
                     className="thumbnail"
                     alt="Thumbnail"
                   />
@@ -127,11 +170,13 @@ function ProductDetail() {
 
           {/* Product Info */}
           <div className="col-md-6">
-            <div className="card shadow-sm">
+            <div className="card shadow">
               <div className="card-body">
                 <h1 className="card-title mb-3">{product.name}</h1>
                 <div className="d-flex align-items-center mb-3">
-                  <span className="badge bg-primary me-2">{product.category.name}</span>
+                  <span className="badge bg-primary me-2">
+                    {product.category.name}
+                  </span>
                   <span className="badge bg-secondary">{product.age}</span>
                 </div>
                 <div className="product-price mb-4">
@@ -244,10 +289,16 @@ function ProductDetail() {
           <div className="col-12">
             <div className="card shadow-sm">
               <div className="card-body">
-                <ul className="nav nav-tabs mb-4" id="productTabs" role="tablist">
+                <ul
+                  className="nav nav-tabs mb-4"
+                  id="productTabs"
+                  role="tablist"
+                >
                   <li className="nav-item" role="presentation">
                     <button
-                      className={`nav-link ${activeTab === "description" ? "active" : ""}`}
+                      className={`nav-link ${
+                        activeTab === "description" ? "active" : ""
+                      }`}
                       onClick={() => setActiveTab("description")}
                     >
                       Description
@@ -255,7 +306,9 @@ function ProductDetail() {
                   </li>
                   <li className="nav-item" role="presentation">
                     <button
-                      className={`nav-link ${activeTab === "specifications" ? "active" : ""}`}
+                      className={`nav-link ${
+                        activeTab === "specifications" ? "active" : ""
+                      }`}
                       onClick={() => setActiveTab("specifications")}
                     >
                       Specifications
@@ -263,7 +316,9 @@ function ProductDetail() {
                   </li>
                   <li className="nav-item" role="presentation">
                     <button
-                      className={`nav-link ${activeTab === "reviews" ? "active" : ""}`}
+                      className={`nav-link ${
+                        activeTab === "reviews" ? "active" : ""
+                      }`}
                       onClick={() => setActiveTab("reviews")}
                     >
                       Reviews
@@ -275,8 +330,7 @@ function ProductDetail() {
                   {activeTab === "description" && (
                     <div className="tab-pane fade show active">
                       <h4>Product Description</h4>
-                      <p className="lead">{product.description}</p>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                      <p>{product.description}</p>
                     </div>
                   )}
                   {activeTab === "specifications" && (
@@ -325,25 +379,48 @@ function ProductDetail() {
               <h3 className="mb-4">You May Also Like</h3>
               <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
                 {relatedProducts.map((relatedProduct) => (
-                  <div className="col" key={relatedProduct.id}>
+                  <div
+                    className="col"
+                    key={relatedProduct.name}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      navigate(
+                        `/shop/product/${encodeURIComponent(
+                          relatedProduct.name
+                        )}`
+                      );
+                      window.scrollTo(0, 0);
+                    }}
+                  >
                     <div className="card h-100 shadow-sm hover-shadow">
                       <img
-                        src={`${BASE_URL}${relatedProduct.image}`}
+                        src={relatedProduct.image}
                         className="card-img-top product-image"
                         alt={relatedProduct.name}
                         onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/300x300?text=No+Image";
+                          e.target.src =
+                            "https://via.placeholder.com/300x300?text=No+Image";
                         }}
                       />
                       <div className="card-body">
                         <h5 className="card-title">{relatedProduct.name}</h5>
-                        <p className="card-text text-muted">{relatedProduct.category.name}</p>
-                        <p className="card-text fw-bold">₹{relatedProduct.price}</p>
+                        <p className="card-text text-muted">
+                          {relatedProduct.category.name}
+                        </p>
+                        <p className="card-text fw-bold">
+                          ₹{relatedProduct.price}
+                        </p>
                       </div>
                       <div className="card-footer bg-white border-top-0">
                         <button
                           className="btn btn-dark w-100"
-                          onClick={() => navigate(`/shop/product/${relatedProduct.id}`)}
+                          onClick={() =>
+                            navigate(
+                              `/shop/product/${encodeURIComponent(
+                                relatedProduct.name
+                              )}`
+                            )
+                          }
                         >
                           View Details
                         </button>
@@ -361,4 +438,4 @@ function ProductDetail() {
   );
 }
 
-export default ProductDetail; 
+export default ProductDetail;

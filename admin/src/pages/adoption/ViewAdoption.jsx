@@ -68,7 +68,7 @@ const AdoptionDetails = () => {
             <div className="card bg-dark text-light shadow-lg p-4 rounded">
               {event.image && (
                 <img
-                  src={`${BASE_URL}${event.image}`}
+                  src={event.image}
                   alt={event.name}
                   className="img-fluid mb-3 rounded shadow-sm"
                   style={{

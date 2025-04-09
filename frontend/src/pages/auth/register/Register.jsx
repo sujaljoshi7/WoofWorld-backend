@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../../assets/images/logo/logo1.png";
 import api from "../../../api";
 import LoadingIndicator from "../../../components/common/LoadingIndicator";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ function Register() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const ACCESS_TOKEN = "access_token";
   const REFRESH_TOKEN = "refresh_token";
@@ -18,10 +20,15 @@ function Register() {
 
   const [message, setMessage] = useState(false);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(""); // Clear previous messages
+    sessionStorage.clear();
 
     try {
       // 🔹 Check if the user exists
@@ -37,42 +44,35 @@ function Register() {
         return;
       }
 
-      // 🔹 Proceed with registration
-      const username = email.trim().toLowerCase();
-      const res = await api.post("/api/user/register/", {
-        username,
+      // 🔹 Store user details in session storage
+      const userDetails = {
+        username: email.trim().toLowerCase(),
         email,
         password,
         first_name: firstName,
         last_name: lastName,
-      });
-      console.log(res.data);
+      };
+      sessionStorage.setItem(
+        "pendingRegistration",
+        JSON.stringify(userDetails)
+      );
 
-      // 🔹 Store tokens
-      localStorage.setItem(ACCESS_TOKEN, res.data.access);
-      localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-      localStorage.setItem(user_email, res.data.email);
+      // 🔹 Send OTP
+      const otpRes = await api.post("/api/otp/send-otp/", { email });
 
-      // 🔹 Navigate to homepage or dashboard
-      navigate("/otp");
+      if (otpRes.status === 200) {
+        // 🔹 Navigate to OTP verification page
+        navigate("/otp");
+      } else {
+        setMessage("Failed to send OTP. Please try again.");
+      }
     } catch (error) {
       console.error("Error Response:", error.response?.data || error.message); // Debugging
       setMessage(
-        error.response?.data ||
+        error.response?.data?.message ||
           error.message ||
-          "Error occured during registration"
+          "Error occurred during registration"
       );
-
-      if (error.response) {
-        setMessage(
-          error.response.data.message ||
-            "An error occurred during registration."
-        );
-      } else if (error.request) {
-        setMessage("No response from server. Please try again later.");
-      } else {
-        setMessage("An unexpected error occurred.");
-      }
     } finally {
       setLoading(false);
     }
@@ -200,9 +200,9 @@ function Register() {
                       </div>
                     </div>
                     <div className="col-12">
-                      <div className="form-floating mb-3">
+                      <div className="form-floating mb-3 position-relative">
                         <input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           className="form-control"
                           id="password"
                           value={password}
@@ -211,6 +211,18 @@ function Register() {
                           required
                         />
                         <label htmlFor="password">Password</label>
+                        <button
+                          type="button"
+                          className="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2"
+                          onClick={togglePasswordVisibility}
+                          style={{ zIndex: 10, color: "#6c757d" }}
+                        >
+                          {showPassword ? (
+                            <FaEyeSlash size={18} />
+                          ) : (
+                            <FaEye size={18} />
+                          )}
+                        </button>
                       </div>
                     </div>
                     <div className="col-12">

@@ -3,19 +3,19 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
-
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../../components/Pagination";
+import { exportToCSV } from "../../utils/export";
 import { handleTokenRefresh } from "../../hooks/tokenRefresh";
-import Pagination from "../../components/Pagination"; // Import Pagination Component
 
 const BASE_URL = import.meta.env.VITE_API_URL;
+
 function ViewServices() {
   const navigate = useNavigate();
-
   const { user, isLoading } = useUser();
   const [allServices, setAllServices] = useState([]);
-  const [isLoadingServices, setIsLoadingServices] = useState([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
@@ -23,6 +23,7 @@ function ViewServices() {
   const [currentPage, setCurrentPage] = useState(0);
   const [homePageToggle, setHomePageToggle] = useState();
   const itemsPerPage = 5;
+
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
@@ -39,7 +40,7 @@ function ViewServices() {
 
   const date_format = {
     year: "numeric",
-    month: "long", // "short" for abbreviated months
+    month: "long",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
@@ -55,25 +56,19 @@ function ViewServices() {
       return;
     }
     try {
-      // Fetch user details independently
       const servicesRes = api.get("/api/services/");
-
-      // Wait for both requests to complete independently
       const [services] = await Promise.all([servicesRes]);
-
-      // Update state
       setAllServices(services.data);
       setFilteredData(services.data);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
-
         const refreshed = await handleTokenRefresh();
         if (refreshed) {
-          return fetchServices(); // Retry after refreshing
+          return fetchServices();
         }
       } else {
-        console.error("Failed to fetch user data:", error);
+        console.error("Failed to fetch services data:", error);
       }
     } finally {
       setIsLoadingServices(false);
@@ -94,7 +89,7 @@ function ViewServices() {
       fetchServices();
     }, 60000);
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval);
   }, [message]);
 
   const handleDeactivate = async (service_id) => {
@@ -109,12 +104,11 @@ function ViewServices() {
         `api/services/service/${service_id}/deactivate/`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Add JWT Token
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       setMessage(response.data.message);
-      //   alert("User activated successfully!");
       fetchServices();
     } catch (error) {
       setError(error.response.data.message || "Error deactivating service");
@@ -126,10 +120,10 @@ function ViewServices() {
       const response = await api.patch(
         `api/services/service/${service_id}/activate/`
       );
-      setMessage("Service Activated Successfully");
+      setMessage(response.data.message);
       fetchServices();
     } catch (error) {
-      setError(error.response.data.message || "Error activating Service");
+      setError(error.response.data.message || "Error activating service");
       console.log(error);
     }
   };
@@ -141,22 +135,59 @@ function ViewServices() {
     }
     const formData = new FormData();
     formData.append("show_on_homepage", newStatus);
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]);
-    }
     try {
       await api.patch(`/api/services/service/${id}/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       fetchServices();
       if (newStatus) {
-        setMessage(name + " is live on homepage!");
+        setMessage(name + " is live on featured section!");
       } else {
-        setMessage(name + " will no longer be displayed on homepage!");
+        setMessage(name + " will no longer be displayed on featured section!");
       }
     } catch (error) {
-      console.error("Failed to update status:", error);
+      console.error("Failed to update service:", error);
     }
+  };
+
+  const handleExport = () => {
+    const formattedData = filteredData.map((item) => ({
+      id: item.id,
+      image: item.image,
+      name: item.name,
+      description: item.description,
+      status: item.status,
+      show_on_homepage: item.show_on_homepage,
+      created_by: item.created_by
+        ? `${item.created_by.first_name} ${item.created_by.last_name} [${item.created_by.email}]`
+        : "",
+    }));
+    exportToCSV(
+      formattedData,
+      [
+        "ID",
+        "Image",
+        "Name",
+        "Description",
+        "Status",
+        "Featured",
+        "Created By",
+      ],
+      [
+        "id",
+        "image",
+        "name",
+        "description",
+        "status",
+        "show_on_homepage",
+        "created_by",
+      ],
+      "services.csv"
+    );
+  };
+
+  const handleRowClick = (service_id) => {
+    navigate(`/services/${encodeURIComponent(service_id)}`);
   };
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
@@ -169,215 +200,175 @@ function ViewServices() {
     setCurrentPage(selected);
   };
 
-  const handleRowClick = (service_id) => {
-    navigate(`/services/${service_id}`);
-  };
-
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <h1>Loading...</h1>
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div
+          className="spinner-border text-primary"
+          style={{ width: "3rem", height: "3rem" }}
+          role="status"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="d-flex">
-      <div className="sidebar">
-        <Sidebar user={user} />
-      </div>
+      <Sidebar user={user} />
       <div
-        className="main-content flex-grow-1 ms-2"
-        style={{ marginLeft: "280px", padding: "20px" }}
+        className="main-content flex-grow-1"
+        style={{
+          marginLeft: "280px",
+          padding: "2rem",
+          transition: "all 0.3s ease-in-out",
+        }}
       >
-        <div className="container mt-4">
-          {error && (
-            <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-              <div
-                className="alert alert-danger alert-dismissible fade show"
-                role="alert"
-              >
-                {error}
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="alert"
-                  aria-label="Close"
-                ></button>
-              </div>
-            </div>
-          )}
-          {message && (
-            <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-              <div
-                className="position-fixed bottom-0 end-0 p-3"
-                style={{ zIndex: 11 }} // React style syntax
-              >
-                <div
-                  id="liveToast"
-                  className="toast hide"
-                  role="alert"
-                  aria-live="assertive"
-                  aria-atomic="true"
-                >
-                  <div className="toast-header">
-                    <strong className="me-auto">WoofWorld Admin</strong>
-                    <small>Just Now</small>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      data-bs-dismiss="toast"
-                      aria-label="Close"
-                    ></button>
-                  </div>
-                  <div className="toast-body">{message}</div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Services</h2>
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+          <h1 className="h3 mb-0">Services</h1>
+          <div className="d-flex gap-2 mt-3 mt-md-0">
             <button
-              className="btn btn-warning"
+              className="btn btn-primary"
               onClick={() => navigate("/services/add")}
             >
-              + Create Service
+              Add New Service
+            </button>
+            <button className="btn btn-success" onClick={handleExport}>
+              Export to CSV
             </button>
           </div>
-          <div className="input-group mb-3 mt-3">
-            <span className="input-group-text bg-light border-0">
-              <i className="fa fa-search"></i>
-            </span>
-            <input
-              type="text"
-              className="form-control bg-dark text-light p-2"
-              placeholder="Search..."
-              aria-label="Search"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-          <table className="table table-striped table-bordered table-dark table-hover">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Image</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Created At</th>
-                <th>Created By</th>
-                <th>Display on Home Page</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading || isLoadingServices ? (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    Loading Services
-                  </td>
-                </tr>
-              ) : paginatedData.length > 0 ? (
-                paginatedData.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => handleRowClick(item.id)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <td>{item.id}</td>
+        </div>
 
-                    <td>
-                      <img
-                        src={`${BASE_URL}${item.image}`}
-                        alt="Event Image"
-                        height={100}
-                      />
-                    </td>
-
-                    <td>{item.name}</td>
-
-                    <td>{item.category.name}</td>
-
-                    <td>
-                      {item.status ? (
-                        <span className="badge text-bg-success">Active</span>
-                      ) : (
-                        <span className="badge text-bg-danger">Inactive</span>
-                      )}
-                    </td>
-
-                    <td>
-                      {item.created_at
-                        ? new Date(item.created_at).toLocaleDateString(
-                            undefined,
-                            date_format
-                          )
-                        : "N/A"}
-                    </td>
-
-                    <td>
-                      {item.created_by.first_name} {item.created_by.last_name}
-                    </td>
-
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="form-check form-switch">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          role="switch"
-                          id={`flexSwitchCheckDefault-${item.id}`}
-                          checked={item.show_on_homepage}
-                          value={homePageToggle}
-                          onChange={(e) =>
-                            handleToggleStatus(
-                              item.id,
-                              e.target.checked,
-                              item.name
-                            )
-                          }
-                        />
-                      </div>
-                    </td>
-
-                    <td onClick={(e) => e.stopPropagation()}>
-                      {item.status ? (
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDeactivate(item.id)}
-                          title="Delete User"
-                        >
-                          Deactivate
-                        </button>
-                      ) : (
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleActivate(item.id)}
-                          title="Delete User"
-                        >
-                          Activate
-                        </button>
-                      )}
-                    </td>
+        <div className="card shadow-sm">
+          <div className="card-body">
+            <div className="table-responsive">
+              <div className="mb-3">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search services..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
+              </div>
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Featured</th>
+                    <th>Created By</th>
+                    <th>Actions</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="8" className="text-center">
-                    No data found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
+                </thead>
+                <tbody>
+                  {paginatedData.map((service) => (
+                    <tr
+                      key={service.id}
+                      onClick={() => handleRowClick(service.id)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td>
+                        <img
+                          src={service.image}
+                          alt={service.name}
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </td>
+                      <td>{service.name}</td>
+                      <td>
+                        <span
+                          className={`badge ${
+                            service.status ? "bg-success" : "bg-danger"
+                          }`}
+                        >
+                          {service.status ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="form-check form-switch">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={service.show_on_homepage}
+                            onChange={(e) =>
+                              handleToggleStatus(
+                                service.id,
+                                e.target.checked,
+                                service.name
+                              )
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </td>
+                      <td>
+                        {service.created_by
+                          ? `${service.created_by.first_name} ${service.created_by.last_name}`
+                          : "N/A"}
+                      </td>
+                      <td>
+                        <div className="btn-group">
+                          <button
+                            className={`btn btn-sm ${
+                              service.status ? "btn-danger" : "btn-success"
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              service.status
+                                ? handleDeactivate(service.id)
+                                : handleActivate(service.id);
+                            }}
+                          >
+                            {service.status ? "Deactivate" : "Activate"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <Pagination
+            pageCount={pageCount}
+            onPageChange={handlePageClick}
+            currentPage={currentPage}
+          />
+        </div>
+
+        <div
+          className="toast-container position-fixed bottom-0 end-0 p-3"
+          style={{ zIndex: 11 }}
+        >
+          <div
+            id="liveToast"
+            className="toast"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <div className="toast-header">
+              <strong className="me-auto">Notification</strong>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="toast"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="toast-body">{message}</div>
+          </div>
         </div>
       </div>
     </div>

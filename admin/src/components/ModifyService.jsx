@@ -10,6 +10,7 @@ import { handleTokenRefresh } from "../hooks/tokenRefresh";
 import LoadingIndicator from "./LoadingIndicator";
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
+import uploadToImgBB from "../utils/image-upload";
 
 const ModifyService = ({ method }) => {
   const { user, isLoading } = useUser();
@@ -60,9 +61,7 @@ const ModifyService = ({ method }) => {
       setServiceTitle(data.name);
       setContent(data.content);
       setSelectedCategory(data.category.id);
-      setPreviewImage(
-        data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
-      );
+      setPreviewImage(data.image ? data.image : "");
       setServiceStatus(data.status);
     } catch (err) {
       console.error("Failed to fetch event details:", err);
@@ -82,7 +81,16 @@ const ModifyService = ({ method }) => {
     setLoading(true);
     setError("");
 
-    if (!serviceImage && method === "add") {
+    let imageUrl = null;
+
+    if (serviceImage) {
+      imageUrl = await uploadToImgBB(serviceImage);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
       setError("No image selected");
       setLoading(false);
       return;
@@ -93,8 +101,8 @@ const ModifyService = ({ method }) => {
     formData.append("service_category_id", selectedCategory); // Add other event details
     formData.append("content", content);
     formData.append("status", serviceStatus);
-    if (serviceImage) {
-      formData.append("image", serviceImage); // Append image
+    if (imageUrl) {
+      formData.append("image", imageUrl); // Append image
     }
 
     try {

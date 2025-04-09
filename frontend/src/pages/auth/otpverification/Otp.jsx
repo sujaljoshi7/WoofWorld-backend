@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from "react";
 import logo from "../../../assets/images/logo/logo1.png";
 import api from "../../../api";
-import { ACCESS_TOKEN } from "../../../constants";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../../constants";
 import { useLocation, useNavigate } from "react-router-dom";
+
 function OTPVerification() {
   const navigate = useNavigate();
   const [otp, setOtp] = useState("");
   const [message, setMessage] = useState("");
-  const email = localStorage.getItem("email") || "";
+  const [timer, setTimer] = useState(30);
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
+  const [messageType, setMessageType] = useState("success");
+
+  // Get email from sessionStorage instead of localStorage
+  const pendingRegistration = JSON.parse(
+    sessionStorage.getItem("pendingRegistration") || "{}"
+  );
+  const email = pendingRegistration.email || "";
+
+  // Timer effect for resend button
+  useEffect(() => {
+    let interval;
+    if (timer > 0 && isResendDisabled) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    } else if (timer === 0) {
+      setIsResendDisabled(false);
+    }
+    return () => clearInterval(interval);
+  }, [timer, isResendDisabled]);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -18,75 +40,69 @@ function OTPVerification() {
       return;
     }
 
-    let token = localStorage.getItem("access_token"); // Get token
-
     try {
       // 🔹 Make the OTP verification request
-      let response = await api.post(
-        "api/otp/verify-otp/",
-        {
-          email: localStorage.getItem("email"),
-          otp: otp,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let response = await api.post("api/otp/verify-otp/", {
+        email: email, // Use email from sessionStorage
+        otp: otp,
+      });
 
       if (response.status === 200) {
-        showMessage("✅ OTP Verified Successfully!", "success");
-        navigate("/");
+        // Get pending registration details from session storage
+        if (
+          pendingRegistration &&
+          Object.keys(pendingRegistration).length > 0
+        ) {
+          try {
+            // Complete the registration process
+            const registerResponse = await api.post(
+              "/api/user/register/",
+              pendingRegistration
+            );
+
+            if (registerResponse.status === 201) {
+              // Store tokens
+              localStorage.setItem(ACCESS_TOKEN, registerResponse.data.access);
+              localStorage.setItem(
+                REFRESH_TOKEN,
+                registerResponse.data.refresh
+              );
+              localStorage.setItem("email", registerResponse.data.email);
+
+              // Clear session storage
+              sessionStorage.removeItem("pendingRegistration");
+
+              showMessage("✅ Registration Successful!", "success");
+              navigate("/");
+            } else {
+              showMessage(
+                "❌ Registration failed. Please try again.",
+                "danger"
+              );
+            }
+          } catch (registerError) {
+            console.error("Registration error:", registerError);
+            showMessage(
+              "❌ " +
+                (registerError.response?.data?.message ||
+                  "Registration failed"),
+              "danger"
+            );
+          }
+        } else {
+          showMessage(
+            "❌ Registration details not found. Please register again.",
+            "danger"
+          );
+          navigate("/register");
+        }
       }
     } catch (error) {
       console.error("Error verifying OTP:", error);
-
-      if (error.response && error.response.status === 401) {
-        console.log("🔄 Token expired, refreshing...");
-
-        // 🔹 Refresh the token
-        try {
-          const refreshResponse = await api.post("/api/token/refresh/", {
-            refresh: localStorage.getItem("refresh_token"),
-          });
-
-          const newToken = refreshResponse.data.access;
-          localStorage.setItem("access_token", newToken);
-          token = newToken; // Update token
-
-          // 🔹 Retry OTP Verification with the new token
-          const retryResponse = await api.post(
-            "api/otp/verify-otp/",
-            {
-              email: localStorage.getItem("email"),
-              otp: otp,
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (retryResponse.status === 200) {
-            showMessage("✅ OTP Verified Successfully!", "success");
-            navigate("/");
-          } else {
-            showMessage("❌ OTP verification failed. Try again.", "danger");
-          }
-        } catch (refreshError) {
-          console.log("❌ Refresh token expired. Redirecting to login.");
-          localStorage.clear();
-          showMessage("❌ Session expired. Please log in again.", "danger");
-          navigate("/login");
-        }
-      } else {
-        showMessage("❌ " + error.response.data.error, "danger");
-        // setMessage("❌ Server error. Please try again later.");
-      }
+      showMessage(
+        "❌ " + (error.response?.data?.error || "OTP verification failed"),
+        "danger"
+      );
     }
   };
 
@@ -95,13 +111,20 @@ function OTPVerification() {
     setOtp(value);
   };
 
-  const [timer, setTimer] = useState(30);
-  const [isResendDisabled, setIsResendDisabled] = useState(true);
-  const [messageType, setMessageType] = useState("success");
-
   useEffect(() => {
-    showMessage("✅ OTP sent successfully!", "success"); // Show message when page loads
-  }, []);
+    // Check if we have pending registration data
+    if (!pendingRegistration || Object.keys(pendingRegistration).length === 0) {
+      showMessage(
+        "❌ No registration data found. Please register again.",
+        "danger"
+      );
+      setTimeout(() => {
+        navigate("/register");
+      }, 2000);
+    } else {
+      showMessage("✅ OTP sent successfully!", "success"); // Show message when page loads
+    }
+  }, [navigate]);
 
   const showMessage = (msg, type) => {
     setMessage(msg);
@@ -119,17 +142,23 @@ function OTPVerification() {
 
   const handleResend = async () => {
     try {
-      const response = await api.post("/api/user/resend-otp/", { email });
+      const response = await api.post("/api/otp/send-registration-otp/", {
+        email,
+      });
 
       if (response.status === 200) {
-        alert("A new OTP has been sent to your email.");
+        showMessage("✅ A new OTP has been sent to your email.", "success");
         console.log("OTP resent successfully!");
       } else {
-        alert(response.data.error || "Failed to resend OTP. Please try again.");
+        showMessage(
+          "❌ " +
+            (response.data.error || "Failed to resend OTP. Please try again."),
+          "danger"
+        );
       }
     } catch (error) {
       console.error("Error resending OTP:", error);
-      alert("An error occurred. Please try again.");
+      showMessage("❌ An error occurred. Please try again.", "danger");
     }
   };
 

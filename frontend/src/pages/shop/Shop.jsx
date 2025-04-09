@@ -6,10 +6,13 @@ import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import LoadingScreen from "../../components/LoadingScreen";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
+import { ACCESS_TOKEN } from "../../constants";
 
 function Shop() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [showLoader, setShowLoader] = useState(true);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedCompanies, setSelectedCompanies] = useState([]);
@@ -23,8 +26,11 @@ function Shop() {
   const BASE_URL = import.meta.env.VITE_API_URL;
   const [cart, setCart] = useState([]);
 
+  const [fadeOut, setFadeOut] = useState(false);
+
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
       try {
         const response = await api.get("/api/products/");
         if (response.data && Array.isArray(response.data)) {
@@ -48,6 +54,7 @@ function Shop() {
           }
         } else {
           console.error("Failed to fetch products:", error);
+          setLoading(false);
         }
       } finally {
         setLoading(false);
@@ -57,38 +64,40 @@ function Shop() {
     fetchProducts();
   }, []);
 
-  const categories = [...new Set(products.map((product) => product.category.name))];
+  const categories = [
+    ...new Set(products.map((product) => product.category.name)),
+  ];
   const companies = [...new Set(products.map((product) => product.company))];
   const breeds = [...new Set(products.map((product) => product.breeds.name))];
   const ages = [...new Set(products.map((product) => product.age))];
 
   const handleFilterChange = (filterType, value) => {
     switch (filterType) {
-      case 'category':
-        setSelectedCategories(prev => 
-          prev.includes(value) 
-            ? prev.filter(cat => cat !== value)
+      case "category":
+        setSelectedCategories((prev) =>
+          prev.includes(value)
+            ? prev.filter((cat) => cat !== value)
             : [...prev, value]
         );
         break;
-      case 'company':
-        setSelectedCompanies(prev => 
-          prev.includes(value) 
-            ? prev.filter(comp => comp !== value)
+      case "company":
+        setSelectedCompanies((prev) =>
+          prev.includes(value)
+            ? prev.filter((comp) => comp !== value)
             : [...prev, value]
         );
         break;
-      case 'breed':
-        setSelectedBreeds(prev => 
-          prev.includes(value) 
-            ? prev.filter(breed => breed !== value)
+      case "breed":
+        setSelectedBreeds((prev) =>
+          prev.includes(value)
+            ? prev.filter((breed) => breed !== value)
             : [...prev, value]
         );
         break;
-      case 'age':
-        setSelectedAges(prev => 
-          prev.includes(value) 
-            ? prev.filter(age => age !== value)
+      case "age":
+        setSelectedAges((prev) =>
+          prev.includes(value)
+            ? prev.filter((age) => age !== value)
             : [...prev, value]
         );
         break;
@@ -98,14 +107,30 @@ function Shop() {
   };
 
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category.name);
-    const matchesCompany = selectedCompanies.length === 0 || selectedCompanies.includes(product.company);
-    const matchesBreed = selectedBreeds.length === 0 || selectedBreeds.includes(product.breeds.name);
-    const matchesAge = selectedAges.length === 0 || selectedAges.includes(product.age);
-    const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(product.category.name);
+    const matchesCompany =
+      selectedCompanies.length === 0 ||
+      selectedCompanies.includes(product.company);
+    const matchesBreed =
+      selectedBreeds.length === 0 ||
+      selectedBreeds.includes(product.breeds.name);
+    const matchesAge =
+      selectedAges.length === 0 || selectedAges.includes(product.age);
+    const matchesPrice =
+      product.price >= priceRange.min && product.price <= priceRange.max;
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesCompany && matchesBreed && matchesAge && matchesPrice && matchesSearch;
+    return (
+      matchesCategory &&
+      matchesCompany &&
+      matchesBreed &&
+      matchesAge &&
+      matchesPrice &&
+      matchesSearch
+    );
   });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -127,12 +152,23 @@ function Shop() {
   const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = sortedProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
 
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategories, selectedCompanies, selectedBreeds, selectedAges, priceRange, searchQuery, sortBy]);
+  }, [
+    selectedCategories,
+    selectedCompanies,
+    selectedBreeds,
+    selectedAges,
+    priceRange,
+    searchQuery,
+    sortBy,
+  ]);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -159,21 +195,46 @@ function Shop() {
     setCurrentPage(1);
   };
 
-  const handleAddToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+  const handleAddToCart = async (e, product_id) => {
+    if (!localStorage.getItem(ACCESS_TOKEN)) {
+      localStorage.setItem("redirectAfterLogin", location.pathname);
+      navigate("/login");
+    } else {
+      setLoading(true);
+      setError("");
+      const formData = new FormData();
+      formData.append("type", 1);
+      formData.append("item", parseInt(product_id));
+
+      try {
+        await api.post(`/api/cart/`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        alert("Cart Added Successfully!");
+
+        navigate("/cart");
+      } catch (error) {
+        if (error.response && error.response.data.image) {
+          setError(error.response.data.image[0]); // Display the error message
+        } else {
+          setError("Something went wrong. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
+    }
   };
 
-  if (loading) return <LoadingScreen />;
+  useEffect(() => {
+    if (!loading) {
+      setTimeout(() => {
+        setFadeOut(true); // start fading
+        setTimeout(() => setShowLoader(false), 500); // remove loader
+      }, 1000); // short delay after fetch
+    }
+  }, [loading]);
+
+  if (showLoader) return <LoadingScreen fadeOut={fadeOut} />;
 
   return (
     <div className="bg-light min-vh-100">
@@ -214,7 +275,7 @@ function Shop() {
                 <h5 className="mb-0">
                   <i className="bi bi-filter me-2"></i>Filters
                 </h5>
-                <button 
+                <button
                   className="btn btn-sm btn-outline-dark"
                   onClick={clearFilters}
                 >
@@ -273,7 +334,9 @@ function Shop() {
                           type="checkbox"
                           id={`category-${category}`}
                           checked={selectedCategories.includes(category)}
-                          onChange={() => handleFilterChange('category', category)}
+                          onChange={() =>
+                            handleFilterChange("category", category)
+                          }
                         />
                         <label
                           className="form-check-label"
@@ -297,7 +360,9 @@ function Shop() {
                           type="checkbox"
                           id={`company-${company}`}
                           checked={selectedCompanies.includes(company)}
-                          onChange={() => handleFilterChange('company', company)}
+                          onChange={() =>
+                            handleFilterChange("company", company)
+                          }
                         />
                         <label
                           className="form-check-label"
@@ -321,7 +386,7 @@ function Shop() {
                           type="checkbox"
                           id={`breed-${breed}`}
                           checked={selectedBreeds.includes(breed)}
-                          onChange={() => handleFilterChange('breed', breed)}
+                          onChange={() => handleFilterChange("breed", breed)}
                         />
                         <label
                           className="form-check-label"
@@ -345,7 +410,7 @@ function Shop() {
                           type="checkbox"
                           id={`age-${age}`}
                           checked={selectedAges.includes(age)}
-                          onChange={() => handleFilterChange('age', age)}
+                          onChange={() => handleFilterChange("age", age)}
                         />
                         <label
                           className="form-check-label"
@@ -375,16 +440,25 @@ function Shop() {
             <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
               {currentProducts.map((product) => (
                 <div className="col" key={product.id}>
-                  <div className="card h-100 shadow-sm hover-shadow">
+                  <div
+                    className="card h-100 shadow-sm hover-shadow"
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      navigate(
+                        `/shop/product/${encodeURIComponent(product.name)}`
+                      )
+                    }
+                  >
                     <div className="position-relative">
                       <img
-                        src={`${BASE_URL}${product.image}`}
+                        src={product.image}
                         className="card-img-top product-image"
                         alt={product.name}
                         onError={(e) => {
                           e.target.src =
                             "https://via.placeholder.com/300x300?text=No+Image";
                         }}
+                        style={{ height: "450px" }}
                       />
                     </div>
                     <div className="card-body">
@@ -410,13 +484,22 @@ function Shop() {
                       <div className="d-grid gap-2">
                         <button
                           className="btn btn-dark"
-                          onClick={() => navigate(`/shop/product/${product.id}`)}
+                          onClick={() =>
+                            navigate(
+                              `/shop/product/${encodeURIComponent(
+                                product.name
+                              )}`
+                            )
+                          }
                         >
                           View Details
                         </button>
                         <button
                           className="btn btn-outline-dark"
-                          onClick={() => handleAddToCart(product)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(e, product.id);
+                          }}
                         >
                           <i className="bi bi-cart-plus me-2"></i>
                           Add to Cart
@@ -432,7 +515,11 @@ function Shop() {
             {totalPages > 1 && (
               <nav className="mt-4">
                 <ul className="pagination justify-content-center">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => paginate(currentPage - 1)}
@@ -441,20 +528,28 @@ function Shop() {
                       Previous
                     </button>
                   </li>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <li
-                      key={number}
-                      className={`page-item ${currentPage === number ? 'active' : ''}`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(number)}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (number) => (
+                      <li
+                        key={number}
+                        className={`page-item ${
+                          currentPage === number ? "active" : ""
+                        }`}
                       >
-                        {number}
-                      </button>
-                    </li>
-                  ))}
-                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => paginate(number)}
+                        >
+                          {number}
+                        </button>
+                      </li>
+                    )
+                  )}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => paginate(currentPage + 1)}

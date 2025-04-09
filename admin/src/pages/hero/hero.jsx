@@ -3,19 +3,19 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
-import Pagination from "../../components/Pagination";
-import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../../components/Pagination";
 import { exportToCSV } from "../../utils/export";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-function ViewAdoptions() {
+function ViewHero() {
   const navigate = useNavigate();
   const { user, isLoading } = useUser();
-  const [allAdoptions, setAllAdoptions] = useState([]);
-  const [isLoadingAdoptions, setIsLoadingAdoptions] = useState(false);
+  const [allHeroes, setAllHeroes] = useState([]);
+  const [isLoadingHeroes, setIsLoadingHeroes] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
@@ -28,9 +28,9 @@ function ViewAdoptions() {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
 
-    if (allAdoptions) {
-      const filtered = allAdoptions.filter((item) =>
-        `${item.name} ${item.status} ${item.created_by}`
+    if (allHeroes) {
+      const filtered = allHeroes.filter((item) =>
+        `${item.title} ${item.status} ${item.created_by}`
           .toLowerCase()
           .includes(value)
       );
@@ -47,31 +47,31 @@ function ViewAdoptions() {
     second: "2-digit",
   };
 
-  const fetchAdoptions = async () => {
-    setIsLoadingAdoptions(true);
+  const fetchHeroes = async () => {
+    setIsLoadingHeroes(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
-      setIsLoadingAdoptions(false);
+      setIsLoadingUser(false);
       return;
     }
     try {
-      const adoptionsRes = api.get("/api/adoption/");
-      const [adoptions] = await Promise.all([adoptionsRes]);
-      setAllAdoptions(adoptions.data);
-      setFilteredData(adoptions.data);
+      const heroesRes = api.get("/api/hero/");
+      const [heroes] = await Promise.all([heroesRes]);
+      setAllHeroes(heroes.data);
+      setFilteredData(heroes.data);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
         const refreshed = await handleTokenRefresh();
         if (refreshed) {
-          return fetchAdoptions();
+          return fetchHeroes();
         }
       } else {
-        console.error("Failed to fetch adoption data:", error);
+        console.error("Failed to fetch hero data:", error);
       }
     } finally {
-      setIsLoadingAdoptions(false);
+      setIsLoadingHeroes(false);
     }
   };
 
@@ -84,50 +84,43 @@ function ViewAdoptions() {
       }
     }
 
-    fetchAdoptions();
+    fetchHeroes();
     const interval = setInterval(() => {
-      fetchAdoptions();
+      fetchHeroes();
     }, 60000);
 
     return () => clearInterval(interval);
   }, [message]);
 
-  const handleDeactivate = async (adoption_id) => {
+  const handleDeactivate = async (hero_id) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
-      setIsLoadingAdoptions(false);
+      setIsLoadingUser(false);
       return;
     }
     try {
-      const response = await api.patch(
-        `api/adoption/dog/${adoption_id}/deactivate/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.patch(`api/hero/hero/${hero_id}/deactivate/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setMessage(response.data.message);
-      fetchAdoptions();
+      fetchHeroes();
     } catch (error) {
       setError(
-        error.response.data.message || "Error deactivating adoption listing"
+        error.response.data.message || "Error deactivating hero section"
       );
     }
   };
 
-  const handleActivate = async (adoption_id) => {
+  const handleActivate = async (hero_id) => {
     try {
-      const response = await api.patch(
-        `api/adoption/dog/${adoption_id}/activate/`
-      );
+      const response = await api.patch(`api/hero/hero/${hero_id}/activate/`);
       setMessage(response.data.message);
-      fetchAdoptions();
+      fetchHeroes();
     } catch (error) {
-      setError(
-        error.response.data.message || "Error activating adoption listing"
-      );
+      setError(error.response.data.message || "Error activating hero section");
       console.log(error);
     }
   };
@@ -140,17 +133,17 @@ function ViewAdoptions() {
     const formData = new FormData();
     formData.append("show_on_homepage", newStatus);
     try {
-      await api.patch(`/api/adoptions/adoption/${id}/`, formData, {
+      await api.patch(`/api/hero/hero/${id}/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      fetchAdoptions();
+      fetchHeroes();
       if (newStatus) {
         setMessage(name + " is live on featured section!");
       } else {
         setMessage(name + " will no longer be displayed on featured section!");
       }
     } catch (error) {
-      console.error("Failed to update adoption listing:", error);
+      console.error("Failed to update hero section:", error);
     }
   };
 
@@ -158,11 +151,12 @@ function ViewAdoptions() {
     const formattedData = filteredData.map((item) => ({
       id: item.id,
       image: item.image,
-      pet_name: item.name,
+      title: item.title,
+      subtitle: item.subtitle,
       description: item.description,
+      button_text: item.button_text,
+      button_link: item.button_link,
       status: item.status,
-      breed: item.breed ? `${item.breed.name}` : "",
-      age: item.age,
       show_on_homepage: item.show_on_homepage,
       created_by: item.created_by
         ? `${item.created_by.first_name} ${item.created_by.last_name} [${item.created_by.email}]`
@@ -173,10 +167,11 @@ function ViewAdoptions() {
       [
         "ID",
         "Image",
-        "Pet Name",
+        "Title",
+        "Subtitle",
         "Description",
-        "Age",
-        "Breed",
+        "Button Text",
+        "Button Link",
         "Status",
         "Featured",
         "Created By",
@@ -184,20 +179,21 @@ function ViewAdoptions() {
       [
         "id",
         "image",
-        "pet_name",
+        "title",
+        "subtitle",
         "description",
-        "age",
-        "breed",
+        "button_text",
+        "button_link",
         "status",
         "show_on_homepage",
         "created_by",
       ],
-      "adoptions.csv"
+      "hero.csv"
     );
   };
 
-  const handleRowClick = (adoption_id) => {
-    navigate(`/adoption/${encodeURIComponent(adoption_id)}`);
+  const handleRowClick = (hero_id) => {
+    navigate(`/hero/${encodeURIComponent(hero_id)}`);
   };
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
@@ -236,13 +232,13 @@ function ViewAdoptions() {
         }}
       >
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-          <h1 className="h3 mb-0">Adoption Listings</h1>
+          <h1 className="h3 mb-0">Hero Sections</h1>
           <div className="d-flex gap-2 mt-3 mt-md-0">
             <button
               className="btn btn-primary"
-              onClick={() => navigate("/adoption/add")}
+              onClick={() => navigate("/hero/add")}
             >
-              Add New Adoption
+              Add New Hero Section
             </button>
             <button className="btn btn-success" onClick={handleExport}>
               Export to CSV
@@ -257,7 +253,7 @@ function ViewAdoptions() {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search adoptions..."
+                  placeholder="Search hero sections..."
                   value={searchTerm}
                   onChange={handleSearch}
                 />
@@ -266,25 +262,26 @@ function ViewAdoptions() {
                 <thead>
                   <tr>
                     <th>Image</th>
-                    <th>Pet Name</th>
-                    <th>Breed</th>
-                    <th>Age</th>
+                    <th>Title</th>
+                    <th>Subtitle</th>
+                    <th>Button Text</th>
                     <th>Status</th>
+                    <th>Featured</th>
                     <th>Created By</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((adoption) => (
+                  {paginatedData.map((hero) => (
                     <tr
-                      key={adoption.id}
-                      onClick={() => handleRowClick(adoption.id)}
+                      key={hero.id}
+                      onClick={() => handleRowClick(hero.id)}
                       style={{ cursor: "pointer" }}
                     >
                       <td>
                         <img
-                          src={adoption.image}
-                          alt={adoption.name}
+                          src={hero.image}
+                          alt={hero.title}
                           style={{
                             width: "50px",
                             height: "50px",
@@ -293,37 +290,54 @@ function ViewAdoptions() {
                           }}
                         />
                       </td>
-                      <td>{adoption.name}</td>
-                      <td>{adoption.breed?.name || "N/A"}</td>
-                      <td>{adoption.age}</td>
+                      <td>{hero.title}</td>
+                      <td>{hero.subtitle}</td>
+                      <td>{hero.button_text}</td>
                       <td>
                         <span
                           className={`badge ${
-                            adoption.status ? "bg-success" : "bg-danger"
+                            hero.status ? "bg-success" : "bg-danger"
                           }`}
                         >
-                          {adoption.status ? "Active" : "Inactive"}
+                          {hero.status ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td>
-                        {adoption.created_by
-                          ? `${adoption.created_by.first_name} ${adoption.created_by.last_name}`
+                        <div className="form-check form-switch">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={hero.show_on_homepage}
+                            onChange={(e) =>
+                              handleToggleStatus(
+                                hero.id,
+                                e.target.checked,
+                                hero.title
+                              )
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </td>
+                      <td>
+                        {hero.created_by
+                          ? `${hero.created_by.first_name} ${hero.created_by.last_name}`
                           : "N/A"}
                       </td>
                       <td>
                         <div className="btn-group">
                           <button
                             className={`btn btn-sm ${
-                              adoption.status ? "btn-danger" : "btn-success"
+                              hero.status ? "btn-danger" : "btn-success"
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              adoption.status
-                                ? handleDeactivate(adoption.id)
-                                : handleActivate(adoption.id);
+                              hero.status
+                                ? handleDeactivate(hero.id)
+                                : handleActivate(hero.id);
                             }}
                           >
-                            {adoption.status ? "Deactivate" : "Activate"}
+                            {hero.status ? "Deactivate" : "Activate"}
                           </button>
                         </div>
                       </td>
@@ -371,4 +385,4 @@ function ViewAdoptions() {
   );
 }
 
-export default ViewAdoptions;
+export default ViewHero;

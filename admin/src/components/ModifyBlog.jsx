@@ -10,6 +10,7 @@ import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingIndicator from "./LoadingIndicator";
 import { handleTokenRefresh } from "../hooks/tokenRefresh";
+import uploadToImgBB from "../utils/image-upload";
 
 const ModifyBlog = ({ method }) => {
   const blog = location.state?.blog;
@@ -48,9 +49,7 @@ const ModifyBlog = ({ method }) => {
       const data = res.data;
       setBlogTitle(data.title);
       setContent(data.content);
-      setPreviewImage(
-        data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
-      );
+      setPreviewImage(data.image ? data.image : "");
       setBlogStatus(data.status);
     } catch (err) {
       console.error("Failed to fetch event details:", err);
@@ -74,17 +73,27 @@ const ModifyBlog = ({ method }) => {
       setLoading(false);
       return;
     }
-    if (!blogImage && method === "add") {
-      setError("Image is required");
+    let imageUrl = null;
+
+    if (blogImage) {
+      imageUrl = await uploadToImgBB(blogImage);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
+      setError("No image selected");
       setLoading(false);
       return;
     }
+
     const formData = new FormData();
     formData.append("title", blogTitle); // Add other event details
     formData.append("content", content);
     formData.append("status", blogStatus);
-    if (blogImage) {
-      formData.append("image", blogImage); // Append image
+    if (imageUrl) {
+      formData.append("image", imageUrl); // Append image
     }
 
     try {

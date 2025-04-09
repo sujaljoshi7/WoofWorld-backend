@@ -4,6 +4,7 @@ import Sidebar from "../layout/Sidebar";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/styles.css";
 import useUser from "../hooks/useUser";
+import uploadToImgBB from "../utils/image-upload";
 
 function AddEvent({ route, method }) {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ function AddEvent({ route, method }) {
     try {
       const res = await api.get(`/api/events/${id}/`);
       const data = res.data;
+      console.log(data);
       setEventName(data.name);
       setEventDescription(data.description);
       setEventDate(data.date);
@@ -64,7 +66,7 @@ function AddEvent({ route, method }) {
       setAddressLine1(data.address_line_1);
       setAddressLine2(data.address_line_2);
       setMapsLink(data.maps_link);
-      setSelectedCategory(data.event_category_id);
+      setSelectedCategory(data.category.id);
       setEventStatus(data.status);
       const duration = data.duration; // Example: "2 Hours 30 Minutes"
       if (duration) {
@@ -75,7 +77,7 @@ function AddEvent({ route, method }) {
           }
         }
       }
-      setPreviewImage(`${BASE_URL}${data.image}`); // Show existing image
+      setPreviewImage(data.image); // Show existing image
     } catch (err) {
       console.error("Failed to fetch event details:", err);
     }
@@ -101,6 +103,21 @@ function AddEvent({ route, method }) {
     setLoading(true);
     setError("");
 
+    let imageUrl = null;
+
+    if (eventImage) {
+      imageUrl = await uploadToImgBB(eventImage);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
+      setError("No image selected");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", eventName); // Add other event details
     formData.append("description", eventDescription);
@@ -116,12 +133,8 @@ function AddEvent({ route, method }) {
     formData.append("status", 1);
     formData.append("created_by", 1);
     formData.append("event_category_id", selectedCategory);
-    if (eventImage) {
-      const fileExtension = eventImage.name.split(".").pop();
-      const uniqueFileName = `event_${Date.now()}_${Math.random()
-        .toString(36)
-        .substring(2, 8)}.${fileExtension}`;
-      formData.append("image", eventImage, uniqueFileName); // Append image
+    if (imageUrl) {
+      formData.append("image", imageUrl); // Append image
     }
     // Proceed with storing event category
 
@@ -424,7 +437,7 @@ function AddEvent({ route, method }) {
                   </div>
                 </div>
                 <button type="submit" className="btn btn-warning w-100">
-                  Save Category
+                  Save Event
                 </button>
               </form>
             </div>

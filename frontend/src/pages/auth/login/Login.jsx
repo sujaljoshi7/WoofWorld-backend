@@ -4,6 +4,7 @@ import api from "../../../api";
 import logo from "../../../assets/images/logo/logo1.png";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoadingIndicator from "../../../components/common/LoadingIndicator";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState(false);
   const route = "/api/token/";
 
@@ -47,6 +49,10 @@ function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   useEffect(() => {
@@ -161,9 +167,9 @@ function Login() {
                       </div>
                     </div>
                     <div className="col-12">
-                      <div className="form-floating mb-3">
+                      <div className="form-floating mb-3 position-relative">
                         <input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           className="form-control"
                           name="password"
                           id="password"
@@ -175,6 +181,18 @@ function Login() {
                         <label htmlFor="password" className="form-label">
                           Password
                         </label>
+                        <button
+                          type="button"
+                          className="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2"
+                          onClick={togglePasswordVisibility}
+                          style={{ zIndex: 10, color: "#6c757d" }}
+                        >
+                          {showPassword ? (
+                            <FaEyeSlash size={18} />
+                          ) : (
+                            <FaEye size={18} />
+                          )}
+                        </button>
                       </div>
                     </div>
                     <div className="col-12">

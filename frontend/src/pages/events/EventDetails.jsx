@@ -165,7 +165,7 @@ function EventDetails() {
           <div className="row g-4">
             <div className="col-md-8">
               <img
-                src={`${BASE_URL}${event.image}`}
+                src={event.image}
                 alt="Event Image"
                 className="img-fluid rounded"
                 style={{ height: "500px", width: "100%" }}

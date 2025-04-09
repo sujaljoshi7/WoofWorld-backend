@@ -125,7 +125,7 @@ const ServiceDetails = () => {
 
                     {service.image && (
                       <img
-                        src={`${BASE_URL}${service.image}`}
+                        src={service.image}
                         alt="Blog Image"
                         className="img-fluid mb-3 rounded shadow-sm"
                         style={{

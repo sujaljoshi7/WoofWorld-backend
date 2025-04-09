@@ -3,11 +3,12 @@ import api from "../../api";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
 import "../../styles/Home.css";
+import LoadingScreen from "../../components/LoadingScreen";
 
 const AllDogs = () => {
   // State for search and filters
   const BASE_URL = import.meta.env.VITE_API_URL;
-
+  const [fadeOut, setFadeOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBreeds, setSelectedBreeds] = useState([]);
   const [selectedAges, setSelectedAges] = useState([]);
@@ -26,7 +27,7 @@ const AllDogs = () => {
 
   // State for dogs data
   const [dogs, setDogs] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Fetch dogs data
@@ -55,7 +56,7 @@ const AllDogs = () => {
             dog.looking_for ||
             "Lovable dog seeking a forever home",
           // For demo purposes, let's use placeholder images since the remote images might not be accessible
-          image_url: `${BASE_URL}${dog.image}`,
+          image_url: dog.image,
           location: "Adoption Center",
           good_with_kids: true, // Default values since API might not provide these
           good_with_dogs: true,
@@ -72,7 +73,6 @@ const AllDogs = () => {
         }));
 
         setDogs(transformedDogs);
-        setIsLoading(false);
       } catch (err) {
         console.log(err.message);
         setError(err.message);
@@ -272,6 +272,17 @@ const AllDogs = () => {
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => {
+        setFadeOut(true);
+        setTimeout(() => setIsLoading(false), 500); // <-- fix here
+      }, 3000);
+    }
+  }, [isLoading]);
+
+  if (isLoading) return <LoadingScreen fadeOut={fadeOut} />;
 
   return (
     <div className="bg-light min-vh-100">
@@ -604,7 +615,7 @@ const AllDogs = () => {
                         src={dog.image_url}
                         className="card-img-top dog-image"
                         alt={dog.name}
-                        style={{ height: "300px", objectFit: "cover" }}
+                        style={{ height: "350px", objectFit: "cover" }}
                       />
                       <span
                         className={`badge ${
@@ -762,8 +773,8 @@ const AllDogs = () => {
                         alt={activeDog.name}
                         style={{
                           width: "100%",
-                          height: "300px",
-                          objectFit: "cover",
+                          height: "400px",
+                          objectFit: "fill",
                         }}
                       />
                     </div>

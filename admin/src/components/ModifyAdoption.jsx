@@ -7,9 +7,9 @@ import api from "../api";
 import Sidebar from "../layout/Sidebar";
 import "../styles/Styles.css";
 import LoadingIndicator from "./LoadingIndicator";
-
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
+import uploadToImgBB from "../utils/image-upload";
 
 const ModifyAdoption = ({ method }) => {
   const navigate = useNavigate();
@@ -76,9 +76,7 @@ const ModifyAdoption = ({ method }) => {
       setDisease(data.disease);
       setVaccinatedStatus(data.vaccinated_status);
       setLookingFor(data.looking_for);
-      setPreviewImage(
-        data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
-      );
+      setPreviewImage(data.image ? data.image : "");
     } catch (err) {
       console.error("Failed to fetch adoption details:", err);
     }
@@ -97,6 +95,21 @@ const ModifyAdoption = ({ method }) => {
     setLoading(true);
     setError("");
 
+    let imageUrl = null;
+
+    if (image) {
+      imageUrl = await uploadToImgBB(image);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
+      setError("No image selected");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("breed_id", selectedBreed);
@@ -110,8 +123,8 @@ const ModifyAdoption = ({ method }) => {
     formData.append("energy_level", energyLevel);
     formData.append("vaccinated_status", vaccinatedStatus);
     formData.append("status", status);
-    if (image) {
-      formData.append("image", image);
+    if (imageUrl) {
+      formData.append("image", imageUrl);
     }
 
     try {

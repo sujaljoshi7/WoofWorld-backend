@@ -21,7 +21,7 @@ export default function LoadingScreen({ fadeOut }) {
 
   return (
     <motion.div
-      className="flex flex-col items-center justify-center h-screen w-screen bg-white text-center relative overflow-hidden"
+      className="flex flex-col items-center justify-center h-screen w-screen bg-white text-center relative overflow-hidden px-4"
       initial={{ opacity: 1 }}
       animate={{ opacity: fadeOut ? 0 : 1 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -32,23 +32,23 @@ export default function LoadingScreen({ fadeOut }) {
         animate={{ opacity: [0.3, 0.5, 0.3] }}
         transition={{ repeat: Infinity, duration: 3 }}
       >
-        <div className="absolute top-10 left-20 w-6 h-6 bg-gray-200 rounded-full opacity-50"></div>
-        <div className="absolute bottom-20 right-16 w-8 h-8 bg-gray-300 rounded-full opacity-40"></div>
-        <div className="absolute bottom-10 left-32 w-5 h-5 bg-gray-200 rounded-full opacity-60"></div>
+        <div className="absolute top-10 left-20 w-4 h-4 sm:w-6 sm:h-6 bg-gray-200 rounded-full opacity-50"></div>
+        <div className="absolute bottom-20 right-16 w-5 h-5 sm:w-8 sm:h-8 bg-gray-300 rounded-full opacity-40"></div>
+        <div className="absolute bottom-10 left-32 w-3 h-3 sm:w-5 sm:h-5 bg-gray-200 rounded-full opacity-60"></div>
       </motion.div>
 
       {/* Bouncing Dog Icon */}
       <motion.img
         src={dogImage}
         alt="Loading Dog"
-        className="w-28 h-28 mb-4"
+        className="w-20 h-20 sm:w-28 sm:h-28 mb-4"
         animate={{ y: [0, -10, 0], rotate: [0, 10, -10, 0] }}
         transition={{ repeat: Infinity, duration: 1 }}
       />
 
       {/* Typing Effect for Loading Text */}
       <motion.p
-        className="text-lg font-semibold text-gray-700 max-w-md"
+        className="text-base sm:text-lg font-semibold text-gray-700 max-w-[90%] sm:max-w-md"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ repeat: Infinity, duration: 1.5 }}
       >

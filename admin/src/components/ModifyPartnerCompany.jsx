@@ -10,6 +10,7 @@ import LoadingIndicator from "./LoadingIndicator";
 
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
+import uploadToImgBB from "../utils/image-upload";
 
 const ModifyPartnerCompany = ({ method }) => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const ModifyPartnerCompany = ({ method }) => {
       const res = await api.get(`/api/homepage/getpartnercompany/${id}/`);
       const data = res.data;
       setCompanyName(data.name);
-      setPreviewImage(data.image ? `${BASE_URL}${data.image}` : "");
+      setPreviewImage(data.image ? data.image : "");
     } catch (err) {
       console.error("Failed to fetch company details:", err);
     }
@@ -52,8 +53,17 @@ const ModifyPartnerCompany = ({ method }) => {
     setLoading(true);
     setError("");
 
-    if (!image && method === "add") {
-      setError("Please select Image");
+    let imageUrl = null;
+
+    if (image) {
+      imageUrl = await uploadToImgBB(image);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
+      setError("No image selected");
       setLoading(false);
       return;
     }
@@ -61,8 +71,8 @@ const ModifyPartnerCompany = ({ method }) => {
     const formData = new FormData();
     formData.append("name", companyName);
     formData.append("status", 1);
-    if (image) {
-      formData.append("image", image);
+    if (imageUrl) {
+      formData.append("image", imageUrl);
     }
     try {
       if (method === "edit") {

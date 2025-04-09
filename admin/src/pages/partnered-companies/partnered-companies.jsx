@@ -3,19 +3,19 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
-import Pagination from "../../components/Pagination";
-import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../../components/Pagination";
 import { exportToCSV } from "../../utils/export";
+import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-function ViewAdoptions() {
+function ViewPartneredCompanies() {
   const navigate = useNavigate();
   const { user, isLoading } = useUser();
-  const [allAdoptions, setAllAdoptions] = useState([]);
-  const [isLoadingAdoptions, setIsLoadingAdoptions] = useState(false);
+  const [allCompanies, setAllCompanies] = useState([]);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
@@ -28,8 +28,8 @@ function ViewAdoptions() {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
 
-    if (allAdoptions) {
-      const filtered = allAdoptions.filter((item) =>
+    if (allCompanies) {
+      const filtered = allCompanies.filter((item) =>
         `${item.name} ${item.status} ${item.created_by}`
           .toLowerCase()
           .includes(value)
@@ -47,31 +47,31 @@ function ViewAdoptions() {
     second: "2-digit",
   };
 
-  const fetchAdoptions = async () => {
-    setIsLoadingAdoptions(true);
+  const fetchCompanies = async () => {
+    setIsLoadingCompanies(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
-      setIsLoadingAdoptions(false);
+      setIsLoadingUser(false);
       return;
     }
     try {
-      const adoptionsRes = api.get("/api/adoption/");
-      const [adoptions] = await Promise.all([adoptionsRes]);
-      setAllAdoptions(adoptions.data);
-      setFilteredData(adoptions.data);
+      const companiesRes = api.get("/api/partnered-companies/");
+      const [companies] = await Promise.all([companiesRes]);
+      setAllCompanies(companies.data);
+      setFilteredData(companies.data);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
         const refreshed = await handleTokenRefresh();
         if (refreshed) {
-          return fetchAdoptions();
+          return fetchCompanies();
         }
       } else {
-        console.error("Failed to fetch adoption data:", error);
+        console.error("Failed to fetch companies data:", error);
       }
     } finally {
-      setIsLoadingAdoptions(false);
+      setIsLoadingCompanies(false);
     }
   };
 
@@ -84,24 +84,24 @@ function ViewAdoptions() {
       }
     }
 
-    fetchAdoptions();
+    fetchCompanies();
     const interval = setInterval(() => {
-      fetchAdoptions();
+      fetchCompanies();
     }, 60000);
 
     return () => clearInterval(interval);
   }, [message]);
 
-  const handleDeactivate = async (adoption_id) => {
+  const handleDeactivate = async (company_id) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
-      setIsLoadingAdoptions(false);
+      setIsLoadingUser(false);
       return;
     }
     try {
       const response = await api.patch(
-        `api/adoption/dog/${adoption_id}/deactivate/`,
+        `api/partnered-companies/company/${company_id}/deactivate/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -109,25 +109,21 @@ function ViewAdoptions() {
         }
       );
       setMessage(response.data.message);
-      fetchAdoptions();
+      fetchCompanies();
     } catch (error) {
-      setError(
-        error.response.data.message || "Error deactivating adoption listing"
-      );
+      setError(error.response.data.message || "Error deactivating company");
     }
   };
 
-  const handleActivate = async (adoption_id) => {
+  const handleActivate = async (company_id) => {
     try {
       const response = await api.patch(
-        `api/adoption/dog/${adoption_id}/activate/`
+        `api/partnered-companies/company/${company_id}/activate/`
       );
       setMessage(response.data.message);
-      fetchAdoptions();
+      fetchCompanies();
     } catch (error) {
-      setError(
-        error.response.data.message || "Error activating adoption listing"
-      );
+      setError(error.response.data.message || "Error activating company");
       console.log(error);
     }
   };
@@ -140,29 +136,28 @@ function ViewAdoptions() {
     const formData = new FormData();
     formData.append("show_on_homepage", newStatus);
     try {
-      await api.patch(`/api/adoptions/adoption/${id}/`, formData, {
+      await api.patch(`/api/partnered-companies/company/${id}/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      fetchAdoptions();
+      fetchCompanies();
       if (newStatus) {
         setMessage(name + " is live on featured section!");
       } else {
         setMessage(name + " will no longer be displayed on featured section!");
       }
     } catch (error) {
-      console.error("Failed to update adoption listing:", error);
+      console.error("Failed to update company:", error);
     }
   };
 
   const handleExport = () => {
     const formattedData = filteredData.map((item) => ({
       id: item.id,
-      image: item.image,
-      pet_name: item.name,
+      logo: item.logo,
+      name: item.name,
       description: item.description,
+      website: item.website,
       status: item.status,
-      breed: item.breed ? `${item.breed.name}` : "",
-      age: item.age,
       show_on_homepage: item.show_on_homepage,
       created_by: item.created_by
         ? `${item.created_by.first_name} ${item.created_by.last_name} [${item.created_by.email}]`
@@ -172,32 +167,30 @@ function ViewAdoptions() {
       formattedData,
       [
         "ID",
-        "Image",
-        "Pet Name",
+        "Logo",
+        "Name",
         "Description",
-        "Age",
-        "Breed",
+        "Website",
         "Status",
         "Featured",
         "Created By",
       ],
       [
         "id",
-        "image",
-        "pet_name",
+        "logo",
+        "name",
         "description",
-        "age",
-        "breed",
+        "website",
         "status",
         "show_on_homepage",
         "created_by",
       ],
-      "adoptions.csv"
+      "partnered-companies.csv"
     );
   };
 
-  const handleRowClick = (adoption_id) => {
-    navigate(`/adoption/${encodeURIComponent(adoption_id)}`);
+  const handleRowClick = (company_id) => {
+    navigate(`/partnered-companies/${encodeURIComponent(company_id)}`);
   };
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
@@ -236,13 +229,13 @@ function ViewAdoptions() {
         }}
       >
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-          <h1 className="h3 mb-0">Adoption Listings</h1>
+          <h1 className="h3 mb-0">Partnered Companies</h1>
           <div className="d-flex gap-2 mt-3 mt-md-0">
             <button
               className="btn btn-primary"
-              onClick={() => navigate("/adoption/add")}
+              onClick={() => navigate("/partnered-companies/add")}
             >
-              Add New Adoption
+              Add New Company
             </button>
             <button className="btn btn-success" onClick={handleExport}>
               Export to CSV
@@ -257,7 +250,7 @@ function ViewAdoptions() {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search adoptions..."
+                  placeholder="Search companies..."
                   value={searchTerm}
                   onChange={handleSearch}
                 />
@@ -265,26 +258,26 @@ function ViewAdoptions() {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>Image</th>
-                    <th>Pet Name</th>
-                    <th>Breed</th>
-                    <th>Age</th>
+                    <th>Logo</th>
+                    <th>Name</th>
+                    <th>Website</th>
                     <th>Status</th>
+                    <th>Featured</th>
                     <th>Created By</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((adoption) => (
+                  {paginatedData.map((company) => (
                     <tr
-                      key={adoption.id}
-                      onClick={() => handleRowClick(adoption.id)}
+                      key={company.id}
+                      onClick={() => handleRowClick(company.id)}
                       style={{ cursor: "pointer" }}
                     >
                       <td>
                         <img
-                          src={adoption.image}
-                          alt={adoption.name}
+                          src={company.logo}
+                          alt={company.name}
                           style={{
                             width: "50px",
                             height: "50px",
@@ -293,37 +286,62 @@ function ViewAdoptions() {
                           }}
                         />
                       </td>
-                      <td>{adoption.name}</td>
-                      <td>{adoption.breed?.name || "N/A"}</td>
-                      <td>{adoption.age}</td>
+                      <td>{company.name}</td>
+                      <td>
+                        <a
+                          href={company.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {company.website}
+                        </a>
+                      </td>
                       <td>
                         <span
                           className={`badge ${
-                            adoption.status ? "bg-success" : "bg-danger"
+                            company.status ? "bg-success" : "bg-danger"
                           }`}
                         >
-                          {adoption.status ? "Active" : "Inactive"}
+                          {company.status ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td>
-                        {adoption.created_by
-                          ? `${adoption.created_by.first_name} ${adoption.created_by.last_name}`
+                        <div className="form-check form-switch">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={company.show_on_homepage}
+                            onChange={(e) =>
+                              handleToggleStatus(
+                                company.id,
+                                e.target.checked,
+                                company.name
+                              )
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </td>
+                      <td>
+                        {company.created_by
+                          ? `${company.created_by.first_name} ${company.created_by.last_name}`
                           : "N/A"}
                       </td>
                       <td>
                         <div className="btn-group">
                           <button
                             className={`btn btn-sm ${
-                              adoption.status ? "btn-danger" : "btn-success"
+                              company.status ? "btn-danger" : "btn-success"
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              adoption.status
-                                ? handleDeactivate(adoption.id)
-                                : handleActivate(adoption.id);
+                              company.status
+                                ? handleDeactivate(company.id)
+                                : handleActivate(company.id);
                             }}
                           >
-                            {adoption.status ? "Deactivate" : "Activate"}
+                            {company.status ? "Deactivate" : "Activate"}
                           </button>
                         </div>
                       </td>
@@ -371,4 +389,4 @@ function ViewAdoptions() {
   );
 }
 
-export default ViewAdoptions;
+export default ViewPartneredCompanies;

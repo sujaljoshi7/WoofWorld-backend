@@ -47,6 +47,9 @@ import EditPartnerCompany from "./pages/homepage/partnercompanies/EditPartnerCom
 import NavbarItems from "./pages/homepage/navbar/NavbarItems";
 import AddNavbarItems from "./pages/homepage/navbar/AddNavbarItem";
 import EditNavbarItems from "./pages/homepage/navbar/EditNavbarItem";
+import ViewOrders from "./pages/orders/orders";
+import OrderDetails from "./pages/orders/order-details";
+
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -329,6 +332,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/companyinfo/aboutus"
           element={
@@ -421,7 +425,15 @@ function App() {
           path="/orders"
           element={
             <ProtectedRoute>
-              <ComingSoon />
+              <ViewOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderDetails />
             </ProtectedRoute>
           }
         />

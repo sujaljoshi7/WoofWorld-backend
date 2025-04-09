@@ -266,11 +266,7 @@ function ViewBlogs() {
                   >
                     <td>{item.id}</td>
                     <td>
-                      <img
-                        src={`${BASE_URL}${item.image}`}
-                        alt="Event Image"
-                        height={100}
-                      />
+                      <img src={item.image} alt="Event Image" height={100} />
                     </td>
                     <td>{item.title}</td>
                     <td>

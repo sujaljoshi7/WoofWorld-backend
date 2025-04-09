@@ -17,6 +17,7 @@ function UpcomingEvents() {
   const [addedToCartEvents, setAddedToCartEvents] = useState(new Set());
   const [isButtonLoading, setIsButtonLoading] = useState(false);
   const [priceFilter, setPriceFilter] = useState("all"); // "all", "free", or "paid"
+  const [fadeOut, setFadeOut] = useState(false);
   const [sortOrder, setSortOrder] = useState("date"); // "date" (default) or "price-asc"
   const BASE_URL = import.meta.env.VITE_API_URL;
   const date_format = {
@@ -62,8 +63,6 @@ function UpcomingEvents() {
       } else {
         console.error("Failed to fetch events:", error);
       }
-    } finally {
-      setIsLoadingEvents(false);
     }
   };
 
@@ -132,6 +131,17 @@ function UpcomingEvents() {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    if (!isLoadingEvents) {
+      setTimeout(() => {
+        setFadeOut(true);
+        setTimeout(() => setIsLoadingEvents(false), 500); // Wait for fade-out to finish
+      }, 3000);
+    }
+  }, [isLoadingEvents]);
+
+  if (isLoadingEvents) return <LoadingScreen fadeOut={fadeOut} />;
+
   return (
     <div>
       <div className="main-content">
@@ -146,7 +156,11 @@ function UpcomingEvents() {
                     value={priceFilter}
                     onChange={handlePriceFilterChange}
                     aria-label="Filter by price"
-                    style={{ width: "auto" }}
+                    style={{
+                      width: "auto",
+                      minWidth: "120px",
+                      paddingRight: "2rem",
+                    }}
                   >
                     <option value="all">All Events</option>
                     <option value="free">Free Events</option>
@@ -160,7 +174,11 @@ function UpcomingEvents() {
                     value={sortOrder}
                     onChange={handleSortChange}
                     aria-label="Sort events"
-                    style={{ width: "auto" }}
+                    style={{
+                      width: "auto",
+                      minWidth: "150px",
+                      paddingRight: "2rem",
+                    }}
                   >
                     <option value="date">Sort by Date</option>
                     <option value="price-asc">Price: Low to High</option>
@@ -182,7 +200,7 @@ function UpcomingEvents() {
                   >
                     <div className="card border-0">
                       <img
-                        src={`${BASE_URL}${event.image}`}
+                        src={event.image}
                         className="card-img-top"
                         alt={event.name}
                       />

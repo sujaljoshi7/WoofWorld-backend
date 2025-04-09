@@ -22,6 +22,7 @@ import ComingSoon from "./pages/coming-soon/ComingSoon";
 import Shop from "./pages/shop/Shop";
 import BlogDetail from "./pages/blogs/BlogDetail";
 import ProductDetail from "./pages/shop/ProductDetail";
+import Checkout from "./pages/checkout/Checkout";
 
 function Logout() {
   localStorage.clear();
@@ -44,6 +45,7 @@ function App() {
         <Route path="/pay" element={<RazorpayCheckout />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogDetail />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route
           path="/cart"
           element={

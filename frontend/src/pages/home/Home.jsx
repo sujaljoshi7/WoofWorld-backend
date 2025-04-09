@@ -203,43 +203,11 @@ function Home() {
 
   // Extracted counter component to improve readability
   const Counter = ({ title, target, icon }) => {
-    const [count, setCount] = useState(0);
-    const hasCounted = useRef(false);
-    const counterInterval = useRef(null);
-
-    useEffect(() => {
-      // Only run if we haven't counted yet
-      if (hasCounted.current) return;
-
-      let start = 0;
-      const duration = 2000;
-      const increment = target / (duration / 50);
-
-      counterInterval.current = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          start = target;
-          clearInterval(counterInterval.current);
-          counterInterval.current = null;
-          hasCounted.current = true;
-        }
-        setCount(Math.ceil(start));
-      }, 50);
-
-      // Cleanup function
-      return () => {
-        if (counterInterval.current) {
-          clearInterval(counterInterval.current);
-          counterInterval.current = null;
-        }
-      };
-    }, []); // Empty dependency array to ensure it only runs once
-
     return (
       <div className="counter-card">
         <div className="counter-icon">{icon}</div>
         <div className="counter-content">
-          <h2 className="counter-number">{count}+</h2>
+          <h2 className="counter-number">{target}+</h2>
           <p className="counter-title">{title}</p>
         </div>
       </div>
@@ -288,7 +256,7 @@ function Home() {
                       </div>
                       <div className="black-overlay"></div>
                       <img
-                        src={`${BASE_URL}${hero.image}`}
+                        src={hero.image}
                         alt={`Hero ${index + 1}`}
                         className="hero-image"
                       />
@@ -301,7 +269,7 @@ function Home() {
             </div>
 
             <button
-              className="carousel-control-prev"
+              className="carousel-control-prev visually-hidden"
               type="button"
               onClick={goToPrevSlide}
             >
@@ -312,7 +280,7 @@ function Home() {
               <span className="visually-hidden">Previous</span>
             </button>
             <button
-              className="carousel-control-next"
+              className="carousel-control-next visually-hidden"
               type="button"
               onClick={goToNextSlide}
             >
@@ -328,28 +296,108 @@ function Home() {
         {/* Partner Companies Section */}
         <section className="partner-companies">
           <h4 className="text-center">Trusted by great companies</h4>
-          <div className="overflow-hidden bg-gray-100 py-4 relative w-full mt-3">
-            <div className="scrolling-wrapper">
-              <div className="logos">
-                {data.partnerCompanies.length > 0 ? (
-                  [...data.partnerCompanies, ...data.partnerCompanies].map(
-                    (company, index) => (
-                      <img
-                        key={index}
-                        title={company.name}
-                        src={`${BASE_URL}${company.image}`}
-                        alt="Company Logo"
-                        className="logo"
-                      />
-                    )
-                  )
-                ) : (
-                  <p>No partner companies available</p>
-                )}
+          <div className="container-fluid py-4">
+            <div className="partner-logos-wrapper">
+              <div className="partner-logos-container">
+                <div className="partner-logos">
+                  {data.partnerCompanies.length > 0 ? (
+                    data.partnerCompanies.map((company, index) => (
+                      <div key={index} className="partner-logo-item">
+                        <img
+                          title={company.name}
+                          src={company.image}
+                          alt="Company Logo"
+                          className="img-fluid"
+                          style={{
+                            height: "100px",
+                            width: "auto",
+                            minWidth: "150px",
+                            objectFit: "contain",
+                            padding: "0 40px",
+                          }}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <p>No partner companies available</p>
+                  )}
+                </div>
+                <div className="partner-logos" aria-hidden="true">
+                  {data.partnerCompanies.length > 0
+                    ? data.partnerCompanies.map((company, index) => (
+                        <div
+                          key={`duplicate-${index}`}
+                          className="partner-logo-item"
+                        >
+                          <img
+                            title={company.name}
+                            src={company.image}
+                            alt="Company Logo"
+                            className="img-fluid"
+                            style={{
+                              height: "100px",
+                              width: "auto",
+                              minWidth: "150px",
+                              objectFit: "contain",
+                              padding: "0 40px",
+                            }}
+                          />
+                        </div>
+                      ))
+                    : null}
+                </div>
               </div>
             </div>
           </div>
         </section>
+
+        <style>
+          {`
+            .partner-logos-wrapper {
+              width: 100%;
+              overflow: hidden;
+              position: relative;
+              padding: 20px 0;
+            }
+
+            .partner-logos-container {
+              display: flex;
+              animation: scroll 20s linear infinite;
+              will-change: transform;
+            }
+
+            .partner-logos {
+              display: flex;
+              flex-shrink: 0;
+              gap: 40px;
+            }
+
+            .partner-logo-item {
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            @keyframes scroll {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+
+            .hover-shadow:hover {
+              transform: translateY(-5px);
+              box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+            }
+            
+            .shadow-lg {
+              box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+            }
+          `}
+        </style>
 
         {/* Counters Section */}
         <section className="stats-section">
@@ -432,39 +480,6 @@ function Home() {
           </div>
         </section>
 
-        <style>
-          {`
-
-          
-            .scrolling-wrapper {
-              width: 100%;
-              overflow: hidden;
-              white-space: nowrap;
-              position: relative;
-            }
-
-            .logos {
-              display: flex;
-              gap: 150px;
-              animation: scroll 30s linear infinite;
-            }
-
-            .logo {
-              height: 100px;
-              width: auto;
-            }
-
-            @keyframes scroll {
-              from {
-                transform: translateX(0);
-              }
-              to {
-                transform: translateX(-50%);
-              }
-            }
-          `}
-        </style>
-
         {/* Services Section */}
         <section className="ourservices-section container">
           <div className="justify-content-between align-items-center">
@@ -485,11 +500,22 @@ function Home() {
                   key={service.id}
                   style={{ flex: "0 0 auto" }}
                 >
-                  <div className="card">
+                  <div
+                    className="card shadow-lg hover-shadow"
+                    style={{
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      border: "none",
+                      borderRadius: "15px",
+                    }}
+                  >
                     <img
-                      src={`${BASE_URL}${service.image}`}
+                      src={service.image}
                       className="card-img-top"
                       alt={service.name}
+                      style={{
+                        borderTopLeftRadius: "15px",
+                        borderTopRightRadius: "15px",
+                      }}
                     />
                     <div className="card-body d-flex flex-column">
                       <h5 className="card-title text-wrap">{service.name}</h5>
@@ -523,13 +549,29 @@ function Home() {
                 <div
                   className="p-2"
                   key={product.id}
-                  style={{ flex: "0 0 auto" }}
+                  style={{ flex: "0 0 auto", cursor: "pointer" }}
+                  onClick={() =>
+                    navigate(
+                      `/shop/product/${encodeURIComponent(product.name)}`
+                    )
+                  }
                 >
-                  <div className="card">
+                  <div
+                    className="card shadow-lg hover-shadow"
+                    style={{
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      border: "none",
+                      borderRadius: "15px",
+                    }}
+                  >
                     <img
-                      src={`${BASE_URL}${product.image}`}
+                      src={product.image}
                       className="card-img-top"
                       alt={product.name}
+                      style={{
+                        borderTopLeftRadius: "15px",
+                        borderTopRightRadius: "15px",
+                      }}
                     />
                     <div className="card-body d-flex flex-column">
                       <h5 className="card-title text-wrap">
@@ -572,11 +614,22 @@ function Home() {
                   style={{ flex: "0 0 auto", cursor: "pointer" }}
                   onClick={() => navigate(`/events/${event.id}`)}
                 >
-                  <div className="card">
+                  <div
+                    className="card shadow-lg hover-shadow"
+                    style={{
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      border: "none",
+                      borderRadius: "15px",
+                    }}
+                  >
                     <img
-                      src={`${BASE_URL}${event.image}`}
+                      src={event.image}
                       className="card-img-top"
                       alt={event.name}
+                      style={{
+                        borderTopLeftRadius: "15px",
+                        borderTopRightRadius: "15px",
+                      }}
                     />
                     <div className="card-body">
                       <div className="event-title">
@@ -641,11 +694,24 @@ function Home() {
                   key={adoption.id}
                   style={{ flex: "0 0 auto" }}
                 >
-                  <div className="card">
+                  <div
+                    className="card shadow-lg hover-shadow"
+                    style={{
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      border: "none",
+                      borderRadius: "15px",
+                    }}
+                  >
                     <img
-                      src={`${BASE_URL}${adoption.image}`}
+                      src={adoption.image}
                       className="card-img-top"
                       alt={adoption.name}
+                      style={{
+                        borderTopLeftRadius: "15px",
+                        borderTopRightRadius: "15px",
+                        height: "350px",
+                        objectFit: "fill",
+                      }}
                     />
                     <div className="card-body">
                       <h5 className="card-title text-wrap">

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Order, OrderItems
-from .serializers import OrderSerializer, OrderItemsSerializer
+from .serializers import OrderSerializer, OrderItemsSerializer, ProductSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from cart.models import Cart
@@ -105,3 +105,49 @@ class AllOrdersAdminView(APIView):
             })
 
         return Response(order_data, status=status.HTTP_200_OK)
+
+class OrderDetailsView(APIView):
+    permission_classes = [IsAdminUser]  # Only admin users can access this
+
+    def get(self, request, order_id):
+        """
+        Fetch detailed information about a specific order, including all order items and their details.
+        """
+        try:
+            order = Order.objects.get(id=order_id)
+            order_items = OrderItems.objects.filter(order_id=order)
+            
+            # Get order items with their details
+            order_items_data = []
+            for item in order_items:
+                item_data = OrderItemsSerializer(item).data
+                if item.type == 1:  # Product
+                    try:
+                        product = Product.objects.get(id=item.item)
+                        item_data['product_details'] = ProductSerializer(product).data
+                    except Product.DoesNotExist:
+                        item_data['product_details'] = None
+                order_items_data.append(item_data)
+
+            # Prepare the response data
+            response_data = {
+                'order': OrderSerializer(order).data,
+                'order_items': order_items_data,
+                'user': {
+                    'id': order.user_id.id,
+                    'username': order.user_id.username,
+                    'email': order.user_id.email
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Order.DoesNotExist:
+            return Response(
+                {"error": "Order not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

@@ -8,6 +8,7 @@ import TicketButton from "../../components/event/TicketButton";
 import { QRCodeCanvas } from "qrcode.react";
 import logo from "../../assets/images/logo/logo1.png";
 import LoadingScreen from "../../components/LoadingScreen";
+import OrderDetails from "../../components/profile/OrderDetails";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const UserProfile = () => {
   const [showLoading, setShowLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   // Mock user data - in a real app, this would come from props or a context
   const userData = {
     name: user.first_name + " " + user.last_name,
@@ -73,7 +75,6 @@ const UserProfile = () => {
       try {
         const response = await api.get(`api/user/loggedin-user/`); // Use api.get
         setUser(response.data);
-        console.log(response.data);
       } catch (error) {
         console.error("Error fetching user:", error);
       } finally {
@@ -92,7 +93,6 @@ const UserProfile = () => {
     setLoading(true);
     try {
       const response = await api.get(`api/order/`);
-      console.log("API Response:", response.data);
 
       // Format order data, only including orders with type 1 items
       const formattedOrders = response.data
@@ -123,6 +123,7 @@ const UserProfile = () => {
             status: getStatus(order.order_status),
             statusColor: getStatusColor(order.order_status),
             totalItems,
+            total: order.total,
           };
         })
         .filter(Boolean); // Remove null values (orders without type 1 items)
@@ -134,7 +135,6 @@ const UserProfile = () => {
       const type2OrderItems = response.data.flatMap((orderData) =>
         orderData.order_items.filter((item) => item.type === 2)
       );
-      console.log("Filtered type2OrderItems:", type2OrderItems);
 
       if (type2OrderItems.length === 0) {
         setAllOrders(formattedOrders);
@@ -153,7 +153,6 @@ const UserProfile = () => {
 
       // Map event data
       const eventsData = eventResponses.map((res) => res.data);
-      console.log("Fetched Events Data:", eventsData);
 
       // Count total events
       const totalEvents = eventsData.length;
@@ -175,9 +174,6 @@ const UserProfile = () => {
       const pastEvents = type2OrderItemsWithEvents.filter(
         (item) => item.event && new Date(item.event.date) < today
       );
-
-      console.log("Upcoming Events:", upcomingEvents);
-      console.log("Past Events:", pastEvents);
 
       // Update state
       setAllOrders(formattedOrders);
@@ -210,87 +206,6 @@ const UserProfile = () => {
       setLoading(false);
     }
   };
-
-  // const fetchOrders = async () => {
-  //   try {
-  //     const response = await api.get(`api/order/`);
-  //     console.log("API Response:", response.data);
-
-  //     // Format order data
-  //     const formattedOrders = response.data.map((orderData) => {
-  //       const order = orderData.order;
-  //       const totalItems = orderData.order_items.reduce(
-  //         (sum, item) => sum + item.quantity,
-  //         0
-  //       );
-  //       return {
-  //         id: order.id,
-  //         date: new Date(order.created_at).toLocaleDateString("en-US", {
-  //           month: "long",
-  //           day: "numeric",
-  //           year: "numeric",
-  //         }),
-  //         order_id: order.order_id,
-  //         status: getStatus(order.order_status),
-  //         statusColor: getStatusColor(order.order_status),
-  //         totalItems,
-  //       };
-  //     });
-
-  //     // Extract all order_items where type is 2
-  //     const type2OrderItems = response.data.flatMap((orderData) =>
-  //       orderData.order_items.filter((item) => item.type === 2)
-  //     );
-  //     console.log("Filtered type2OrderItems:", type2OrderItems);
-
-  //     if (type2OrderItems.length === 0) {
-  //       setAllOrders(formattedOrders);
-  //       setAllUpcomingEvents([]);
-  //       setAllPastEvents([]);
-  //       return;
-  //     }
-
-  //     // Fetch event details for each unique event ID
-  //     const eventIds = [...new Set(type2OrderItems.map((item) => item.item))]; // Get unique event IDs
-  //     const eventResponses = await Promise.all(
-  //       eventIds.map((id) => api.get(`api/events/${id}/`))
-  //     );
-
-  //     // Map event data
-  //     const eventsData = eventResponses.map((res) => res.data);
-  //     console.log("Fetched Events Data:", eventsData);
-
-  //     // Get today's date
-  //     const today = new Date();
-  //     today.setHours(0, 0, 0, 0); // Normalize for date-only comparison
-
-  //     // Map order items to event data
-  //     const type2OrderItemsWithEvents = type2OrderItems.map((item) => {
-  //       const event = eventsData.find((event) => event.id === item.item);
-  //       return event ? { ...item, event } : { ...item, event: null };
-  //     });
-
-  //     // Separate upcoming and past events
-  //     const upcomingEvents = type2OrderItemsWithEvents.filter(
-  //       (item) => item.event && new Date(item.event.date) >= today
-  //     );
-  //     const pastEvents = type2OrderItemsWithEvents.filter(
-  //       (item) => item.event && new Date(item.event.date) < today
-  //     );
-
-  //     console.log("Upcoming Events:", upcomingEvents);
-  //     console.log("Past Events:", pastEvents);
-
-  //     // Update state
-  //     setAllOrders(formattedOrders);
-  //     setAllUpcomingEvents(upcomingEvents);
-  //     setAllPastEvents(pastEvents);
-  //   } catch (error) {
-  //     console.error("Error fetching orders or events:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   // Helper functions to get status text and color
   const getStatus = (order_status) => {
@@ -658,6 +573,7 @@ const UserProfile = () => {
                             <th className="px-4 py-2 text-left">Order ID</th>
                             <th className="px-4 py-2 text-left">Date</th>
                             <th className="px-4 py-2 text-left">Total Items</th>
+                            <th className="px-4 py-2 text-left">Total Price</th>
                             <th className="px-4 py-2 text-left">Status</th>
                             <th className="text-end">Action</th>
                           </tr>
@@ -666,10 +582,11 @@ const UserProfile = () => {
                           {allOrders.map((order) => (
                             <tr key={order.id}>
                               <td className="fw-bold px-4 py-2">
-                                {order.order_id}
+                                #{order.order_id}
                               </td>
                               <td className="px-4 py-2">{order.date}</td>
                               <td className="px-4 py-2">{order.totalItems}</td>
+                              <td className="px-4 py-2">₹{order.total}</td>
                               <td className="px-4 py-2">
                                 <span
                                   className="badge rounded-pill px-3 py-2"
@@ -682,7 +599,10 @@ const UserProfile = () => {
                                 </span>
                               </td>
                               <td className="text-end">
-                                <button className="btn btn-sm btn-outline-primary">
+                                <button
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => setSelectedOrderId(order.id)}
+                                >
                                   <i className="fas fa-eye me-2"></i>View
                                   Details
                                 </button>
@@ -707,7 +627,7 @@ const UserProfile = () => {
                             <div className="card h-100 border-0 shadow-sm overflow-hidden">
                               <div className="position-relative">
                                 <img
-                                  src={`${BASE_URL}${ticket.event?.image}`}
+                                  src={ticket.event?.image}
                                   className="card-img-top"
                                   alt={ticket.event.name}
                                   style={{
@@ -813,6 +733,18 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      {selectedOrderId && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-lg">
+            <OrderDetails
+              orderId={selectedOrderId}
+              onClose={() => setSelectedOrderId(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

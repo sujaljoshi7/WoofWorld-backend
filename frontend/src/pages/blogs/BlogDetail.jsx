@@ -22,8 +22,14 @@ function BlogDetail() {
         if (response.data) {
           setBlog(response.data);
           if (response.data.category) {
-            const relatedResponse = await api.get(`/api/blogs/?category=${response.data.category.id}`);
-            setRelatedBlogs(relatedResponse.data.filter(b => b.id !== response.data.id).slice(0, 3));
+            const relatedResponse = await api.get(
+              `/api/blogs/?category=${response.data.category.id}`
+            );
+            setRelatedBlogs(
+              relatedResponse.data
+                .filter((b) => b.id !== response.data.id)
+                .slice(0, 3)
+            );
           }
         }
       } catch (error) {
@@ -61,26 +67,34 @@ function BlogDetail() {
   const handleShare = (platform) => {
     const url = window.location.href;
     const title = blog.title;
-    let shareUrl = '';
+    let shareUrl = "";
 
     switch (platform) {
-      case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          url
+        )}`;
         break;
-      case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(title)}`;
         break;
-      case 'linkedin':
-        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+          url
+        )}&title=${encodeURIComponent(title)}`;
         break;
-      case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`;
+      case "whatsapp":
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(
+          title + " " + url
+        )}`;
         break;
       default:
         return;
     }
 
-    window.open(shareUrl, '_blank', 'width=600,height=400');
+    window.open(shareUrl, "_blank", "width=600,height=400");
   };
 
   if (loading) return <LoadingScreen />;
@@ -89,7 +103,7 @@ function BlogDetail() {
   return (
     <div className="blog-detail-page">
       <Navbar />
-      
+
       <div className="container">
         <div className="blog-header">
           <div className="blog-title">
@@ -109,51 +123,55 @@ function BlogDetail() {
 
         <div className="blog-image">
           <img
-            src={`${BASE_URL}${blog.image}`}
+            src={blog.image}
             alt={blog.title}
             onError={(e) => {
-              e.target.src = "https://via.placeholder.com/1200x600?text=No+Image";
+              e.target.src =
+                "https://via.placeholder.com/1200x600?text=No+Image";
             }}
           />
         </div>
 
         <div className="blog-content">
-          <div 
+          <div
             className="content"
             dangerouslySetInnerHTML={{ __html: blog.content }}
           />
         </div>
 
         <div className="blog-tags">
-          {blog.tags && blog.tags.map((tag, index) => (
-            <span key={index} className="tag">{tag}</span>
-          ))}
+          {blog.tags &&
+            blog.tags.map((tag, index) => (
+              <span key={index} className="tag">
+                {tag}
+              </span>
+            ))}
         </div>
 
         <div className="share-section">
           <h4>Share this article</h4>
           <div className="share-buttons">
-            <button 
-              className="share-btn facebook" 
-              onClick={() => handleShare('facebook')}
+            <button
+              className="share-btn facebook"
+              onClick={() => handleShare("facebook")}
             >
               <i className="fab fa-facebook-f"></i>
             </button>
-            <button 
-              className="share-btn twitter" 
-              onClick={() => handleShare('twitter')}
+            <button
+              className="share-btn twitter"
+              onClick={() => handleShare("twitter")}
             >
               <i className="fab fa-twitter"></i>
             </button>
-            <button 
-              className="share-btn linkedin" 
-              onClick={() => handleShare('linkedin')}
+            <button
+              className="share-btn linkedin"
+              onClick={() => handleShare("linkedin")}
             >
               <i className="fab fa-linkedin-in"></i>
             </button>
-            <button 
-              className="share-btn whatsapp" 
-              onClick={() => handleShare('whatsapp')}
+            <button
+              className="share-btn whatsapp"
+              onClick={() => handleShare("whatsapp")}
             >
               <i className="fab fa-whatsapp"></i>
             </button>

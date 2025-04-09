@@ -10,6 +10,7 @@ import LoadingIndicator from "./LoadingIndicator";
 
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
+import uploadToImgBB from "../utils/image-upload";
 
 const ModifyProduct = ({ method }) => {
   const navigate = useNavigate();
@@ -103,7 +104,16 @@ const ModifyProduct = ({ method }) => {
     setLoading(true);
     setError("");
 
-    if (!productImage && method === "add") {
+    let imageUrl = null;
+
+    if (productImage) {
+      imageUrl = await uploadToImgBB(productImage);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
       setError("No image selected");
       setLoading(false);
       return;
@@ -120,14 +130,18 @@ const ModifyProduct = ({ method }) => {
     formData.append("weight", weight);
     formData.append("status", 1);
     formData.append("product_category_id", selectedCategory);
-    if (productImage) {
-      formData.append("image", productImage);
+    if (imageUrl) {
+      formData.append("image", imageUrl);
     }
     try {
       if (method === "edit") {
-        await api.patch(`/api/products/product/${id}/`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await api.patch(
+          `/api/products/product/${localStorage.getItem("id")}/`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         alert("Product Updated Successfully!");
       } else {
         await api.post(`/api/products/`, formData, {

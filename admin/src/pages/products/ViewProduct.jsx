@@ -67,10 +67,9 @@ const ProductDetails = () => {
             </div>
           ) : event ? (
             <div className="card bg-dark text-light shadow-lg p-4 rounded">
-              {console.log(`${BASE_URL}${event.image}`)}
               {event.image && (
                 <img
-                  src={`${BASE_URL}${event.image}`}
+                  src={event.image}
                   alt="Event"
                   className="img-fluid mb-3 rounded shadow-sm"
                   style={{
@@ -88,7 +87,10 @@ const ProductDetails = () => {
                     <button
                       className="btn btn-warning btn-sm"
                       title="Edit Webinar"
-                      onClick={() => navigate(`/products/edit/${event.id}`)}
+                      onClick={() => {
+                        navigate(`/products/edit/${event.name}`);
+                        localStorage.setItem("id", event.id);
+                      }}
                       style={{ transition: "0.3s" }}
                     >
                       ✏️ Edit product

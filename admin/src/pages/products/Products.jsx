@@ -3,22 +3,19 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
-
 import useUser from "../../hooks/useUser";
 import { useNavigate } from "react-router-dom";
-
-import Pagination from "../../components/Pagination"; // Import Pagination Component
-
+import Pagination from "../../components/Pagination";
 import { exportToCSV } from "../../utils/export";
 import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
+
 function ViewProducts() {
   const navigate = useNavigate();
-
   const { user, isLoading } = useUser();
   const [allProducts, setAllProducts] = useState([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState("");
@@ -26,6 +23,7 @@ function ViewProducts() {
   const [currentPage, setCurrentPage] = useState(0);
   const [homePageToggle, setHomePageToggle] = useState();
   const itemsPerPage = 5;
+
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
@@ -211,7 +209,7 @@ function ViewProducts() {
   };
 
   const handleRowClick = (product_id) => {
-    navigate(`/products/${product_id}`);
+    navigate(`/products/${encodeURIComponent(product_id)}`);
   };
 
   const pageCount = Math.ceil(filteredData.length / itemsPerPage);
@@ -226,197 +224,243 @@ function ViewProducts() {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <h1>Loading...</h1>
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div
+          className="spinner-border text-primary"
+          style={{ width: "3rem", height: "3rem" }}
+          role="status"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="d-flex">
-      <div className="sidebar">
-        <Sidebar user={user} />
-      </div>
+      <Sidebar user={user} />
       <div
-        className="main-content flex-grow-1 ms-2"
-        style={{ marginLeft: "280px", padding: "20px" }}
+        className="main-content flex-grow-1"
+        style={{
+          marginLeft: "280px",
+          padding: "2rem",
+          transition: "all 0.3s ease-in-out",
+        }}
       >
-        <div className="container mt-4">
-          {error && (
-            <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-              <div
-                className="alert alert-danger alert-dismissible fade show"
-                role="alert"
-              >
-                {error}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+          <div>
+            <h1 className="fw-bold text-primary mb-2">Products</h1>
+            <p className="text-muted">Manage and monitor your products</p>
+          </div>
+          <div className="d-flex gap-2 mt-3 mt-md-0">
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate("/products/add")}
+            >
+              <i className="fas fa-plus me-2"></i>Add Product
+            </button>
+            <button className="btn btn-outline-primary" onClick={handleExport}>
+              <i className="fas fa-download me-2"></i>Export
+            </button>
+          </div>
+        </div>
+
+        <div className="card shadow-sm border-0">
+          <div className="card-body">
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+              <div className="search-box position-relative mb-3 mb-md-0">
+                <i className="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input
+                  type="text"
+                  className="form-control ps-5"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  style={{ minWidth: "300px" }}
+                />
+              </div>
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => navigate("/products/category")}
+                >
+                  <i className="fas fa-tags me-2"></i>Categories
+                </button>
+              </div>
+            </div>
+
+            {isLoadingProducts ? (
+              <div className="d-flex justify-content-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle">
+                  <thead className="table-light">
+                    <tr>
+                      <th scope="col">Image</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Category</th>
+                      <th scope="col">Price</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Featured</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedData.map((product) => (
+                      <tr
+                        key={product.id}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleRowClick(product.name)}
+                      >
+                        <td>
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="rounded"
+                            style={{
+                              width: "50px",
+                              height: "50px",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <div className="d-flex flex-column">
+                            <span className="fw-medium">{product.name}</span>
+                            <small className="text-muted">
+                              {product.description?.substring(0, 50)}...
+                            </small>
+                          </div>
+                        </td>
+                        <td>{product.category?.name}</td>
+                        <td>₹{product.price}</td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              product.status ? "bg-success" : "bg-danger"
+                            }`}
+                          >
+                            {product.status ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="form-check form-switch">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={product.show_on_homepage}
+                              onChange={(e) =>
+                                handleToggleStatus(
+                                  product.id,
+                                  e.target.checked,
+                                  product.name
+                                )
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <div className="d-flex gap-2">
+                            <button
+                              className="btn btn-sm btn-outline-primary"
+                              // onClick={(e) => {
+                              //   e.stopPropagation();
+                              //   navigate(`/products/edit/${product.id}`);
+                              // }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(
+                                  `/products/edit/${encodeURIComponent(
+                                    product.name
+                                  )}`
+                                );
+                              }}
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button
+                              className={`btn btn-sm ${
+                                product.status
+                                  ? "btn-outline-danger"
+                                  : "btn-outline-success"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                product.status
+                                  ? handleDeactivate(product.id)
+                                  : handleActivate(product.id);
+                              }}
+                            >
+                              <i
+                                className={`fas fa-${
+                                  product.status ? "ban" : "check"
+                                }`}
+                              ></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {filteredData.length === 0 && !isLoadingProducts && (
+              <div className="text-center py-5">
+                <i className="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <p className="text-muted mb-0">No products found</p>
+              </div>
+            )}
+
+            {filteredData.length > 0 && (
+              <div className="d-flex justify-content-between align-items-center mt-4">
+                <div className="text-muted">
+                  Showing {currentPage * itemsPerPage + 1} to{" "}
+                  {Math.min(
+                    (currentPage + 1) * itemsPerPage,
+                    filteredData.length
+                  )}{" "}
+                  of {filteredData.length} entries
+                </div>
+                <Pagination
+                  pageCount={pageCount}
+                  onPageChange={handlePageClick}
+                  currentPage={currentPage}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {message && (
+          <div className="toast-container position-fixed bottom-0 end-0 p-3">
+            <div
+              id="liveToast"
+              className="toast"
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+            >
+              <div className="toast-header">
+                <i className="fas fa-check-circle text-success me-2"></i>
+                <strong className="me-auto">Success</strong>
                 <button
                   type="button"
                   className="btn-close"
-                  data-bs-dismiss="alert"
+                  data-bs-dismiss="toast"
                   aria-label="Close"
                 ></button>
               </div>
-            </div>
-          )}
-          {message && (
-            <div className="col-12 col-sm-auto mt-4 mt-sm-0">
-              <div
-                className="position-fixed bottom-0 end-0 p-3"
-                style={{ zIndex: 11 }} // React style syntax
-              >
-                <div
-                  id="liveToast"
-                  className="toast hide"
-                  role="alert"
-                  aria-live="assertive"
-                  aria-atomic="true"
-                >
-                  <div className="toast-header">
-                    <strong className="me-auto">WoofWorld Admin</strong>
-                    <small>Just Now</small>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      data-bs-dismiss="toast"
-                      aria-label="Close"
-                    ></button>
-                  </div>
-                  <div className="toast-body">{message}</div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h2>Products</h2>
-            <div>
-              <button className="btn btn-primary me-2" onClick={handleExport}>
-                Export to CSV
-              </button>
-              <button
-                className="btn btn-warning"
-                onClick={() => navigate("/products/add")}
-              >
-                + Add Product
-              </button>
+              <div className="toast-body">{message}</div>
             </div>
           </div>
-          <div className="input-group mb-3 mt-3">
-            <span className="input-group-text bg-light border-0">
-              <i className="fa fa-search"></i>
-            </span>
-            <input
-              type="text"
-              className="form-control bg-dark text-light p-2"
-              placeholder="Search..."
-              aria-label="Search"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-          <table className="table table-striped table-bordered table-dark table-hover">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Image</th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Created By</th>
-                <th>Featured </th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading || isLoadingProducts ? (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    Loading Events
-                  </td>
-                </tr>
-              ) : paginatedData.length > 0 ? (
-                paginatedData.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => handleRowClick(item.id)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <td>{item.id}</td>
-                    <td>
-                      <img
-                        src={`${BASE_URL}${item.image}`}
-                        alt="Event Image"
-                        height={100}
-                      />
-                    </td>
-                    <td>{item.name}</td>
-                    <td>
-                      {item.status ? (
-                        <span className="badge text-bg-success">Active</span>
-                      ) : (
-                        <span className="badge text-bg-danger">Inactive</span>
-                      )}
-                    </td>
-                    <td>
-                      {item.created_by.first_name} {item.created_by.last_name}
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="form-check form-switch">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          role="switch"
-                          id={`flexSwitchCheckDefault-${item.id}`}
-                          checked={item.show_on_homepage}
-                          value={homePageToggle}
-                          onChange={(e) =>
-                            handleToggleStatus(
-                              item.id,
-                              e.target.checked,
-                              item.name
-                            )
-                          }
-                        />
-                      </div>
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      {item.status ? (
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDeactivate(item.id)}
-                          title="Delete User"
-                        >
-                          Deactivate
-                        </button>
-                      ) : (
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleActivate(item.id)}
-                          title="Delete User"
-                        >
-                          Activate
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="text-center">
-                    No data found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          {/* Pagination Component */}
-          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
-        </div>
+        )}
       </div>
     </div>
   );

@@ -30,6 +30,11 @@ function Dashboard() {
   const [location, setLocation] = useState({ country: "", city: "" });
   const [currentTime, setCurrentTime] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const handleSidebarCollapse = (collapsed) => {
+    setIsSidebarCollapsed(collapsed);
+  };
 
   const updateTime = () => setCurrentTime(new Date().toLocaleTimeString());
 
@@ -141,100 +146,197 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <h1>Loading...</h1>
+      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div
+          className="spinner-border text-primary"
+          style={{ width: "3rem", height: "3rem" }}
+          role="status"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="d-flex">
-      <Sidebar user={user} />
-      <div
-        className="main-content flex-grow-1 ms-2"
-        style={{ marginLeft: "280px", padding: "20px" }}
+      <Sidebar user={user} onCollapse={handleSidebarCollapse} />
+      <div 
+        className="main-content flex-grow-1" 
+        style={{ 
+          marginLeft: isSidebarCollapsed ? '80px' : '280px',
+          padding: window.innerWidth < 768 ? "1rem" : "2.5rem",
+          transition: "all 0.3s ease-in-out",
+          width: isSidebarCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 280px)'
+        }}
       >
-        <div className="d-flex justify-content-between align-items-center mt-5">
-          <h1 className="fw-semibold">Hello, {user?.first_name}</h1>
+        <div className="dashboard-header mb-4 mb-md-5">
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div className="mb-3 mb-md-0">
+              <h1 className="fw-bold text-primary mb-2" style={{ 
+                fontSize: window.innerWidth < 576 ? "1.75rem" : "2.5rem" 
+              }}>
+                Welcome back, {user?.first_name}!
+              </h1>
+              <p className="text-muted" style={{ 
+                fontSize: window.innerWidth < 576 ? "0.9rem" : "1.25rem" 
+              }}>
+                Here's what's happening with your platform today
+              </p>
+            </div>
+            <div className="bg-primary bg-opacity-10 rounded-pill px-3 px-md-4 py-2">
+              <span className="text-primary fw-medium" style={{ 
+                fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem" 
+              }}>
+                {new Date().toLocaleDateString('en-US', { 
+                  weekday: window.innerWidth < 576 ? 'short' : 'long', 
+                  year: 'numeric', 
+                  month: window.innerWidth < 576 ? 'short' : 'long', 
+                  day: 'numeric' 
+                })}
+              </span>
+            </div>
+          </div>
         </div>
-        <p className="text-secondary">
-          Your go-to system for creating, editing, and managing content
-          seamlessly.
-        </p>
-        <hr className="mt-4 mb-3" />
 
-        <div className="row justify-content-between">
+        <div className="row g-3 g-md-4 mb-4 mb-md-5">
           <DashboardCard
             title="Users"
             count={userCount}
             image={user_img}
             onClick={handleRowClick}
+            color="#4e73df"
+            iconBg="#e3e6f0"
           />
           <DashboardCard
             title="Blogs"
             count={blogsCount}
             image={blog_img}
             onClick={handleRowClick}
+            color="#1cc88a"
+            iconBg="#e3f8f0"
           />
           <DashboardCard
             title="Events"
             count={eventsCount}
             image={event_img}
             onClick={handleRowClick}
+            color="#36b9cc"
+            iconBg="#e3f6f8"
           />
           <DashboardCard
             title="Adoption"
             count={webinarCount}
             image={webinar_img}
             onClick={handleRowClick}
+            color="#f6c23e"
+            iconBg="#f8f0e3"
           />
         </div>
-        <div className="row mt-5">
-          <div className="col-lg-6 bg-dark">
-            <h4 className="text-light text-center mt-5 mb-5">
-              Revenue Analysis
-            </h4>
-            <div className="mt-5">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={barData}>
-                  <XAxis dataKey="name" stroke="#fff" />
-                  <YAxis stroke="#fff" />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#f5d107" barSize={50} />
-                </BarChart>
-              </ResponsiveContainer>
+
+        <div className="row g-3 g-md-4">
+          <div className="col-12 col-lg-6">
+            <div className="card shadow-sm h-100 border-0">
+              <div className="card-header bg-white py-2 py-md-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h5 className="card-title mb-0 text-primary fw-bold" style={{ 
+                    fontSize: window.innerWidth < 576 ? "1rem" : "1.25rem" 
+                  }}>
+                    Revenue Analysis
+                  </h5>
+                  <div className="dropdown">
+                    <button className="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                      <i className="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul className="dropdown-menu">
+                      <li><a className="dropdown-item" href="#">View Details</a></li>
+                      <li><a className="dropdown-item" href="#">Export Data</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body p-2 p-md-3">
+                <ResponsiveContainer width="100%" height={window.innerWidth < 576 ? 200 : 300}>
+                  <BarChart data={barData}>
+                    <XAxis dataKey="name" stroke="#6c757d" />
+                    <YAxis stroke="#6c757d" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        padding: '12px'
+                      }}
+                    />
+                    <Legend />
+                    <Bar 
+                      dataKey="count" 
+                      fill="#4e73df" 
+                      barSize={window.innerWidth < 576 ? 30 : 40}
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
-          <div className="col-lg-6 bg-dark">
-            <h4 className="text-light text-center mt-5 mb-5">Order Analysis</h4>
-
-            <div className="mt-5">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={data}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {data.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+          
+          <div className="col-12 col-lg-6">
+            <div className="card shadow-sm h-100 border-0">
+              <div className="card-header bg-white py-2 py-md-3 border-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h5 className="card-title mb-0 text-primary fw-bold" style={{ 
+                    fontSize: window.innerWidth < 576 ? "1rem" : "1.25rem" 
+                  }}>
+                    Order Analysis
+                  </h5>
+                  <div className="dropdown">
+                    <button className="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                      <i className="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul className="dropdown-menu">
+                      <li><a className="dropdown-item" href="#">View Details</a></li>
+                      <li><a className="dropdown-item" href="#">Export Data</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body p-2 p-md-3">
+                <ResponsiveContainer width="100%" height={window.innerWidth < 576 ? 200 : 300}>
+                  <PieChart>
+                    <Pie
+                      data={data}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) =>
+                        `${name} ${(percent * 100).toFixed(0)}%`
+                      }
+                      outerRadius={window.innerWidth < 576 ? 80 : 100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {data.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: 'none',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        padding: '12px'
+                      }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>
@@ -243,24 +345,64 @@ function Dashboard() {
   );
 }
 
-const DashboardCard = ({ title, count, image, onClick }) => (
-  <div className="col-3">
+const DashboardCard = ({ title, count, image, onClick, color, iconBg }) => (
+  <div className="col-6 col-md-6 col-lg-3">
     <div
-      className="card bg-dark"
-      style={{ maxWidth: "250px", margin: "10px", cursor: "pointer" }}
-      onClick={() => onClick(title)}
+      className="card shadow-sm h-100 border-0"
+      style={{ 
+        cursor: "pointer",
+        transition: "all 0.3s ease-in-out",
+        background: `linear-gradient(135deg, ${color} 0%, ${color}40 100%)`,
+        borderRadius: "12px"
+      }}
+      onClick={() => onClick(title.toLowerCase())}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-5px)";
+        e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.1)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+      }}
     >
-      <div className="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <h6 className="card-title text-secondary fs-6 fw-light">{title}</h6>
-          <h6 className="card-text fw-semibold text-light fs-2">{count}</h6>
+      <div className="card-body p-2 p-md-4">
+        <div className="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 className="text-white mb-1 mb-md-2" style={{ 
+              opacity: 0.9,
+              fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem"
+            }}>
+              {title}
+            </h6>
+            <h2 className="text-white mb-0" style={{ 
+              fontSize: window.innerWidth < 576 ? "1.5rem" : "2rem"
+            }}>
+              {count}
+            </h2>
+          </div>
+          <div 
+            className="rounded-circle"
+            style={{ 
+              backgroundColor: iconBg,
+              width: window.innerWidth < 576 ? "40px" : "60px",
+              height: window.innerWidth < 576 ? "40px" : "60px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: window.innerWidth < 576 ? "0.5rem" : "1rem"
+            }}
+          >
+            <img 
+              src={image} 
+              alt={title} 
+              style={{ 
+                width: window.innerWidth < 576 ? "20px" : "30px",
+                height: window.innerWidth < 576 ? "20px" : "30px",
+                filter: "none"
+              }} 
+            />
+          </div>
         </div>
-        <img
-          src={image}
-          alt={title}
-          className="rounded-circle"
-          style={{ width: "50px", height: "50px" }}
-        />
       </div>
     </div>
   </div>

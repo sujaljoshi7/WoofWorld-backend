@@ -130,7 +130,7 @@ const BlogDetails = () => {
 
                     {blog.image && (
                       <img
-                        src={`${BASE_URL}${blog.image}`}
+                        src={blog.image}
                         alt="Blog Image"
                         className="img-fluid mb-3 rounded shadow-sm"
                         style={{

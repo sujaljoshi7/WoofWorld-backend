@@ -10,6 +10,7 @@ import LoadingIndicator from "./LoadingIndicator";
 
 import useUser from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
+import uploadToImgBB from "../utils/image-upload";
 
 const ModifyHero = ({ method }) => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const ModifyHero = ({ method }) => {
       setHeadline(data.headline);
       setSubText(data.subtext);
       setCta(data.cta);
-      setPreviewImage(data.image ? `${BASE_URL}${data.image}` : "");
+      setPreviewImage(data.image ? data.image : "");
     } catch (err) {
       console.error("Failed to fetch hero details:", err);
     }
@@ -56,8 +57,17 @@ const ModifyHero = ({ method }) => {
     setLoading(true);
     setError("");
 
-    if (!image && method === "add") {
-      setError("Please select Image");
+    let imageUrl = null;
+
+    if (image) {
+      imageUrl = await uploadToImgBB(image);
+      if (!imageUrl) {
+        setError("Image upload failed");
+        setLoading(false);
+        return;
+      }
+    } else if (method === "add") {
+      setError("No image selected");
       setLoading(false);
       return;
     }
@@ -67,12 +77,8 @@ const ModifyHero = ({ method }) => {
     formData.append("subtext", subText);
     formData.append("cta", cta);
     formData.append("status", 1);
-    if (image) {
-      const fileExtension = image.name.split(".").pop();
-      const uniqueFileName = `hero_${Date.now()}_${Math.random()
-        .toString(36)
-        .substring(2, 8)}.${fileExtension}`;
-      formData.append("image", image, uniqueFileName);
+    if (imageUrl) {
+      formData.append("image", imageUrl);
     }
     try {
       if (method === "edit") {

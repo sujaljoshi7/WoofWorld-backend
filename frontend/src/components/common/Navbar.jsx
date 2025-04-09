@@ -13,6 +13,7 @@ const Navbar = () => {
   const [index, setIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const placeholderTexts = [
     "dog food...",
@@ -27,15 +28,13 @@ const Navbar = () => {
   const fetchCartItemCount = async () => {
     try {
       const response = await api.get("/api/cart/");
-      // Count distinct items in the cart
-      const distinctItems = new Set(response.data.map((item) => item.item)); // Assuming `item` is the unique identifier for each item
-      setCartItemCount(distinctItems.size); // Set the number of unique items
+      const distinctItems = new Set(response.data.map((item) => item.item));
+      setCartItemCount(distinctItems.size);
     } catch (error) {
       console.error("Error fetching cart items:", error);
     }
   };
 
-  // Fetch the cart item count when the component mounts
   useEffect(() => {
     fetchCartItemCount();
   }, []);
@@ -70,69 +69,95 @@ const Navbar = () => {
   return (
     <div>
       <nav className="navbar navbar-expand-lg container">
-        <div className="container-fluid">
+        <div className="container-fluid px-3 px-md-4 px-lg-5">
           <Link className="navbar-brand" to="/">
-            <img src={logo} alt="Logo" height={40} />
+            <img
+              src={logo}
+              alt="Logo"
+              className="img-fluid"
+              style={{ maxHeight: "40px", width: "auto" }}
+            />
           </Link>
 
-          <div className="position-absolute start-50 translate-middle-x w-50">
-            <div className="input-group">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={`Search for ${placeholder}`}
-                style={{ height: "45px" }}
-              />
-              <span
-                className="input-group-text"
-                style={{ backgroundColor: "#ffec00" }}
-              >
-                <i className="fa-solid fa-magnifying-glass bg-yellow"></i>
-              </span>
-            </div>
-          </div>
+          <button
+            className="navbar-toggler border-0"
+            type="button"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-expanded={isMenuOpen}
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
 
-          <div className="d-none d-lg-block position-relative">
-            <img
-              src={cart}
-              alt="Cart"
-              height={30}
-              className="me-4"
-              onClick={() => navigate("/cart")}
-              style={{ cursor: "pointer" }}
-            />
-            {/* {cartItemCount > 0 && (
-              <span
-                className="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger p-1"
-                style={{
-                  fontSize: "10px",
-                  width: "18px",
-                  height: "18px",
-                  transform: "translate(50%, -50%)",
-                }}
-              >
-                {cartItemCount}
-              </span>
-            )} */}
-            {localStorage.getItem(ACCESS_TOKEN) ? (
-              // If token exists, show profile icon
-              <img
-                src={profileIcon}
-                alt="Profile"
-                height={30}
-                className="me-4"
-                onClick={() => navigate("/profile")}
-                style={{ cursor: "pointer" }}
-              />
-            ) : (
-              // If token does not exist, show Sign In button
-              <button
-                onClick={() => navigate("/login")}
-                className="btn btn-dark"
-              >
-                Sign In
-              </button>
-            )}
+          <div
+            className={`collapse navbar-collapse ${isMenuOpen ? "show" : ""}`}
+          >
+            <div className="d-flex flex-column flex-lg-row align-items-center w-100">
+              <div className="search-container w-100 mb-3 mb-lg-0 px-2 px-lg-0">
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control rounded-start"
+                    placeholder={`Search for ${placeholder}`}
+                    style={{ height: "45px" }}
+                  />
+                  <span
+                    className="input-group-text rounded-end"
+                    style={{ backgroundColor: "#ffec00" }}
+                  >
+                    <i className="fa-solid fa-magnifying-glass bg-yellow"></i>
+                  </span>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center ms-lg-3 gap-3">
+                <div className="position-relative">
+                  <img
+                    src={cart}
+                    alt="Cart"
+                    className="img-fluid"
+                    style={{
+                      maxHeight: "30px",
+                      width: "auto",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/cart")}
+                  />
+                  {cartItemCount > 0 && (
+                    <span
+                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger p-1"
+                      style={{
+                        fontSize: "10px",
+                        width: "18px",
+                        height: "18px",
+                        transform: "translate(50%, -50%)",
+                      }}
+                    >
+                      {cartItemCount}
+                    </span>
+                  )}
+                </div>
+                {localStorage.getItem(ACCESS_TOKEN) ? (
+                  <img
+                    src={profileIcon}
+                    alt="Profile"
+                    className="img-fluid"
+                    style={{
+                      maxHeight: "30px",
+                      width: "auto",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/profile")}
+                  />
+                ) : (
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="btn btn-dark rounded-0"
+                  >
+                    Sign In
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </nav>
@@ -142,8 +167,8 @@ const Navbar = () => {
           className="border-0"
           style={{ height: "1px", backgroundColor: "black" }}
         />
-        <div className="collapse navbar-collapse w-100 mt-4 d-flex justify-content-center">
-          <ul className="navbar-nav mx-auto">
+        <div className={`collapse navbar-collapse ${isMenuOpen ? "show" : ""}`}>
+          <ul className="navbar-nav mx-auto text-center px-3 px-md-4 px-lg-5">
             <li className="nav-item">
               <Link className="nav-link active" to="/">
                 Home
@@ -200,44 +225,6 @@ const Navbar = () => {
                 Shop
               </Link>
             </li>
-            {/* <li className="nav-item dropdown">
-              <Link
-                className="nav-link dropdown-toggle"
-                to="#"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Shop by Dog
-              </Link>
-              <ul className="dropdown-menu">
-                <li>
-                  <Link className="dropdown-item" to="/dog">
-                    Dry food
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/dog">
-                    Wet food
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/dog">
-                    Treats
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/dog">
-                    Accessories
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/dog">
-                    Health Suppliment
-                  </Link>
-                </li>
-              </ul>
-            </li> */}
             <li className="nav-item">
               <Link className="nav-link active" to="/blogs">
                 Blogs

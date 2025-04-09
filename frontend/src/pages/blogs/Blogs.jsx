@@ -60,7 +60,7 @@ function Blogs() {
   );
 
   const createSlug = (title) => {
-    return title.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    return title.toLowerCase().replace(/[^a-z0-9]/g, "-");
   };
 
   if (loading) return <LoadingScreen />;
@@ -105,7 +105,7 @@ function Blogs() {
               <div className="blog-card">
                 <div className="blog-image-container">
                   <img
-                    src={`${BASE_URL}${blog.image}`}
+                    src={blog.image}
                     alt={blog.title}
                     className="blog-image"
                     onError={(e) => {
@@ -119,14 +119,16 @@ function Blogs() {
                   <div className="blog-meta">
                     <div className="author">
                       <i className="fa-solid fa-user"></i>
-                      <span>{blog.created_by.first_name} {blog.created_by.last_name}</span>
+                      <span>
+                        {blog.created_by.first_name} {blog.created_by.last_name}
+                      </span>
                     </div>
                     <div className="date">
                       <i className="fa-solid fa-calendar-days"></i>
                       <span>{formatDate(blog.created_at)}</span>
                     </div>
                   </div>
-                  <div 
+                  <div
                     className="blog-excerpt"
                     dangerouslySetInnerHTML={{
                       __html: blog.content.substring(0, 150) + "...",
@@ -149,7 +151,10 @@ function Blogs() {
         {filteredBlogs.length === 0 && (
           <div className="text-center py-5">
             <div className="no-results">
-              <i className="fa-solid fa-search" style={{ fontSize: "3rem" }}></i>
+              <i
+                className="fa-solid fa-search"
+                style={{ fontSize: "3rem" }}
+              ></i>
               <h3>No blogs found</h3>
               <p className="text-muted">Try adjusting your search criteria</p>
             </div>
