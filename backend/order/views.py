@@ -189,7 +189,7 @@ class DashboardStatsView(APIView):
             total_users = User.objects.count()
             
             # Get orders by status
-            orders_by_status = Order.objects.values('status').annotate(count=Count('id'))
+            # orders_by_status = Order.objects.values('status').annotate(count=Count('id'))
             
             # Get top selling products
             top_products = OrderItems.objects.filter(type=1).values(
@@ -236,7 +236,7 @@ class DashboardStatsView(APIView):
                     'total_products': total_products,
                     'total_users': total_users
                 },
-                'orders_by_status': list(orders_by_status),
+                # 'orders_by_status': list(orders_by_status),
                 'top_products': product_details,
                 'monthly_orders': monthly_data
             }
