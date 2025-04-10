@@ -9,6 +9,10 @@ from django.db import transaction
 from cart.models import Cart
 from products.models import Product
 from rest_framework.permissions import IsAdminUser
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class OrderCheckoutView(APIView):
@@ -164,5 +168,82 @@ class OrderDetailsView(APIView):
         except Exception as e:
             return Response(
                 {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class DashboardStatsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        try:
+            # Get total orders count
+            total_orders = Order.objects.count()
+            
+            # Get total revenue
+            total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
+            
+            # Get total products
+            total_products = Product.objects.count()
+            
+            # Get total users
+            total_users = User.objects.count()
+            
+            # Get orders by status
+            orders_by_status = Order.objects.values('status').annotate(count=Count('id'))
+            
+            # Get top selling products
+            top_products = OrderItems.objects.filter(type=1).values(
+                'item'
+            ).annotate(
+                total_quantity=Sum('quantity')
+            ).order_by('-total_quantity')[:5]
+            
+            # Get product details for top selling products
+            product_details = []
+            for product in top_products:
+                try:
+                    product_obj = Product.objects.get(id=product['item'])
+                    product_details.append({
+                        'name': product_obj.name,
+                        'quantity': product['total_quantity'],
+                        'image': product_obj.image
+                    })
+                except Product.DoesNotExist:
+                    continue
+            
+            # Get monthly orders for the last 6 months
+            six_months_ago = timezone.now() - timezone.timedelta(days=180)
+            monthly_orders = Order.objects.filter(
+                created_at__gte=six_months_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month').annotate(
+                count=Count('id')
+            ).order_by('month')
+            
+            # Format monthly data
+            monthly_data = []
+            for order in monthly_orders:
+                monthly_data.append({
+                    'month': order['month'].strftime('%b %Y'),
+                    'orders': order['count']
+                })
+
+            response_data = {
+                'stats': {
+                    'total_orders': total_orders,
+                    'total_revenue': total_revenue,
+                    'total_products': total_products,
+                    'total_users': total_users
+                },
+                'orders_by_status': list(orders_by_status),
+                'top_products': product_details,
+                'monthly_orders': monthly_data
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
