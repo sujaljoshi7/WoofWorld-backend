@@ -40,7 +40,7 @@ function ViewProducts() {
   const filterProducts = (searchValue, brand) => {
     if (allProducts) {
       let filtered = allProducts.filter((item) =>
-        `${item.name} ${item.status} ${item.created_by}`
+        `${item.name} ${item.status} ${item.created_by} ${item.sku}`
           .toLowerCase()
           .includes(searchValue)
       );
@@ -417,10 +417,6 @@ function ViewProducts() {
                           <div className="d-flex gap-2">
                             <button
                               className="btn btn-sm btn-outline-primary"
-                              // onClick={(e) => {
-                              //   e.stopPropagation();
-                              //   navigate(`/products/edit/${product.id}`);
-                              // }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(

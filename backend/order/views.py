@@ -136,7 +136,13 @@ class OrderDetailsView(APIView):
                 'user': {
                     'id': order.user_id.id,
                     'username': order.user_id.username,
-                    'email': order.user_id.email
+                    'email': order.user_id.email,
+                    'address': {
+                        'street': order.user_id.address.street,
+                        'city': order.user_id.address.city,
+                        'state': order.user_id.address.state,
+                        'zip_code': order.user_id.address.zip_code
+                    }
                 }
             }
 
