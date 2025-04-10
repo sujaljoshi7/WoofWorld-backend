@@ -180,7 +180,7 @@ class DashboardStatsView(APIView):
             total_orders = Order.objects.count()
             
             # Get total revenue
-            total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
+            total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
             
             # Get total products
             total_products = Product.objects.count()
@@ -196,7 +196,7 @@ class DashboardStatsView(APIView):
                 'item'
             ).annotate(
                 total_quantity=Sum('quantity')
-            ).order_by('-total_quantity')[:5]
+            ).order_by('-quantity')[:5]
             
             # Get product details for top selling products
             product_details = []
@@ -205,7 +205,7 @@ class DashboardStatsView(APIView):
                     product_obj = Product.objects.get(id=product['item'])
                     product_details.append({
                         'name': product_obj.name,
-                        'quantity': product['total_quantity'],
+                        'quantity': product['quantity'],
                         'image': product_obj.image
                     })
                 except Product.DoesNotExist:
