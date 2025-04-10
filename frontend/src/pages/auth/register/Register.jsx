@@ -13,6 +13,7 @@ function Register() {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   const ACCESS_TOKEN = "access_token";
   const REFRESH_TOKEN = "refresh_token";
@@ -24,11 +25,55 @@ function Register() {
     setShowPassword(!showPassword);
   };
 
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one capital letter";
+    }
+    if (!hasNumber) {
+      return "Password must contain at least one number";
+    }
+    if (!hasSpecialChar) {
+      return "Password must contain at least one special character";
+    }
+    return "";
+  };
+
+  const getPasswordValidationStatus = (password) => {
+    return {
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    setPasswordError(validatePassword(newPassword));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(""); // Clear previous messages
     sessionStorage.clear();
+
+    // Validate password before proceeding
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setMessage(passwordValidationError);
+      setLoading(false);
+      return;
+    }
 
     try {
       // 🔹 Check if the user exists
@@ -88,13 +133,13 @@ function Register() {
           <div className="col-12 col-sm-auto mt-4 mt-sm-0">
             <div
               className="position-fixed top-0 end-0 p-3"
-              style={{ zIndex: 11 }} // React style syntax
+              style={{ zIndex: 11 }}
             >
               <div
                 id="liveToast"
                 className={`toast ${
                   message ? "show" : "hide"
-                } bg-danger text-white`} // ✅ Ensure toast is visible
+                } bg-danger text-white`}
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true"
@@ -107,7 +152,7 @@ function Register() {
                     className="btn-close"
                     data-bs-dismiss="toast"
                     aria-label="Close"
-                    onClick={() => setMessage("")} // ✅ Close on click
+                    onClick={() => setMessage("")}
                   ></button>
                 </div>
                 <div className="toast-body">{message}</div>
@@ -203,11 +248,13 @@ function Register() {
                       <div className="form-floating mb-3 position-relative">
                         <input
                           type={showPassword ? "text" : "password"}
-                          className="form-control"
+                          className={`form-control ${
+                            passwordError ? "is-invalid" : ""
+                          }`}
                           id="password"
                           value={password}
                           placeholder="Password"
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={handlePasswordChange}
                           required
                         />
                         <label htmlFor="password">Password</label>
@@ -223,6 +270,47 @@ function Register() {
                             <FaEye size={18} />
                           )}
                         </button>
+                        {passwordError && (
+                          <div className="invalid-feedback">
+                            {passwordError}
+                          </div>
+                        )}
+                        <div className="form-text">
+                          Password must contain:
+                          <ul className="mb-0">
+                            <li
+                              className={
+                                password.length >= 8 ? "text-success" : ""
+                              }
+                            >
+                              At least 8 characters
+                            </li>
+                            <li
+                              className={
+                                /[A-Z]/.test(password) ? "text-success" : ""
+                              }
+                            >
+                              At least one capital letter
+                            </li>
+                            <li
+                              className={
+                                /[0-9]/.test(password) ? "text-success" : ""
+                              }
+                            >
+                              At least one number
+                            </li>
+                            <li
+                              className={
+                                /[!@#$%^&*(),.?":{}|<>]/.test(password)
+                                  ? "text-success"
+                                  : ""
+                              }
+                            >
+                              At least one special character (!@#$%^&*(),.?":{}
+                              |&lt;&gt;)
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                     <div className="col-12">
@@ -247,7 +335,11 @@ function Register() {
                             <LoadingIndicator />
                           </div>
                         ) : (
-                          <button className="btn btn-dark btn-lg" type="submit">
+                          <button
+                            className="btn btn-dark btn-lg"
+                            type="submit"
+                            disabled={!!passwordError}
+                          >
                             Register
                           </button>
                         )}

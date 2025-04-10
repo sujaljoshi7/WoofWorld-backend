@@ -298,35 +298,14 @@ function Home() {
           <h4 className="text-center">Trusted by great companies</h4>
           <div className="container-fluid py-4">
             <div className="partner-logos-wrapper">
-              <div className="partner-logos-container">
-                <div className="partner-logos">
-                  {data.partnerCompanies.length > 0 ? (
-                    data.partnerCompanies.map((company, index) => (
-                      <div key={index} className="partner-logo-item">
-                        <img
-                          title={company.name}
-                          src={company.image}
-                          alt="Company Logo"
-                          className="img-fluid"
-                          style={{
-                            height: "100px",
-                            width: "auto",
-                            minWidth: "150px",
-                            objectFit: "contain",
-                            padding: "0 40px",
-                          }}
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    <p>No partner companies available</p>
-                  )}
-                </div>
-                <div className="partner-logos" aria-hidden="true">
-                  {data.partnerCompanies.length > 0
-                    ? data.partnerCompanies.map((company, index) => (
+              <div className="partner-logos-track">
+                {data.partnerCompanies.length > 0 ? (
+                  <>
+                    {/* First set of logos */}
+                    <div className="partner-logos">
+                      {data.partnerCompanies.map((company, index) => (
                         <div
-                          key={`duplicate-${index}`}
+                          key={`first-${index}`}
                           className="partner-logo-item"
                         >
                           <img
@@ -343,9 +322,35 @@ function Home() {
                             }}
                           />
                         </div>
-                      ))
-                    : null}
-                </div>
+                      ))}
+                    </div>
+                    {/* Duplicate set for seamless transition */}
+                    <div className="partner-logos">
+                      {data.partnerCompanies.map((company, index) => (
+                        <div
+                          key={`second-${index}`}
+                          className="partner-logo-item"
+                        >
+                          <img
+                            title={company.name}
+                            src={company.image}
+                            alt="Company Logo"
+                            className="img-fluid"
+                            style={{
+                              height: "100px",
+                              width: "auto",
+                              minWidth: "150px",
+                              objectFit: "contain",
+                              padding: "0 40px",
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p>No partner companies available</p>
+                )}
               </div>
             </div>
           </div>
@@ -353,6 +358,11 @@ function Home() {
 
         <style>
           {`
+            .partner-companies {
+              width: 100%;
+              overflow: hidden;
+            }
+
             .partner-logos-wrapper {
               width: 100%;
               overflow: hidden;
@@ -360,16 +370,17 @@ function Home() {
               padding: 20px 0;
             }
 
-            .partner-logos-container {
+            .partner-logos-track {
               display: flex;
-              animation: scroll 20s linear infinite;
+              animation: scroll 40s linear infinite;
               will-change: transform;
+              width: fit-content;
             }
 
             .partner-logos {
               display: flex;
               flex-shrink: 0;
-              gap: 40px;
+              width: fit-content;
             }
 
             .partner-logo-item {
@@ -377,6 +388,7 @@ function Home() {
               display: flex;
               align-items: center;
               justify-content: center;
+              width: fit-content;
             }
 
             @keyframes scroll {
@@ -384,7 +396,7 @@ function Home() {
                 transform: translateX(0);
               }
               100% {
-                transform: translateX(-50%);
+                transform: translateX(calc(-100% - 20px));
               }
             }
 

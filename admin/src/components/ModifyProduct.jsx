@@ -22,11 +22,13 @@ const ModifyProduct = ({ method }) => {
   const [productPrice, setProductPrice] = useState("");
   const [productStatus, setProductStatus] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
   const [categories, setCategories] = useState([]);
   const [company, setCompany] = useState([]);
   const [weight, setWeight] = useState([]);
   const [productImage, setProductImage] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState("");
+  const [productId, setProductId] = useState("");
   const [breeds, setBreeds] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,83 @@ const ModifyProduct = ({ method }) => {
     showXPathInStatusbar: false,
   };
 
+  const [sku, setSku] = useState("");
+  const [categoryCodes, setCategoryCodes] = useState({});
+
+  // Brand codes mapping
+  const brandCodes = {
+    "Royal Canin": "RC",
+    Drools: "DR",
+    Himalaya: "HL",
+    Snackers: "SN",
+    JerHigh: "JH",
+    Pedigree: "PD",
+    BarkButler: "BB",
+    DogaHolic: "DH",
+    FirstBark: "FB",
+    Zeedog: "ZD",
+    TropiClean: "TC",
+    PurePet: "PP",
+    Rena: "RN",
+  };
+
+  // Size codes mapping
+  const sizeCodes = {
+    Small: "S",
+    Medium: "M",
+    Large: "L",
+    "Extra Large": "XL",
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get("/api/products/category/");
+      setCategories(response.data);
+
+      // Generate category codes from fetched categories
+      const codes = {};
+      response.data.forEach((category) => {
+        // Generate code from category name
+        const words = category.name.split(/[\s,&]+/);
+        const code = words
+          .map((word) => word.charAt(0).toUpperCase())
+          .join("")
+          .slice(0, 3); // Take first 3 letters
+        codes[category.name] = code;
+      });
+      setCategoryCodes(codes);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const generateSku = () => {
+    if (!selectedCategoryName || !company || !weight) return;
+    const categoryCode = categoryCodes[selectedCategoryName] || "OTH";
+    const brandCode = brandCodes[company] || "OTH";
+
+    // Determine size based on weight
+    let sizeCode = "S";
+    const weightNum = parseFloat(weight);
+    if (weightNum > 10) sizeCode = "L";
+    else if (weightNum > 5) sizeCode = "M";
+
+    // Generate unique ID using timestamp
+    const timestamp = Date.now().toString().slice(-4);
+    const randomNum = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
+    const uniqueId = `${timestamp}${randomNum}`;
+
+    const newSku = `WW-${brandCode}-${sizeCode}-${uniqueId}`;
+    setSku(newSku);
+  };
+
+  // Generate SKU when category, company, or weight changes
+  useEffect(() => {
+    generateSku();
+  }, [selectedCategoryName, company, weight]);
+
   useEffect(() => {
     if (method === "edit" && id) {
       fetchProductDetails();
@@ -52,15 +131,6 @@ const ModifyProduct = ({ method }) => {
     fetchCategories();
     fetchBreeds();
   }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await api.get("/api/products/category/");
-      setCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
 
   const fetchBreeds = async () => {
     try {
@@ -75,17 +145,24 @@ const ModifyProduct = ({ method }) => {
     try {
       const res = await api.get(`/api/products/${id}/`);
       const data = res.data;
+      setProductId(data.id);
       setProductName(data.name);
       setProductDescription(data.description);
       setSelectedCategory(data.category.id);
+      setSelectedCategoryName(data.category.name);
       setProductPrice(data.price);
       setCompany(data.company);
       setSelectedBreed(data.breeds.id);
       setProductAge(data.age);
       setWeight(data.weight);
-      setPreviewImage(
-        data.image ? `${import.meta.env.VITE_API_URL}${data.image}` : ""
-      );
+      setPreviewImage(data.image ? data.image : "");
+
+      // Set SKU only if it exists, otherwise generate a new one
+      if (data.sku) {
+        setSku(data.sku);
+      } else {
+        generateSku();
+      }
     } catch (err) {
       console.error("Failed to fetch product details:", err);
     }
@@ -130,18 +207,25 @@ const ModifyProduct = ({ method }) => {
     formData.append("weight", weight);
     formData.append("status", 1);
     formData.append("product_category_id", selectedCategory);
+
+    // Ensure SKU is set before submitting
+    if (!sku) {
+      generateSku();
+    }
+    formData.append("sku", sku);
+    console.log("Submitting SKU:", sku);
+
     if (imageUrl) {
       formData.append("image", imageUrl);
     }
     try {
       if (method === "edit") {
-        await api.patch(
-          `/api/products/product/${localStorage.getItem("id")}/`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
+        await api.patch(`/api/products/product/${productId}/`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
         alert("Product Updated Successfully!");
       } else {
         await api.post(`/api/products/`, formData, {
@@ -261,7 +345,15 @@ const ModifyProduct = ({ method }) => {
                     <select
                       className="form-select"
                       value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      onChange={(e) => {
+                        const selectedOption = categories.find(
+                          (cat) => cat.id === e.target.value
+                        );
+                        setSelectedCategory(e.target.value);
+                        setSelectedCategoryName(
+                          selectedOption ? selectedOption.name : ""
+                        );
+                      }}
                       required
                     >
                       <option value="">-- Select Category --</option>
@@ -378,6 +470,26 @@ const ModifyProduct = ({ method }) => {
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                     />
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-6 mb-4">
+                    <label className="form-label" htmlFor="sku">
+                      SKU Number
+                    </label>
+                    <input
+                      className="form-control"
+                      id="sku"
+                      type="text"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                      readOnly
+                      placeholder="SKU will be generated automatically"
+                    />
+                    <small className="text-muted">
+                      Format: WW-Brand-Size-UniqueID
+                    </small>
                   </div>
                 </div>
 

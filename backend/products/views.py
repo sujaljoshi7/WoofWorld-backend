@@ -52,18 +52,22 @@ class ProductView(APIView):
     
     def patch(self, request, **kwargs):
         id = kwargs.get("id")
-        data = request.data.copy()
-        data['created_by'] = request.user.id
         try:
             product = Product.objects.get(id=id)
+            data = request.data.copy()
+            data['created_by'] = request.user.id
+            
+            # If SKU is not provided in the request, keep the existing SKU
+            if 'sku' not in data and product.sku:
+                data['sku'] = product.sku
+            
+            serializer = ProductSerializer(product, data=data, partial=True, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Product.DoesNotExist:
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ProductSerializer(product, data=request.data, partial=True)  # Use partial=True for PATCH
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users

@@ -25,6 +25,7 @@ class Product(models.Model):
     age = models.CharField(max_length=100, default="")
     weight = models.CharField(max_length=100, null=True, blank=True)
     image = models.URLField(max_length=500, default="")
+    sku = models.CharField(max_length=100, default="", null=True, blank=True)
     status = models.IntegerField()
     show_on_homepage = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=datetime.now(), editable=False)

@@ -170,7 +170,12 @@ function Shop() {
     sortBy,
   ]);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 100);
+  };
 
   const handlePriceChange = (e) => {
     const { name, value } = e.target;

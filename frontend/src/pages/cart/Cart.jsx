@@ -32,7 +32,6 @@ const Cart = () => {
       }));
 
       setAllCartItems(cartItemsWithQuantity);
-      console.log("Cart items with quantity:", cartItemsWithQuantity);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -322,7 +321,8 @@ const Cart = () => {
                 {allCartItems.length > 0 && !isLoadingPayment && (
                   <button
                     className="btn btn-success w-100 mb-3 mt-3 py-2 fw-bold"
-                    onClick={handlePayment}
+                    // onClick={handlePayment}
+                    onClick={() => navigate("/checkout")}
                   >
                     Proceed to Checkout
                   </button>

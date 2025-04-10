@@ -12,13 +12,15 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cartItems, setCartItems] = useState([]);
+  const [allCartItems, setAllCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
-
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const TAX_RATE = 0.18;
   const [editingAddress, setEditingAddress] = useState(null);
 
   useEffect(() => {
     fetchUserAddress();
-    fetchCartItems();
+    fetchCart();
   }, []);
 
   const fetchUserAddress = async () => {
@@ -38,24 +40,52 @@ const Checkout = () => {
     }
   };
 
-  const fetchCartItems = async () => {
+  const fetchCart = async () => {
+    setLoading(true);
+
     try {
       const response = await api.get("/api/cart/");
-      if (response.data && response.data.items) {
-        setCartItems(response.data.items);
-        calculateTotal(response.data.items);
+      if (!response.data || !Array.isArray(response.data)) {
+        console.error("Unexpected response format:", response.data);
+        return;
       }
+
+      // Add default quantity of 1 if not present in the response
+      const cartItemsWithQuantity = response.data.map((item) => ({
+        ...item,
+        quantity: item.quantity || 1, // Default to 1 if quantity is not provided
+      }));
+
+      setAllCartItems(cartItemsWithQuantity);
     } catch (error) {
-      console.error("Error fetching cart items:", error);
-      setError("Failed to load your cart items. Please try again.");
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchCart(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const calculateTotal = (items) => {
-    const total = items.reduce((sum, item) => {
-      return sum + item.price * item.quantity;
-    }, 0);
-    setTotalAmount(total);
+  const getSubtotal = () => {
+    return allCartItems.reduce(
+      (total, item) => total + item.item_data.price * (item.quantity || 1),
+      0
+    );
+  };
+
+  const getTaxAmount = () => {
+    return getSubtotal() * TAX_RATE;
+  };
+
+  const getTotal = () => {
+    return getSubtotal() + getTaxAmount();
   };
 
   const handlePlaceOrder = async () => {
@@ -66,21 +96,77 @@ const Checkout = () => {
 
     try {
       setLoading(true);
-      const orderData = {
-        address_id: address.id,
-        items: cartItems.map((item) => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-        })),
-      };
-
-      await api.post("/api/orders/create/", orderData);
-      navigate("/orders");
+      handlePayment();
     } catch (error) {
       console.error("Error placing order:", error);
       setError("Failed to place your order. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateOrderId = () => {
+    const timestamp = Date.now(); // Current timestamp in milliseconds
+    const randomNumber = Math.floor(Math.random() * 10000); // Random number between 0 and 9999
+    return `ORD${timestamp}${randomNumber}`; // Combine timestamp and random number to form a unique order ID
+  };
+
+  const handlePayment = async () => {
+    setIsLoadingPayment(true);
+    try {
+      // Request order creation from backend
+      const orderId = generateOrderId();
+      const response = await api.post("/api/payments/order/", {
+        event_id: orderId,
+        amount: getTotal(), // Ensure event.price is defined
+      });
+
+      const { order_id, amount, currency } = response.data;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_API_KEY, // Public Razorpay key
+        amount,
+        currency,
+        name: "WoofWorld",
+        description: "Order",
+        order_id,
+        handler: async function (response) {
+          // Make handler async
+          try {
+            const payment_id = response.razorpay_payment_id;
+            const payment_status = 1; // Assuming 1 means success
+
+            // Send payment success details to the backend
+            const paymentSuccessResponse = await api.post("/api/order/", {
+              payment_id: payment_id,
+              payment_status: payment_status,
+              order_id: order_id,
+              total_price: getTotal(),
+            });
+
+            if (paymentSuccessResponse.status === 201) {
+              localStorage.setItem("order_id", order_id);
+              navigate("/orderplaced");
+              // Optionally, navigate to order confirmation page or clear cart
+            } else {
+              alert("Failed to place order after payment.");
+            }
+          } catch (error) {
+            console.error("Error sending payment details to backend:", error);
+            alert("Payment failed, please try again.");
+          }
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } catch (error) {
+      console.error("Error creating Razorpay order:", error);
+    } finally {
+      setIsLoadingPayment(false);
     }
   };
 
@@ -104,7 +190,7 @@ const Checkout = () => {
       <div className="container py-5">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
           <div>
-            <h1 className="fw-bold text-primary mb-2">Checkout</h1>
+            <h1 className="fw-bold text-dark mb-2">Checkout</h1>
             <p className="text-muted">Complete your order</p>
           </div>
           <button
@@ -185,16 +271,17 @@ const Checkout = () => {
                 <h5 className="mb-0">Order Summary</h5>
               </div>
               <div className="card-body">
-                {cartItems.length > 0 ? (
+                {allCartItems.length > 0 ? (
                   <div>
-                    {cartItems.map((item) => (
+                    {allCartItems.map((item) => (
                       <div
                         key={item.id}
                         className="d-flex align-items-center mb-3 pb-3 border-bottom"
                       >
+                        {console.log(allCartItems)}
                         <img
-                          src={item.product.images[0]}
-                          alt={item.product.name}
+                          src={item.item_data.image}
+                          alt={item.item_data.name}
                           className="rounded"
                           style={{
                             width: "80px",
@@ -203,14 +290,14 @@ const Checkout = () => {
                           }}
                         />
                         <div className="ms-3 flex-grow-1">
-                          <h6 className="mb-1">{item.product.name}</h6>
+                          <h6 className="mb-1">{item.item_data.name}</h6>
                           <p className="text-muted mb-0">
                             Quantity: {item.quantity}
                           </p>
                         </div>
                         <div className="text-end">
                           <h6 className="mb-0">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ₹{(item.item_data.price * item.quantity).toFixed(2)}
                           </h6>
                         </div>
                       </div>
@@ -233,24 +320,45 @@ const Checkout = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
-                  <span>${totalAmount.toFixed(2)}</span>
+                  <span>₹{getSubtotal().toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Shipping</span>
-                  <span>Free</span>
+                  <span className="text-success">Free</span>
                 </div>
                 <div className="d-flex justify-content-between mb-3 pb-3 border-bottom">
                   <span>Tax</span>
-                  <span>${(totalAmount * 0.1).toFixed(2)}</span>
+                  <span>₹{getTaxAmount().toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-3">
                   <strong>Total</strong>
-                  <strong>${(totalAmount * 1.1).toFixed(2)}</strong>
+                  <strong>₹{getTotal().toFixed(2)}</strong>
                 </div>
-                <button
-                  className="btn btn-primary w-100"
+
+                {allCartItems.length > 0 && !isLoadingPayment && (
+                  <button
+                    className="btn btn-dark w-100 mb-3 mt-3 py-2"
+                    disabled={loading || !address || allCartItems === 0}
+                    onClick={handlePayment}
+                  >
+                    <i className="fas fa-shopping-cart me-2"></i>
+                    Place Order
+                  </button>
+                )}
+
+                {isLoadingPayment && (
+                  <div className="text-center mb-3 mt-3">
+                    <div className="spinner-border text-success" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* <button
+                  style={{ height: "50px" }}
+                  className="btn btn-dark w-100"
                   onClick={handlePlaceOrder}
-                  disabled={loading || !address || cartItems.length === 0}
+                  disabled={loading || !address || allCartItems.length === 0}
                 >
                   {loading ? (
                     <span
@@ -262,7 +370,7 @@ const Checkout = () => {
                     <i className="fas fa-shopping-cart me-2"></i>
                   )}
                   Place Order
-                </button>
+                </button> */}
               </div>
             </div>
           </div>

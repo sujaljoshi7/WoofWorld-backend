@@ -485,68 +485,80 @@ const UserProfile = () => {
 
                     {!showAddressForm ? (
                       <>
-                        {/* Display existing addresses */}
-                        <div className="card mb-4 border-0 shadow-sm">
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-8">
-                                <div className="d-flex align-items-center mb-3">
-                                  <h6 className="text-muted mb-0">
-                                    Primary Address
-                                  </h6>
-                                  <span className="badge bg-primary ms-2">
-                                    Default
-                                  </span>
+                        {/* Display existing addresses or "No address found" message */}
+                        {userData.address === "No address found" ? (
+                          <div className="text-center py-5">
+                            <div className="mb-4">
+                              <i
+                                className="fas fa-map-marker-alt text-muted"
+                                style={{ fontSize: "48px" }}
+                              ></i>
+                            </div>
+                            <h5 className="text-muted mb-3">
+                              No Address Found
+                            </h5>
+                            <button
+                              className="btn btn-primary rounded-pill"
+                              onClick={() => {
+                                setEditingAddress(null);
+                                setShowAddressForm(true);
+                              }}
+                            >
+                              <i className="fas fa-plus me-2"></i>Add Address
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="card mb-4 border-0 shadow-sm">
+                            <div className="card-body">
+                              <div className="row">
+                                <div className="col-md-8">
+                                  <div className="d-flex align-items-center mb-3">
+                                    <h6 className="text-muted mb-0">
+                                      Primary Address
+                                    </h6>
+                                    <span className="badge bg-primary ms-2">
+                                      Default
+                                    </span>
+                                  </div>
+                                  <p className="mb-1">
+                                    {userData.address.name},{" "}
+                                    {userData.address.addressLine1},{" "}
+                                    {userData.address.addressLine2},{" "}
+                                    {userData.address.city},{" "}
+                                    {userData.address.state},{" "}
+                                    {userData.address.country},{" - "}
+                                    {userData.address.postalCode}
+                                  </p>
                                 </div>
-                                <p className="mb-1">
-                                  {userData.address.name},{" "}
-                                  {userData.address.addressLine1},{" "}
-                                  {userData.address.addressLine2},{" "}
-                                  {userData.address.city},{" "}
-                                  {userData.address.state},{" "}
-                                  {userData.address.country},{" - "}
-                                  {userData.address.postalCode}
-                                </p>
-                              </div>
-                              <div className="col-md-4 d-flex align-items-center justify-content-end">
-                                <button
-                                  className="btn btn-outline-primary me-2"
-                                  onClick={() => {
-                                    setEditingAddress({
-                                      name: userData.address.name,
-                                      addressLine1:
-                                        userData.address.addressLine1,
-                                      addressLine2:
-                                        userData.address.addressLine2 || "",
-                                      city: userData.address.city,
-                                      state: userData.address.state,
-                                      postalCode: userData.address.postalCode,
-                                      country: userData.address.country,
-                                      phone: userData.address.phone,
-                                      isDefault: true,
-                                      addressType: "home",
-                                    });
-                                    setShowAddressForm(true);
-                                  }}
-                                >
-                                  <i className="fas fa-pencil-alt me-2"></i>Edit
-                                </button>
+                                <div className="col-md-4 d-flex align-items-center justify-content-end">
+                                  <button
+                                    className="btn btn-outline-primary me-2"
+                                    onClick={() => {
+                                      setEditingAddress({
+                                        name: userData.address.name,
+                                        addressLine1:
+                                          userData.address.addressLine1,
+                                        addressLine2:
+                                          userData.address.addressLine2 || "",
+                                        city: userData.address.city,
+                                        state: userData.address.state,
+                                        postalCode: userData.address.postalCode,
+                                        country: userData.address.country,
+                                        phone: userData.address.phone,
+                                        isDefault: true,
+                                        addressType: "home",
+                                      });
+                                      setShowAddressForm(true);
+                                    }}
+                                  >
+                                    <i className="fas fa-pencil-alt me-2"></i>
+                                    Edit
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-
-                        <div className="text-center">
-                          <button
-                            className="btn btn-primary rounded-pill"
-                            onClick={() => {
-                              setEditingAddress(null);
-                              setShowAddressForm(true);
-                            }}
-                          >
-                            <i className="fas fa-plus me-2"></i>Add New Address
-                          </button>
-                        </div>
+                        )}
                       </>
                     ) : (
                       <AddressForm

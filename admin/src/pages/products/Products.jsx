@@ -22,20 +22,40 @@ function ViewProducts() {
   const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [homePageToggle, setHomePageToggle] = useState();
+  const [selectedBrand, setSelectedBrand] = useState("all");
   const itemsPerPage = 5;
 
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
     setSearchTerm(value);
+    filterProducts(value, selectedBrand);
+  };
 
+  const handleBrandFilter = (event) => {
+    const brand = event.target.value;
+    setSelectedBrand(brand);
+    filterProducts(searchTerm, brand);
+  };
+
+  const filterProducts = (searchValue, brand) => {
     if (allProducts) {
-      const filtered = allProducts.filter((item) =>
+      let filtered = allProducts.filter((item) =>
         `${item.name} ${item.status} ${item.created_by}`
           .toLowerCase()
-          .includes(value)
+          .includes(searchValue)
       );
+
+      if (brand !== "all") {
+        filtered = filtered.filter((item) => item.company === brand);
+      }
+
       setFilteredData(filtered);
     }
+  };
+
+  const getUniqueBrands = () => {
+    const brands = new Set(allProducts.map((product) => product.company));
+    return Array.from(brands).filter(Boolean).sort();
   };
 
   const date_format = {
@@ -62,9 +82,19 @@ function ViewProducts() {
       // Wait for both requests to complete independently
       const [services] = await Promise.all([servicesRes]);
 
+      // Sort products by created_at and id in ascending order
+      const sortedProducts = services.data.sort((a, b) => {
+        // First sort by creation date
+        const dateComparison = new Date(a.created_at) - new Date(b.created_at);
+        if (dateComparison !== 0) return dateComparison;
+
+        // If dates are equal, sort by ID
+        return a.id - b.id;
+      });
+
       // Update state
-      setAllProducts(services.data);
-      setFilteredData(services.data);
+      setAllProducts(sortedProducts);
+      setFilteredData(sortedProducts);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -280,6 +310,19 @@ function ViewProducts() {
                 />
               </div>
               <div className="d-flex gap-2">
+                <select
+                  className="form-select"
+                  value={selectedBrand}
+                  onChange={handleBrandFilter}
+                  style={{ minWidth: "150px" }}
+                >
+                  <option value="all">All Brands</option>
+                  {getUniqueBrands().map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
                 <button
                   className="btn btn-outline-secondary"
                   onClick={() => navigate("/products/category")}
@@ -302,6 +345,7 @@ function ViewProducts() {
                     <tr>
                       <th scope="col">Image</th>
                       <th scope="col">Name</th>
+                      <th scope="col">SKU</th>
                       <th scope="col">Category</th>
                       <th scope="col">Price</th>
                       <th scope="col">Status</th>
@@ -335,6 +379,11 @@ function ViewProducts() {
                               {product.description?.substring(0, 50)}...
                             </small>
                           </div>
+                        </td>
+                        <td>
+                          <span className="text-muted">
+                            {product.sku || "N/A"}
+                          </span>
                         </td>
                         <td>{product.category?.name}</td>
                         <td>₹{product.price}</td>

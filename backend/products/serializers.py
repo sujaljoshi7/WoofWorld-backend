@@ -29,17 +29,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields  = '__all__'
+        fields = '__all__'
     
     def create(self, validated_data):
         request = self.context.get("request")
-        category_instance = validated_data.pop("product_category_id", None)  # Use correct field name
-        breed_instance = validated_data.pop("breed", None)  # Use correct field name
+        category_instance = validated_data.pop("product_category_id", None)
+        breed_instance = validated_data.pop("breed", None)
         if category_instance:
             validated_data["product_category_id"] = category_instance
         if breed_instance:
             validated_data["breed"] = breed_instance
-        validated_data["created_by"] = request.user  # Ensure created_by is set
+        validated_data["created_by"] = request.user
         return super().create(validated_data)
 
     def get_created_by(self, obj):

@@ -6,6 +6,8 @@ import Sidebar from "../../layout/Sidebar";
 import useUser from "../../hooks/useUser";
 import { useParams, useNavigate } from "react-router-dom";
 import { handleTokenRefresh } from "../../hooks/tokenRefresh";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -102,6 +104,96 @@ function OrderDetails() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const downloadInvoice = () => {
+    if (!order) return;
+
+    const doc = new jsPDF();
+    const orderItems = order.order_items || [];
+    const subtotal = order.order.total / 1.18;
+    const tax = order.order.total - subtotal;
+
+    // Add company logo and header
+    doc.setFontSize(20);
+    doc.text("WoofWorld", 20, 20);
+    doc.setFontSize(12);
+    doc.text("123 Pet Street, Bangalore, India", 20, 30);
+    doc.text("Phone: +91 9876543210 | Email: info@woofworld.com", 20, 37);
+
+    // Add invoice title
+    doc.setFontSize(16);
+    doc.text("INVOICE", 105, 50);
+
+    // Add order details
+    doc.setFontSize(12);
+    doc.text(`Invoice #: ${order.order.order_id}`, 20, 65);
+    doc.text(`Date: ${formatDate(order.order.created_at)}`, 20, 72);
+    doc.text(`Payment ID: ${order.order.payment_id}`, 20, 79);
+    doc.text(
+      `Payment Status: ${
+        order.order.payment_status === 1 ? "Paid" : "Pending"
+      }`,
+      20,
+      86
+    );
+
+    // Add customer details
+    doc.text("Bill To:", 120, 65);
+    doc.text(`User ID: ${order.order.user_id}`, 120, 72);
+
+    // Add table header
+    const tableColumn = ["Item", "Type", "Quantity", "Price", "Total"];
+    const tableRows = [];
+
+    // Add table rows
+    orderItems.forEach((item) => {
+      let itemName = "Unknown Item";
+      let itemPrice = 0;
+
+      if (item.type === 1 && item.product) {
+        itemName = item.product.name;
+        itemPrice = item.product.price;
+      } else if (item.type === 2) {
+        itemName = "Event Ticket";
+      }
+
+      const itemTotal = itemPrice * item.quantity;
+      const itemType = item.type === 1 ? "Product" : "Ticket";
+
+      tableRows.push([
+        itemName,
+        itemType,
+        item.quantity,
+        `₹${itemPrice.toFixed(2)}`,
+        `₹${itemTotal.toFixed(2)}`,
+      ]);
+    });
+
+    // Generate table
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 100,
+      theme: "grid",
+      headStyles: { fillColor: [66, 139, 202] },
+      footStyles: { fillColor: [240, 240, 240] },
+      foot: [
+        ["", "", "", "Subtotal:", `₹${subtotal.toFixed(2)}`],
+        ["", "", "", "Tax (18%):", `₹${tax.toFixed(2)}`],
+        ["", "", "", "Delivery:", "Free"],
+        ["", "", "", "Total:", `₹${order.order.total.toFixed(2)}`],
+      ],
+    });
+
+    // Add footer
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.text("Thank you for your business!", 20, pageHeight - 30);
+    doc.text("WoofWorld - Your trusted pet care partner", 20, pageHeight - 25);
+
+    // Save the PDF
+    doc.save(`Invoice-${order.order.order_id}.pdf`);
   };
 
   if (isLoading) {
@@ -221,18 +313,23 @@ function OrderDetails() {
       >
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h1 className="h3 mb-0">Order Details</h1>
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => navigate("/orders")}
-          >
-            Back to Orders
-          </button>
+          <div>
+            <button className="btn btn-success me-2" onClick={downloadInvoice}>
+              <i className="fas fa-file-download me-2"></i>Download Invoice
+            </button>
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => navigate("/orders")}
+            >
+              Back to Orders
+            </button>
+          </div>
         </div>
 
         <div className="card shadow-sm mb-4">
           <div className="card-header bg-light">
             <div className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0">Order #{order.order.order_id}</h5>
+              <h5 className="mb-0 text-dark">Order #{order.order.order_id}</h5>
               <span
                 className={`badge ${getStatusBadgeClass(
                   order.order.order_status === 1 ? "completed" : "pending"
@@ -269,7 +366,7 @@ function OrderDetails() {
                   <strong>User ID:</strong> {order.order.user_id}
                 </p>
                 <p className="mb-1">
-                  <strong>Total Amount:</strong> ${order.order.total.toFixed(2)}
+                  <strong>Total Amount:</strong> ₹{order.order.total.toFixed(2)}
                 </p>
                 <p className="mb-1">
                   <strong>Total Items:</strong>{" "}
@@ -318,23 +415,40 @@ function OrderDetails() {
                           </span>
                         </td>
                         <td>{item.quantity}</td>
-                        <td>${itemPrice.toFixed(2)}</td>
-                        <td>${itemTotal.toFixed(2)}</td>
+                        <td>₹{itemPrice.toFixed(2)}</td>
+                        <td>₹{itemTotal.toFixed(2)}</td>
                       </tr>
                     );
                   })}
                 </tbody>
-                <tfoot className="table-light">
-                  <tr>
-                    <td colSpan="4" className="text-end">
-                      <strong>Total:</strong>
-                    </td>
-                    <td>
-                      <strong>${order.order.total.toFixed(2)}</strong>
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
+            </div>
+
+            {/* Price Breakdown Section */}
+            <div className="card mt-4">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 text-dark">Price Breakdown</h6>
+              </div>
+              <div className="card-body">
+                <div className="d-flex justify-content-between mb-2">
+                  <span>Subtotal:</span>
+                  <span>₹{(order.order.total / 1.18).toFixed(2)}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-2">
+                  <span>Tax (18%):</span>
+                  <span>
+                    ₹{(order.order.total - order.order.total / 1.18).toFixed(2)}
+                  </span>
+                </div>
+                <div className="d-flex justify-content-between mb-2">
+                  <span>Delivery:</span>
+                  <span className="text-success">Free</span>
+                </div>
+                <div className="d-flex justify-content-between fw-bold pt-2 border-top">
+                  <span>Total:</span>
+                  <span>₹{order.order.total.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
 
             <div className="mt-4">

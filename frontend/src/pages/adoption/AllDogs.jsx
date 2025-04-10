@@ -70,6 +70,7 @@ const AllDogs = () => {
           energy_level: dog.energy_level,
           color: dog.color,
           looking_for: dog.looking_for,
+          views: dog.views || 0,
         }));
 
         setDogs(transformedDogs);
@@ -212,36 +213,43 @@ const AllDogs = () => {
 
   // Toggle breed selection
   const toggleBreed = (breed) => {
-    if (selectedBreeds.includes(breed)) {
-      setSelectedBreeds(selectedBreeds.filter((b) => b !== breed));
-    } else {
-      setSelectedBreeds([...selectedBreeds, breed]);
-    }
+    setSelectedBreeds((prev) => {
+      const newBreeds = prev.includes(breed)
+        ? prev.filter((b) => b !== breed)
+        : [...prev, breed];
+      setCurrentPage(1); // Reset to first page when filter changes
+      return newBreeds;
+    });
   };
 
   // Toggle age selection
   const toggleAge = (age) => {
-    if (selectedAges.includes(age)) {
-      setSelectedAges(selectedAges.filter((a) => a !== age));
-    } else {
-      setSelectedAges([...selectedAges, age]);
-    }
+    setSelectedAges((prev) => {
+      const newAges = prev.includes(age)
+        ? prev.filter((a) => a !== age)
+        : [...prev, age];
+      setCurrentPage(1); // Reset to first page when filter changes
+      return newAges;
+    });
   };
 
   // Toggle size selection
   const toggleSize = (size) => {
-    if (selectedSizes.includes(size)) {
-      setSelectedSizes(selectedSizes.filter((s) => s !== size));
-    } else {
-      setSelectedSizes([...selectedSizes, size]);
-    }
+    setSelectedSizes((prev) => {
+      const newSizes = prev.includes(size)
+        ? prev.filter((s) => s !== size)
+        : [...prev, size];
+      setCurrentPage(1); // Reset to first page when filter changes
+      return newSizes;
+    });
   };
 
   // Toggle other filters
   const toggleFilter = (filter) => {
-    setSelectedFilters({
-      ...selectedFilters,
-      [filter]: !selectedFilters[filter],
+    setSelectedFilters((prev) => {
+      const newFilters = { ...prev, [filter]: !prev[filter] };
+      setCurrentPage(1); // Reset to first page when filter changes
+      return newFilters;
     });
   };
 
@@ -259,18 +267,40 @@ const AllDogs = () => {
       specialNeeds: false,
     });
     setSortBy("default");
+    setCurrentPage(1); // Reset to first page when clearing filters
   };
 
   // Handle search form submission
   const handleSearch = (e) => {
     e.preventDefault();
-    // Search is handled by the filter function
+    setCurrentPage(1); // Reset to first page when search changes
   };
 
-  // Pagination navigation
+  // Pagination navigation with scroll to top
   const changePage = (newPage) => {
     setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Use setTimeout to ensure the scroll happens after the state update
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 100);
+  };
+
+  const handleViewDetails = async (dog) => {
+    setActiveDog(dog);
+    try {
+      // Increment views when viewing details
+      await api.post(`/api/adoption/dog/${dog.id}/increment-views/`);
+      // Refresh the dog data to get updated view count
+      const response = await api.get(`/api/adoption/${dog.id}/`);
+      const updatedDog = response.data;
+      setActiveDog(updatedDog);
+      // Update the dog in the list
+      setDogs((prevDogs) =>
+        prevDogs.map((d) => (d.id === updatedDog.id ? updatedDog : d))
+      );
+    } catch (error) {
+      console.error("Error incrementing views:", error);
+    }
   };
 
   useEffect(() => {
@@ -440,7 +470,7 @@ const AllDogs = () => {
                       onChange={() => toggleSize("small")}
                     />
                     <label className="form-check-label" htmlFor="size-small">
-                      Small (0-25 lbs)
+                      Small (0-25 Kgs)
                     </label>
                   </div>
                   <div className="form-check">
@@ -452,7 +482,7 @@ const AllDogs = () => {
                       onChange={() => toggleSize("medium")}
                     />
                     <label className="form-check-label" htmlFor="size-medium">
-                      Medium (26-50 lbs)
+                      Medium (26-50 Kgs)
                     </label>
                   </div>
                   <div className="form-check">
@@ -464,7 +494,7 @@ const AllDogs = () => {
                       onChange={() => toggleSize("large")}
                     />
                     <label className="form-check-label" htmlFor="size-large">
-                      Large (51-90 lbs)
+                      Large (51-90 Kgs)
                     </label>
                   </div>
                   <div className="form-check">
@@ -476,7 +506,7 @@ const AllDogs = () => {
                       onChange={() => toggleSize("xlarge")}
                     />
                     <label className="form-check-label" htmlFor="size-xlarge">
-                      X-Large (90+ lbs)
+                      X-Large (90+ Kgs)
                     </label>
                   </div>
                 </div>
@@ -628,12 +658,12 @@ const AllDogs = () => {
                     <div className="card-body">
                       <div className="d-flex justify-content-between align-items-start mb-2">
                         <h5 className="card-title mb-0 fw-bold">{dog.name}</h5>
-                        <button
-                          className="btn btn-sm btn-outline-danger border-0"
-                          title="Add to favorites"
-                        >
-                          <i className="bi bi-heart"></i>
-                        </button>
+                        <div className="d-flex align-items-center">
+                          <span className="badge bg-light text-dark px-2 py-1">
+                            <i className="bi bi-eye-fill me-1"></i>
+                            {dog.views || 0} views
+                          </span>
+                        </div>
                       </div>
                       <p className="card-text text-muted">
                         {dog.breed} · {getSizeCategory(dog.weight)} ·{" "}
@@ -677,7 +707,7 @@ const AllDogs = () => {
                     <div className="card-footer bg-white border-top-0">
                       <button
                         className="btn btn-dark w-100"
-                        onClick={() => setActiveDog(dog)}
+                        onClick={() => handleViewDetails(dog)}
                         data-bs-toggle="modal"
                         data-bs-target="#dogModal"
                       >
@@ -794,6 +824,13 @@ const AllDogs = () => {
                         <div className="me-4">
                           <small className="text-muted d-block">Weight</small>
                           <span className="fw-bold">{activeDog.weight} kg</span>
+                        </div>
+                        <div className="me-4">
+                          <small className="text-muted d-block">Views</small>
+                          <span className="fw-bold">
+                            <i className="bi bi-eye me-1"></i>
+                            {activeDog.views || 0}
+                          </span>
                         </div>
                         <div>
                           <small className="text-muted d-block">Location</small>
