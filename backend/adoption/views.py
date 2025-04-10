@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
+from django.db import models
 
 
 class BreedView(APIView):
@@ -114,3 +115,14 @@ class GetSpecificDogData(APIView):
         dogs = get_object_or_404(Dogs.objects.select_related("breed"), id=dog_id)
         serializer = DogsSerializer(dogs)  # Use your serializer directly
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def increment_dog_views(request, dog_id):
+    try:
+        dog = Dogs.objects.get(id=dog_id)
+        dog.views = models.F('views') + 1
+        dog.save(update_fields=['views'])
+        return Response({"message": "View count incremented successfully"}, status=status.HTTP_200_OK)
+    except Dogs.DoesNotExist:
+        return Response({"error": "Dog not found"}, status=status.HTTP_404_NOT_FOUND)

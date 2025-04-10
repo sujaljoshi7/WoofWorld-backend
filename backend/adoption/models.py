@@ -27,5 +27,6 @@ class Dogs(models.Model):
     energy_level = models.CharField(max_length=10)
     vaccinated_status = models.CharField(max_length=30)
     status = models.IntegerField()
+    views = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=now, editable=False)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_adoption')
