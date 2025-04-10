@@ -96,6 +96,28 @@ function PastEvents() {
     }
   }, [isLoadingEvents]);
 
+  const NoEventsFound = () => (
+    <div className="no-events-container text-center py-5">
+      <div className="no-events-content">
+        <div className="no-events-icon mb-4">
+          <i className="fas fa-calendar-times fa-4x text-muted"></i>
+        </div>
+        <h3 className="text-muted mb-3">No Past Events Found</h3>
+        <p className="text-muted mb-4">
+          Looks like we haven't had any events in the past yet. Stay tuned for
+          future events!
+        </p>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate("/events/upcoming")}
+        >
+          <i className="fas fa-calendar-alt me-2"></i>
+          Check Upcoming Events
+        </button>
+      </div>
+    </div>
+  );
+
   if (isLoadingEvents) return <LoadingScreen fadeOut={fadeOut} />;
 
   return (
@@ -158,7 +180,7 @@ function PastEvents() {
                 </div>
               ))
             ) : (
-              <p>Loading events...</p>
+              <NoEventsFound />
             )}
           </div>
         </div>

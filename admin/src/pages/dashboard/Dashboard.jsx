@@ -36,7 +36,8 @@ function Dashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await api.get("/api/orders/dashboard-stats/");
+        const response = await api.get("/api/order/dashboard-stats/");
+        console.log("Dashboard API Response:", response.data);
         setDashboardData(response.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -90,14 +91,7 @@ function Dashboard() {
   ];
 
   const monthlyOrdersData = {
-    labels:
-      dashboardData?.monthly_orders?.map((item) => {
-        const date = new Date(item.month);
-        return date.toLocaleString("default", {
-          month: "short",
-          year: "numeric",
-        });
-      }) || [],
+    labels: dashboardData?.monthly_orders?.map((item) => item.month) || [],
     datasets: [
       {
         label: "Orders",
@@ -218,8 +212,10 @@ function Dashboard() {
   const ordersByStatusPieData = {
     labels:
       dashboardData?.orders_by_status?.map((item) => {
-        // Convert status to title case
-        return item.status.charAt(0).toUpperCase() + item.status.slice(1);
+        // Convert status to title case and add count
+        const status =
+          item.status.charAt(0).toUpperCase() + item.status.slice(1);
+        return `${status} (${item.count})`;
       }) || [],
     datasets: [
       {
@@ -239,6 +235,7 @@ function Dashboard() {
           "rgba(153, 102, 255, 1)",
         ],
         borderWidth: 1,
+        hoverOffset: 10,
       },
     ],
   };
@@ -252,13 +249,14 @@ function Dashboard() {
         labels: {
           font: {
             size: 12,
+            weight: "bold",
           },
           padding: 20,
           generateLabels: function (chart) {
             const data = chart.data;
             if (data.labels.length && data.datasets.length) {
               return data.labels.map((label, i) => ({
-                text: `${label}: ${data.datasets[0].data[i]}`,
+                text: label,
                 fillStyle: data.datasets[0].backgroundColor[i],
                 strokeStyle: data.datasets[0].borderColor[i],
                 lineWidth: 1,
@@ -278,11 +276,22 @@ function Dashboard() {
             const value = context.raw || 0;
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = Math.round((value / total) * 100);
-            return `${label}: ${value} (${percentage}%)`;
+            return `${label.split(" ")[0]}: ${value} orders (${percentage}%)`;
           },
         },
       },
+      title: {
+        display: true,
+        text: "Order Status Distribution",
+        font: {
+          size: 16,
+          weight: "bold",
+        },
+        padding: 20,
+      },
     },
+    cutout: "60%",
+    radius: "80%",
   };
 
   return (
@@ -342,7 +351,7 @@ function Dashboard() {
               <div className="card border-0 shadow-sm">
                 <div className="card-body">
                   <h5 className="card-title text-primary mb-4">
-                    Orders Distribution
+                    Order Status Distribution
                   </h5>
                   <div style={{ height: "300px" }}>
                     <Pie
