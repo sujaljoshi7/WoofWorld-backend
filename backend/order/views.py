@@ -129,6 +129,9 @@ class OrderDetailsView(APIView):
                         item_data['product_details'] = None
                 order_items_data.append(item_data)
 
+            # Get the user's address
+            user_address = order.user_id.user_address.first()
+            
             # Prepare the response data
             response_data = {
                 'order': OrderSerializer(order).data,
@@ -137,14 +140,17 @@ class OrderDetailsView(APIView):
                     'id': order.user_id.id,
                     'username': order.user_id.username,
                     'email': order.user_id.email,
+                    'first_name': order.user_id.first_name,
+                    'last_name': order.user_id.last_name,
                     'address': {
-                        'name': order.user_id.address.name,
-                        'address_line_1': order.user_id.address.address_line_1,
-                        'address_line_2': order.user_id.address.address_line_2,
-                        'city': order.user_id.address.city,
-                        'state': order.user_id.address.state,
-                        'zip_code': order.user_id.address.zip_code,
-                        'country': order.user_id.address.country
+                        'name': user_address.name if user_address else None,
+                        'address_line_1': user_address.address_line_1 if user_address else None,
+                        'address_line_2': user_address.address_line_2 if user_address else None,
+                        'city': user_address.city if user_address else None,
+                        'state': user_address.state if user_address else None,
+                        'postal_code': user_address.postal_code if user_address else None,
+                        'country': user_address.country if user_address else None,
+                        'phone': user_address.phone if user_address else None
                     }
                 }
             }
