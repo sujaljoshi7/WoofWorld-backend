@@ -138,7 +138,7 @@ class OrderDetailsView(APIView):
                         event = Event.objects.get(id=item.item)
                         item_data['event_details'] = {
                             'id': event.id,
-                            'title': event.title,
+                            'title': event.name,
                             'description': event.description,
                             'date': event.date,
                             'time': event.time,
