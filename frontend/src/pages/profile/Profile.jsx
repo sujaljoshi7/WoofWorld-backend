@@ -213,15 +213,15 @@ const UserProfile = () => {
       case 1:
         return "Placed";
       case 2:
-        return "Confirmed";
-      case 3:
         return "Packed";
-      case 4:
+      case 3:
         return "In Transit";
-      case 5:
+      case 4:
         return "Out for delivery";
-      case 6:
+      case 5:
         return "Delivered";
+      case 6:
+        return "Cancelled";
       default:
         return "Unknown";
     }
@@ -236,11 +236,11 @@ const UserProfile = () => {
       case 3: // Packed
         return "#f39c12"; // Orange
       case 4: // In Transit
-        return "#e67e22"; // Dark Orange
-      case 5: // Out for delivery
-        return "#e74c3c"; // Red
-      case 6: // Delivered
         return "#2ecc71"; // Green
+      case 5: // Out for delivery
+        return "#2ecc71"; // Green
+      case 6: // Delivered
+        return "#e74c3c"; // Red
       default:
         return "#95a5a6"; // Gray for Unknown
     }

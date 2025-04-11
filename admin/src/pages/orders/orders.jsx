@@ -18,6 +18,7 @@ function ViewOrders() {
   const [currentPage, setCurrentPage] = useState(0);
   const [activeTab, setActiveTab] = useState("all");
   const itemsPerPage = 5;
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   const handleSearch = (event) => {
     const value = event.target.value.toLowerCase();
@@ -119,12 +120,23 @@ function ViewOrders() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await api.patch(`/api/order/${orderId}/update-status/`, {
-        order_status: newStatus,
-      });
+      setUpdatingOrderId(orderId);
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      await api.patch(
+        `/api/order/${orderId}/update-status/`,
+        { order_status: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       fetchUserData();
     } catch (error) {
       console.error("Error updating order status:", error);
+      if (error.response && error.response.status === 401) {
+        await handleTokenRefresh();
+      }
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -161,6 +173,17 @@ function ViewOrders() {
       mixed: "bg-secondary",
     };
     return badges[type] || "bg-secondary";
+  };
+
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      1: { class: "bg-warning", text: "Pending" },
+      2: { class: "bg-info", text: "Processing" },
+      3: { class: "bg-primary", text: "Shipped" },
+      4: { class: "bg-success", text: "Delivered" },
+      5: { class: "bg-danger", text: "Cancelled" },
+    };
+    return statusMap[status] || { class: "bg-secondary", text: "Unknown" };
   };
 
   const pageCount = Math.ceil(
@@ -321,25 +344,38 @@ function ViewOrders() {
                             </span>
                           </td>
                           <td>
-                            <select
-                              className="form-select form-select-sm"
-                              value={item.order.order_status}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(
-                                  item.order.id,
-                                  e.target.value
-                                );
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <option value="1">Placed</option>
-                              <option value="2">Packed</option>
-                              <option value="3">In Transit</option>
-                              <option value="4">Out For Delivery</option>
-                              <option value="5">Delivered</option>
-                              <option value="6">Cancelled</option>
-                            </select>
+                            <div className="position-relative">
+                              <select
+                                className={`form-select form-select-sm text-white`}
+                                value={item.order.order_status}
+                                onChange={(e) =>
+                                  handleStatusChange(
+                                    item.order.id,
+                                    parseInt(e.target.value)
+                                  )
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                disabled={updatingOrderId === item.order.id}
+                              >
+                                <option value={1}>Pending</option>
+                                <option value={2}>Processing</option>
+                                <option value={3}>Shipped</option>
+                                <option value={4}>Delivered</option>
+                                <option value={5}>Cancelled</option>
+                              </select>
+                              {updatingOrderId === item.order.id && (
+                                <div className="position-absolute top-50 start-50 translate-middle">
+                                  <div
+                                    className="spinner-border spinner-border-sm text-light"
+                                    role="status"
+                                  >
+                                    <span className="visually-hidden">
+                                      Loading...
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="fw-bold">
                             ₹{item.order.total.toFixed(2)}

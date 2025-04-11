@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Order, OrderItems
 from products.serializers import ProductSerializer
 from products.models import Product
+from user.models import Address
+from user.serializers import AddressSerializer
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,4 +27,12 @@ class OrderItemsSerializer(serializers.ModelSerializer):
                 return ProductSerializer(product).data
             except Product.DoesNotExist:
                 return None
+        return None
+
+    def get_address(self, obj):
+        try:
+            address = Address.objects.get(user=obj.user_id)
+            return AddressSerializer(address).data
+        except Address.DoesNotExist:
+            return None
         return None
