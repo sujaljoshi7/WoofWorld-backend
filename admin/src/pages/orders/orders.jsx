@@ -120,7 +120,7 @@ function ViewOrders() {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await api.patch(`/api/order/${orderId}/update-status/`, {
-        status: newStatus,
+        order_status: newStatus,
       });
       fetchUserData();
     } catch (error) {
@@ -333,10 +333,12 @@ function ViewOrders() {
                               }}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <option value="pending">Pending</option>
-                              <option value="processing">Processing</option>
-                              <option value="completed">Completed</option>
-                              <option value="cancelled">Cancelled</option>
+                              <option value="1">Placed</option>
+                              <option value="2">Packed</option>
+                              <option value="3">In Transit</option>
+                              <option value="4">Out For Delivery</option>
+                              <option value="5">Delivered</option>
+                              <option value="6">Cancelled</option>
                             </select>
                           </td>
                           <td className="fw-bold">

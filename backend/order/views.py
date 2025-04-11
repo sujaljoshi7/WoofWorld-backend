@@ -300,11 +300,11 @@ class UpdateOrderStatusView(APIView):
                 )
             
             # Validate status value
-            if new_status not in [1, 2, 3, 4, 5]:
-                return Response(
-                    {"error": "Invalid order status"},
-                    status=400
-                )
+            # if new_status not in [1, 2, 3, 4, 5]:
+            #     return Response(
+            #         {"error": "Invalid order status"},
+            #         status=400
+            #     )
             
             # Update order status
             order.order_status = new_status
