@@ -144,7 +144,7 @@ class OrderDetailsView(APIView):
                             'time': event.time,
                             'location': event.address_line_1 + " " + event.address_line_2,
                             'price': event.price,
-                            'image': event.image.url if event.image else None
+                            'image': event.image if event.image else None
                         }
                     except Event.DoesNotExist:
                         item_data['event_details'] = None
