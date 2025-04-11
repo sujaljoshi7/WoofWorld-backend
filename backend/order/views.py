@@ -136,6 +136,7 @@ class OrderDetailsView(APIView):
 
             # Get the user's address
             user_address = order.user_id.user_address.first()
+            print(user_address)
             
             # Prepare the response data
             response_data = {
