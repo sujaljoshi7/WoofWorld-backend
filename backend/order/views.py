@@ -13,6 +13,7 @@ from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.contrib.auth.models import User
+from decimal import Decimal
 
 
 class OrderCheckoutView(APIView):
@@ -179,8 +180,27 @@ class DashboardStatsView(APIView):
             # Get total orders count
             total_orders = Order.objects.count()
             
-            # Get total revenue (using total field instead of total_amount)
+            # Get total revenue and format it in Indian currency
             total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
+            
+            # Format revenue in Indian number format
+            def format_indian_currency(amount):
+                amount_str = f"{amount:,.2f}"
+                parts = amount_str.split('.')
+                integer_part = parts[0]
+                decimal_part = parts[1] if len(parts) > 1 else '00'
+                
+                # Format integer part with Indian number system
+                if len(integer_part) > 3:
+                    last_three = integer_part[-3:]
+                    other_numbers = integer_part[:-3]
+                    formatted = f"{other_numbers},{last_three}"
+                else:
+                    formatted = integer_part
+                
+                return f"₹{formatted}.{decimal_part}"
+            
+            formatted_revenue = format_indian_currency(total_revenue)
             
             # Get total products
             total_products = Product.objects.count()
@@ -249,7 +269,7 @@ class DashboardStatsView(APIView):
             response_data = {
                 'stats': {
                     'total_orders': total_orders,
-                    'total_revenue': total_revenue,
+                    'total_revenue': formatted_revenue,
                     'total_products': total_products,
                     'total_users': total_users
                 },
@@ -259,6 +279,48 @@ class DashboardStatsView(APIView):
             }
 
             return Response(response_data)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=500
+            )
+
+class UpdateOrderStatusView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, order_id):
+        try:
+            order = get_object_or_404(Order, id=order_id)
+            new_status = request.data.get('order_status')
+            
+            if new_status is None:
+                return Response(
+                    {"error": "Order status is required"},
+                    status=400
+                )
+            
+            # Validate status value
+            if new_status not in [1, 2, 3, 4, 5]:
+                return Response(
+                    {"error": "Invalid order status"},
+                    status=400
+                )
+            
+            # Update order status
+            order.order_status = new_status
+            order.save()
+            
+            return Response({
+                "message": "Order status updated successfully",
+                "order_id": order.id,
+                "new_status": new_status
+            })
+            
+        except Order.DoesNotExist:
+            return Response(
+                {"error": "Order not found"},
+                status=404
+            )
         except Exception as e:
             return Response(
                 {"error": str(e)},

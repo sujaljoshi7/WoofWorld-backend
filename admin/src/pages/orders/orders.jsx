@@ -119,7 +119,7 @@ function ViewOrders() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await api.patch(`/api/order/${orderId}/status/`, {
+      await api.patch(`/api/order/${orderId}/update-status/`, {
         status: newStatus,
       });
       fetchUserData();
