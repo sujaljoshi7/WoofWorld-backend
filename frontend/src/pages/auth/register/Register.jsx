@@ -96,6 +96,7 @@ function Register() {
         password,
         first_name: firstName,
         last_name: lastName,
+        last_login: "",
       };
       sessionStorage.setItem(
         "pendingRegistration",
