@@ -4,6 +4,8 @@ from products.serializers import ProductSerializer
 from products.models import Product
 from user.models import Address
 from user.serializers import AddressSerializer
+from events.models import Event
+from events.serializers import EventSerializer
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,11 +16,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderItemsSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
-    address = serializers.SerializerMethodField()
+    event = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItems
-        fields = ['id', 'user_id', 'order_id', 'item', 'type', 'quantity', 'product', 'address']
+        fields = ['id', 'user_id', 'order_id', 'item', 'type', 'quantity', 'product', 'event']
         read_only_fields = ['id']  # Prevent modification of ID
 
     def get_product(self, obj):
@@ -30,10 +32,12 @@ class OrderItemsSerializer(serializers.ModelSerializer):
                 return None
         return None
 
-    def get_address(self, obj):
-        try:
-            address = Address.objects.get(user=obj.user_id)
-            return AddressSerializer(address).data
-        except Address.DoesNotExist:
-            return None
+    def get_event_ticket(self, obj):
+        if obj.type == 2:
+            try:
+                event = Event.objects.get(id=obj.item)
+                return EventSerializer(event).data
+            except Event.DoesNotExist:
+                return None
         return None
+

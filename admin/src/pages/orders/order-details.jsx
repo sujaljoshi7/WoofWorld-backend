@@ -330,191 +330,271 @@ function OrderDetails() {
           </div>
         </div>
 
-        <div className="card shadow-sm mb-4">
-          <div className="card-header bg-light">
-            <div className="d-flex justify-content-between align-items-center">
-              <h5 className="mb-0 text-dark">Order #{order.order.order_id}</h5>
-              <span
-                className={`badge ${getStatusBadgeClass(
-                  order.order.order_status === 1
-                    ? "Placed"
-                    : order.order.order_status === 2
-                    ? "Packed"
-                    : order.order.order_status === 3
-                    ? "in transit"
-                    : order.order.order_status === 4
-                    ? "out for delivery"
-                    : order.order.order_status === 5
-                    ? "delivered"
-                    : order.order.order_status === 6
-                    ? "cancel"
-                    : "Unknown"
-                )}`}
-              >
-                {order.order.order_status === 5 ? "Completed" : "Pending"}
-              </span>
+        {isLoadingOrder ? (
+          <div className="text-center">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
           </div>
-          <div className="card-body">
-            <div className="row mb-4">
-              <div className="col-md-6">
-                <h6 className="text-muted mb-2">Order Information</h6>
-                <p className="mb-1">
-                  <strong>Order ID:</strong> {order.order.order_id}
-                </p>
-                <p className="mb-1">
-                  <strong>Order Type:</strong> {orderType}
-                </p>
-                <p className="mb-1">
-                  <strong>Date:</strong> {formatDate(order.order.created_at)}
-                </p>
-                <p className="mb-1">
-                  <strong>Payment ID:</strong> {order.order.payment_id}
-                </p>
-                <p className="mb-1">
-                  <strong>Payment Status:</strong>{" "}
-                  {order.order.payment_status === 1 ? "Paid" : "Pending"}
-                </p>
-              </div>
-              <div className="col-md-6">
-                <h6 className="text-muted mb-2">Customer Information</h6>
-                <p className="mb-1">
-                  <strong>User ID:</strong> {order.order.user_id}
-                </p>
-                <p className="mb-1">
-                  <strong>Total Amount:</strong> ₹{order.order.total.toFixed(2)}
-                </p>
-                <p className="mb-1">
-                  <strong>Total Items:</strong>{" "}
-                  {orderItems.reduce((sum, item) => sum + item.quantity, 0)}
-                </p>
+        ) : (
+          <div className="row">
+            {/* Order Information */}
+            <div className="col-md-8">
+              <div className="card shadow-sm mb-4">
+                <div className="card-header bg-light">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0 text-dark">
+                      Order #{order.order.order_id}
+                    </h5>
+                    <span
+                      className={`badge ${getStatusBadgeClass(
+                        order.order.order_status
+                      )}`}
+                    >
+                      {order.order.order_status === 1
+                        ? "Pending"
+                        : order.order.order_status === 2
+                        ? "Processing"
+                        : order.order.order_status === 3
+                        ? "Shipped"
+                        : order.order.order_status === 4
+                        ? "Delivered"
+                        : order.order.order_status === 5
+                        ? "Cancelled"
+                        : order.order.order_status === 6
+                        ? "Refunded"
+                        : "Unknown"}
+                    </span>
+                  </div>
+                </div>
+                <div className="card-body">
+                  <div className="row mb-4">
+                    <div className="col-md-6">
+                      <h6 className="text-muted mb-2">Order Information</h6>
+                      <p className="mb-1">
+                        <strong>Order ID:</strong> {order.order.order_id}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Date:</strong>{" "}
+                        {formatDate(order.order.created_at)}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Payment ID:</strong> {order.order.payment_id}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Payment Status:</strong>{" "}
+                        {order.order.payment_status === 1 ? "Paid" : "Pending"}
+                      </p>
+                    </div>
+                    <div className="col-md-6">
+                      <h6 className="text-muted mb-2">Order Summary</h6>
+                      <p className="mb-1">
+                        <strong>Total Amount:</strong> ₹
+                        {order.order.total.toFixed(2)}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Total Items:</strong>{" "}
+                        {orderItems.reduce(
+                          (sum, item) => sum + item.quantity,
+                          0
+                        )}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Order Type:</strong> {orderType}
+                      </p>
+                    </div>
+                  </div>
+
+                  <h6 className="text-muted mb-3">Order Items</h6>
+                  <div className="table-responsive">
+                    <table className="table table-hover">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Item</th>
+                          <th>Type</th>
+                          <th>Quantity</th>
+                          <th>Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orderItems.map((item) => {
+                          let itemName = "Unknown Item";
+                          let itemPrice = 0;
+
+                          if (item.type === 1 && item.product) {
+                            itemName = item.product.name;
+                            itemPrice = item.product.price;
+                          } else if (item.type === 2) {
+                            itemName = "Event Ticket";
+                          }
+
+                          const itemTotal = itemPrice * item.quantity;
+
+                          return (
+                            <tr key={item.id}>
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  {item.type === 1 && item.product?.image && (
+                                    <img
+                                      src={item.product.image}
+                                      alt={itemName}
+                                      className="me-2"
+                                      style={{
+                                        width: "50px",
+                                        height: "50px",
+                                        objectFit: "cover",
+                                      }}
+                                    />
+                                  )}
+                                  <div>
+                                    <div className="fw-bold">{itemName}</div>
+                                    {item.type === 1 && item.product?.sku && (
+                                      <small className="text-muted">
+                                        SKU: {item.product.sku}
+                                      </small>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <span
+                                  className={`badge ${
+                                    item.type === 1 ? "bg-info" : "bg-primary"
+                                  }`}
+                                >
+                                  {item.type === 1 ? "Product" : "Ticket"}
+                                </span>
+                              </td>
+                              <td>{item.quantity}</td>
+                              <td>₹{itemPrice.toFixed(2)}</td>
+                              <td>₹{itemTotal.toFixed(2)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <h6 className="text-muted mb-3">Order Items</h6>
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead className="table-light">
-                  <tr>
-                    <th>Item</th>
-                    <th>Type</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderItems.map((item) => {
-                    let itemName = "Unknown Item";
-                    let itemPrice = 0;
-
-                    if (item.type === 1 && item.product) {
-                      itemName = item.product.name;
-                      itemPrice = item.product.price;
-                    } else if (item.type === 2) {
-                      itemName = "Event Ticket";
-                      // You might want to fetch ticket price separately
-                    }
-
-                    const itemTotal = itemPrice * item.quantity;
-
-                    return (
-                      <tr key={item.id}>
-                        <td>{itemName}</td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              item.type === 1 ? "bg-info" : "bg-primary"
-                            }`}
-                          >
-                            {item.type === 1 ? "Product" : "Ticket"}
-                          </span>
-                        </td>
-                        <td>{item.quantity}</td>
-                        <td>₹{itemPrice.toFixed(2)}</td>
-                        <td>₹{itemTotal.toFixed(2)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Price Breakdown Section */}
-            <div className="card mt-4">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 text-dark">Price Breakdown</h6>
-              </div>
-              <div className="card-body">
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Subtotal:</span>
-                  <span>₹{(order.order.total / 1.18).toFixed(2)}</span>
+            {/* Customer Information */}
+            <div className="col-md-4">
+              <div className="card shadow-sm mb-4">
+                <div className="card-header bg-light text-dark">
+                  <h5 className="card-title mb-0">Customer Information</h5>
                 </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Tax (18%):</span>
-                  <span>
-                    ₹{(order.order.total - order.order.total / 1.18).toFixed(2)}
-                  </span>
-                </div>
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Delivery:</span>
-                  <span className="text-success">Free</span>
-                </div>
-                <div className="d-flex justify-content-between fw-bold pt-2 border-top">
-                  <span>Total:</span>
-                  <span>₹{order.order.total.toFixed(2)}</span>
+                <div className="card-body">
+                  <div className="mb-3">
+                    <h6 className="text-muted mb-2">Contact Details</h6>
+                    <p className="mb-1">
+                      <strong>Name:</strong> {order.user?.first_name}{" "}
+                      {order.user?.last_name}
+                    </p>
+                    <p className="mb-1">
+                      <strong>Email:</strong> {order.user?.email}
+                    </p>
+                    <p className="mb-1">
+                      <strong>Username:</strong> {order.user?.username}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h6 className="text-muted mb-2">Shipping Address</h6>
+                    {order.user?.address ? (
+                      <>
+                        <p className="mb-1">
+                          <strong>Name:</strong> {order.user.address.name}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Address:</strong>{" "}
+                          {order.user.address.address_line_1}
+                          {order.user.address.address_line_2 && (
+                            <>, {order.user.address.address_line_2}</>
+                          )}
+                        </p>
+                        <p className="mb-1">
+                          <strong>City:</strong> {order.user.address.city}
+                        </p>
+                        <p className="mb-1">
+                          <strong>State:</strong> {order.user.address.state}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Country:</strong> {order.user.address.country}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Postal Code:</strong>{" "}
+                          {order.user.address.postal_code}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Phone:</strong> {order.user.address.phone}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-muted">No address available</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-4">
-              <h6 className="text-muted mb-3">Update Order Status</h6>
-              <div className="d-flex gap-2">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => handleUpdateStatus("1")}
-                  disabled={order.order.order_status === 0}
-                >
-                  Mark as Placed
-                </button>
-                <button
-                  className="btn btn-warning"
-                  onClick={() => handleUpdateStatus("2")}
-                >
-                  Mark as Packed
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={() => handleUpdateStatus("3")}
-                  disabled={order.order.order_status === 1}
-                >
-                  Mark as In Transit
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={() => handleUpdateStatus("4")}
-                  disabled={order.order.order_status === 1}
-                >
-                  Mark as Out For Delivery
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={() => handleUpdateStatus("5")}
-                  disabled={order.order.order_status === 1}
-                >
-                  Mark as Delivered
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleUpdateStatus("6")}
-                >
-                  Cancel Order
-                </button>
+              {/* Order Status Update */}
+              <div className="card shadow-sm">
+                <div className="card-header bg-light text-dark">
+                  <h5 className="card-title mb-0">Update Order Status</h5>
+                </div>
+                <div className="card-body">
+                  <div className="d-grid gap-2">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleUpdateStatus(1)}
+                      disabled={order.order.order_status === 1}
+                    >
+                      Mark as Pending
+                    </button>
+                    <button
+                      className="btn btn-warning"
+                      onClick={() => handleUpdateStatus(2)}
+                      disabled={order.order.order_status === 2}
+                    >
+                      Mark as Packed
+                    </button>
+                    <button
+                      className="btn btn-info"
+                      onClick={() => handleUpdateStatus(3)}
+                      disabled={order.order.order_status === 3}
+                    >
+                      Mark as In Transit
+                    </button>
+                    <button
+                      className="btn btn-light"
+                      onClick={() => handleUpdateStatus(4)}
+                      disabled={order.order.order_status === 4}
+                    >
+                      Mark as Out for Delivery
+                    </button>
+                    <button
+                      className="btn btn-success"
+                      onClick={() => handleUpdateStatus(5)}
+                      disabled={order.order.order_status === 5}
+                    >
+                      Mark as Delivered
+                    </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleUpdateStatus(6)}
+                      disabled={order.order.order_status === 6}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
+        {/* Toast Notification */}
         <div
           className="toast-container position-fixed bottom-0 end-0 p-3"
           style={{ zIndex: 11 }}

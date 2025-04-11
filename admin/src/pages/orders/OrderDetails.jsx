@@ -1,154 +1,192 @@
-<div className="card border-0 shadow-sm">
-  <div className="card-body">
-    <div className="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h5 className="card-title text-primary mb-2">Invoice</h5>
-        <p className="text-muted mb-0">Order #{order.id}</p>
-      </div>
-      <div className="text-end">
-        <p className="mb-1">
-          <span className="text-muted">Date:</span>{" "}
-          <span className="fw-medium">
-            {new Date(order.created_at).toLocaleDateString()}
-          </span>
-        </p>
-        <p className="mb-0">
-          <span className="text-muted">Status:</span>{" "}
-          <span className={`badge ${getStatusBadgeClass(order.status)}`}>
-            {order.status}
-          </span>
-        </p>
-      </div>
-    </div>
-
-    <div className="row mb-4">
-      <div className="col-md-6">
-        <h6 className="text-muted mb-3">Billing Information</h6>
-        <div className="bg-light p-3 rounded">
-          <p className="mb-1 fw-medium">
-            {order.user?.first_name} {order.user?.last_name}
-          </p>
-          <p className="mb-1 text-muted">{order.user?.email}</p>
-          <p className="mb-1 text-muted">{order.user?.phone_number}</p>
-          <p className="mb-0 text-muted">{order.user?.address}</p>
+<div className="container-fluid">
+  <div className="row">
+    <Sidebar />
+    <div className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 className="h2">Order Details</h1>
+        <div className="btn-toolbar mb-2 mb-md-0">
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => navigate("/admin/orders")}
+          >
+            Back to Orders
+          </button>
         </div>
       </div>
-      <div className="col-md-6">
-        <h6 className="text-muted mb-3">Shipping Information</h6>
-        <div className="bg-light p-3 rounded">
-          <p className="mb-1 fw-medium">{order.shipping_address?.name}</p>
-          <p className="mb-1 text-muted">{order.shipping_address?.address}</p>
-          <p className="mb-1 text-muted">
-            {order.shipping_address?.city}, {order.shipping_address?.state}
-          </p>
-          <p className="mb-0 text-muted">{order.shipping_address?.pincode}</p>
-        </div>
-      </div>
-    </div>
 
-    <div className="table-responsive">
-      <table className="table table-bordered">
-        <thead className="table-light">
-          <tr>
-            <th style={{ width: "5%" }}>#</th>
-            <th style={{ width: "40%" }}>Product</th>
-            <th style={{ width: "15%" }} className="text-end">
-              Price
-            </th>
-            <th style={{ width: "10%" }} className="text-center">
-              Quantity
-            </th>
-            <th style={{ width: "15%" }} className="text-end">
-              Total
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {order.items?.map((item, index) => (
-            <tr key={item.id}>
-              <td>{index + 1}</td>
-              <td>
-                <div className="d-flex align-items-center">
-                  <img
-                    src={item.product?.image}
-                    alt={item.product?.name}
-                    className="rounded me-2"
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <div>
-                    <p className="mb-0 fw-medium">{item.product?.name}</p>
-                    <small className="text-muted">
-                      SKU: {item.product?.sku || "N/A"}
-                    </small>
+      {loading ? (
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : (
+        <div className="row">
+          {/* Order Information */}
+          <div className="col-md-8">
+            <div className="card mb-4">
+              <div className="card-header">
+                <h5 className="card-title mb-0">Order Information</h5>
+              </div>
+              <div className="card-body">
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <p className="mb-1">
+                      <span className="text-muted">Order ID:</span>{" "}
+                      <span className="fw-bold">{order.order_id}</span>
+                    </p>
+                    <p className="mb-1">
+                      <span className="text-muted">Date:</span>{" "}
+                      <span className="fw-bold">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="col-md-6">
+                    <p className="mb-1">
+                      <span className="text-muted">Status:</span>{" "}
+                      <span
+                        className={`badge ${getStatusBadgeClass(
+                          order.order_status
+                        )}`}
+                      >
+                        {getStatusText(order.order_status)}
+                      </span>
+                    </p>
+                    <p className="mb-1">
+                      <span className="text-muted">Total Amount:</span>{" "}
+                      <span className="fw-bold">₹{order.total}</span>
+                    </p>
                   </div>
                 </div>
-              </td>
-              <td className="text-end">₹{item.price}</td>
-              <td className="text-center">{item.quantity}</td>
-              <td className="text-end">₹{item.price * item.quantity}</td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot className="table-light">
-          <tr>
-            <td colSpan="4" className="text-end fw-bold">
-              Subtotal
-            </td>
-            <td className="text-end">₹{order.total_amount}</td>
-          </tr>
-          <tr>
-            <td colSpan="4" className="text-end fw-bold">
-              Shipping
-            </td>
-            <td className="text-end">₹{order.shipping_charge || 0}</td>
-          </tr>
-          <tr>
-            <td colSpan="4" className="text-end fw-bold">
-              Tax
-            </td>
-            <td className="text-end">₹{order.tax || 0}</td>
-          </tr>
-          <tr>
-            <td colSpan="4" className="text-end fw-bold">
-              Total
-            </td>
-            <td className="text-end fw-bold">
-              ₹
-              {order.total_amount +
-                (order.shipping_charge || 0) +
-                (order.tax || 0)}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+              </div>
+            </div>
 
-    <div className="mt-4">
-      <h6 className="text-muted mb-2">Payment Information</h6>
-      <div className="bg-light p-3 rounded">
-        <p className="mb-1">
-          <span className="text-muted">Method:</span>{" "}
-          <span className="fw-medium">{order.payment_method}</span>
-        </p>
-        <p className="mb-1">
-          <span className="text-muted">Transaction ID:</span>{" "}
-          <span className="fw-medium">{order.transaction_id || "N/A"}</span>
-        </p>
-        <p className="mb-0">
-          <span className="text-muted">Status:</span>{" "}
-          <span
-            className={`badge ${
-              order.payment_status === "completed" ? "bg-success" : "bg-warning"
-            }`}
-          >
-            {order.payment_status}
-          </span>
-        </p>
-      </div>
+            {/* Order Items */}
+            <div className="card mb-4">
+              <div className="card-header">
+                <h5 className="card-title mb-0">Order Items</h5>
+              </div>
+              <div className="card-body">
+                <div className="table-responsive">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orderItems.map((item, index) => (
+                        <tr key={index}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <img
+                                src={item.product_details?.image}
+                                alt={item.product_details?.name}
+                                className="me-2"
+                                style={{
+                                  width: "50px",
+                                  height: "50px",
+                                  objectFit: "cover",
+                                }}
+                              />
+                              <div>
+                                <div className="fw-bold">
+                                  {item.product_details?.name}
+                                </div>
+                                <small className="text-muted">
+                                  SKU: {item.product_details?.sku}
+                                </small>
+                              </div>
+                            </div>
+                          </td>
+                          <td>₹{item.product_details?.price}</td>
+                          <td>{item.quantity}</td>
+                          <td>
+                            ₹
+                            {(
+                              item.quantity * item.product_details?.price
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Information */}
+          <div className="col-md-4">
+            <div className="card mb-4">
+              <div className="card-header">
+                <h5 className="card-title mb-0">Customer Information</h5>
+              </div>
+              <div className="card-body">
+                <div className="mb-3">
+                  <h6 className="text-muted mb-2">Contact Details</h6>
+                  <p className="mb-1">
+                    <span className="fw-bold">Name:</span>{" "}
+                    {order.user?.first_name} {order.user?.last_name}
+                  </p>
+                  <p className="mb-1">
+                    <span className="fw-bold">Email:</span> {order.user?.email}
+                  </p>
+                  <p className="mb-1">
+                    <span className="fw-bold">Username:</span>{" "}
+                    {order.user?.username}
+                  </p>
+                </div>
+
+                <div>
+                  <h6 className="text-muted mb-2">Shipping Address</h6>
+                  {order.user?.address ? (
+                    <>
+                      <p className="mb-1">
+                        <span className="fw-bold">Name:</span>{" "}
+                        {order.user.address.name}
+                      </p>
+                      <p className="mb-1">
+                        <span className="fw-bold">Address:</span>{" "}
+                        {order.user.address.address_line_1}
+                        {order.user.address.address_line_2 && (
+                          <>, {order.user.address.address_line_2}</>
+                        )}
+                      </p>
+                      <p className="mb-1">
+                        <span className="fw-bold">City:</span>{" "}
+                        {order.user.address.city}
+                      </p>
+                      <p className="mb-1">
+                        <span className="fw-bold">State:</span>{" "}
+                        {order.user.address.state}
+                      </p>
+                      <p className="mb-1">
+                        <span className="fw-bold">Country:</span>{" "}
+                        {order.user.address.country}
+                      </p>
+                      <p className="mb-1">
+                        <span className="fw-bold">Postal Code:</span>{" "}
+                        {order.user.address.postal_code}
+                      </p>
+                      <p className="mb-1">
+                        <span className="fw-bold">Phone:</span>{" "}
+                        {order.user.address.phone}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-muted">No address available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   </div>
 </div>;
