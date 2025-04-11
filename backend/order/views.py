@@ -142,7 +142,7 @@ class OrderDetailsView(APIView):
                             'description': event.description,
                             'date': event.date,
                             'time': event.time,
-                            'location': event.location,
+                            'location': event.address_line_1 + " " + event.address_line_2,
                             'price': event.price,
                             'image': event.image.url if event.image else None
                         }
