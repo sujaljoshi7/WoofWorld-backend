@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Order, OrderItems
+from .models import Order, OrderItems, Event
 from .serializers import OrderSerializer, OrderItemsSerializer, ProductSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
@@ -132,11 +132,25 @@ class OrderDetailsView(APIView):
                         item_data['product_details'] = ProductSerializer(product).data
                     except Product.DoesNotExist:
                         item_data['product_details'] = None
+                elif item.type == 2:  # Event
+                    try:
+                        event = Event.objects.get(id=item.item)
+                        item_data['event_details'] = {
+                            'id': event.id,
+                            'title': event.title,
+                            'description': event.description,
+                            'date': event.date,
+                            'time': event.time,
+                            'location': event.location,
+                            'price': event.price,
+                            'image': event.image.url if event.image else None
+                        }
+                    except Event.DoesNotExist:
+                        item_data['event_details'] = None
                 order_items_data.append(item_data)
 
             # Get the user's address
             user_address = order.user_id.user_address.first()
-            print(user_address)
             
             # Prepare the response data
             response_data = {
