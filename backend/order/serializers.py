@@ -16,7 +16,6 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderItemsSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
-    event = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItems
@@ -32,12 +31,4 @@ class OrderItemsSerializer(serializers.ModelSerializer):
                 return None
         return None
 
-    def get_event_ticket(self, obj):
-        if obj.type == 2:
-            try:
-                event = Event.objects.get(id=obj.item)
-                return EventSerializer(event).data
-            except Event.DoesNotExist:
-                return None
-        return None
 
