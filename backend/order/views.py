@@ -179,7 +179,7 @@ class DashboardStatsView(APIView):
             # Get total orders count
             total_orders = Order.objects.count()
             
-            # Get total revenue
+            # Get total revenue (using total field instead of total_amount)
             total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
             
             # Get total products
@@ -188,15 +188,32 @@ class DashboardStatsView(APIView):
             # Get total users
             total_users = User.objects.count()
             
-            # Get orders by status
-            # orders_by_status = Order.objects.values('status').annotate(count=Count('id'))
+            # Get orders by status (using order_status instead of status)
+            orders_by_status = Order.objects.values('order_status').annotate(count=Count('id'))
+            
+            # Map order status numbers to readable names
+            status_map = {
+                1: 'Pending',
+                2: 'Processing',
+                3: 'Shipped',
+                4: 'Delivered',
+                5: 'Cancelled'
+            }
+            
+            # Format orders by status with readable names
+            formatted_orders_by_status = []
+            for status in orders_by_status:
+                formatted_orders_by_status.append({
+                    'status': status_map.get(status['order_status'], 'Unknown'),
+                    'count': status['count']
+                })
             
             # Get top selling products
             top_products = OrderItems.objects.filter(type=1).values(
                 'item'
             ).annotate(
                 total_quantity=Sum('quantity')
-            ).order_by('-quantity')[:5]
+            ).order_by('-total_quantity')[:5]
             
             # Get product details for top selling products
             product_details = []
@@ -205,7 +222,7 @@ class DashboardStatsView(APIView):
                     product_obj = Product.objects.get(id=product['item'])
                     product_details.append({
                         'name': product_obj.name,
-                        'quantity': product['quantity'],
+                        'quantity': product['total_quantity'],
                         'image': product_obj.image
                     })
                 except Product.DoesNotExist:
@@ -236,7 +253,7 @@ class DashboardStatsView(APIView):
                     'total_products': total_products,
                     'total_users': total_users
                 },
-                # 'orders_by_status': list(orders_by_status),
+                'orders_by_status': formatted_orders_by_status,
                 'top_products': product_details,
                 'monthly_orders': monthly_data
             }
