@@ -9,7 +9,7 @@ from .views import (
 
 
 urlpatterns = [
-    path("checkout/", OrderCheckoutView.as_view(), name="order-checkout"),
+    path("", OrderCheckoutView.as_view(), name="order-checkout"),
     path("all/", AllOrdersAdminView.as_view(), name="admin-orders"),
     path("<int:order_id>/", OrderDetailsView.as_view(), name="order-details"),
     path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),

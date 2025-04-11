@@ -83,13 +83,17 @@ function OrderDetails() {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case "pending":
+      case "Placed":
         return "bg-warning";
-      case "processing":
+      case "Packed":
         return "bg-info";
-      case "completed":
+      case "in transit":
+        return "bg-info";
+      case "out for delivery":
         return "bg-success";
-      case "cancelled":
+      case "delivered":
+        return "bg-success";
+      case "cancel":
         return "bg-danger";
       default:
         return "bg-secondary";
@@ -332,10 +336,22 @@ function OrderDetails() {
               <h5 className="mb-0 text-dark">Order #{order.order.order_id}</h5>
               <span
                 className={`badge ${getStatusBadgeClass(
-                  order.order.order_status === 1 ? "completed" : "pending"
+                  order.order.order_status === 1
+                    ? "Placed"
+                    : order.order.order_status === 2
+                    ? "Packed"
+                    : order.order.order_status === 3
+                    ? "in transit"
+                    : order.order.order_status === 4
+                    ? "out for delivery"
+                    : order.order.order_status === 5
+                    ? "delivered"
+                    : order.order.order_status === 6
+                    ? "cancel"
+                    : "Unknown"
                 )}`}
               >
-                {order.order.order_status === 1 ? "Completed" : "Pending"}
+                {order.order.order_status === 5 ? "Completed" : "Pending"}
               </span>
             </div>
           </div>
@@ -455,28 +471,42 @@ function OrderDetails() {
               <h6 className="text-muted mb-3">Update Order Status</h6>
               <div className="d-flex gap-2">
                 <button
-                  className="btn btn-warning"
-                  onClick={() => handleUpdateStatus("pending")}
+                  className="btn btn-primary"
+                  onClick={() => handleUpdateStatus("1")}
                   disabled={order.order.order_status === 0}
                 >
-                  Mark as Pending
+                  Mark as Placed
                 </button>
                 <button
-                  className="btn btn-info"
-                  onClick={() => handleUpdateStatus("processing")}
+                  className="btn btn-warning"
+                  onClick={() => handleUpdateStatus("2")}
                 >
-                  Mark as Processing
+                  Mark as Packed
                 </button>
                 <button
                   className="btn btn-success"
-                  onClick={() => handleUpdateStatus("completed")}
+                  onClick={() => handleUpdateStatus("3")}
                   disabled={order.order.order_status === 1}
                 >
-                  Mark as Completed
+                  Mark as In Transit
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={() => handleUpdateStatus("4")}
+                  disabled={order.order.order_status === 1}
+                >
+                  Mark as Out For Delivery
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={() => handleUpdateStatus("5")}
+                  disabled={order.order.order_status === 1}
+                >
+                  Mark as Delivered
                 </button>
                 <button
                   className="btn btn-danger"
-                  onClick={() => handleUpdateStatus("cancelled")}
+                  onClick={() => handleUpdateStatus("6")}
                 >
                   Cancel Order
                 </button>

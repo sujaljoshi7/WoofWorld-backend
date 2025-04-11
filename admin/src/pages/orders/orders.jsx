@@ -323,7 +323,7 @@ function ViewOrders() {
                           <td>
                             <select
                               className="form-select form-select-sm"
-                              value={item.order.status}
+                              value={item.order.order_status}
                               onChange={(e) => {
                                 e.stopPropagation();
                                 handleStatusChange(

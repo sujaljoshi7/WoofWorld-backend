@@ -14,15 +14,7 @@
         </p>
         <p className="mb-0">
           <span className="text-muted">Status:</span>{" "}
-          <span
-            className={`badge ${
-              order.status === "completed"
-                ? "bg-success"
-                : order.status === "pending"
-                ? "bg-warning"
-                : "bg-danger"
-            }`}
-          >
+          <span className={`badge ${getStatusBadgeClass(order.status)}`}>
             {order.status}
           </span>
         </p>
@@ -160,3 +152,22 @@
     </div>
   </div>
 </div>;
+
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case 1:
+      return "bg-warning text-dark"; // Pending
+    case 2:
+      return "bg-info text-dark"; // Processing
+    case 3:
+      return "bg-primary text-white"; // Shipped
+    case 4:
+      return "bg-success text-white"; // Delivered
+    case 5:
+      return "bg-danger text-white"; // Cancelled
+    case 6:
+      return "bg-secondary text-white"; // Refunded
+    default:
+      return "bg-secondary text-white";
+  }
+};
