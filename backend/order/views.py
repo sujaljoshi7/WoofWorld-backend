@@ -258,9 +258,9 @@ class DashboardStatsView(APIView):
                 'monthly_orders': monthly_data
             }
 
-            return Response(response_data, status=status.HTTP_200_OK)
+            return Response(response_data)
         except Exception as e:
             return Response(
                 {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=500
             )
