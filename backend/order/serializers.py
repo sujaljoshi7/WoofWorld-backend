@@ -18,7 +18,7 @@ class OrderItemsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItems
-        fields = ['id', 'user_id', 'order_id', 'item', 'type', 'quantity', 'product']
+        fields = ['id', 'user_id', 'order_id', 'item', 'type', 'quantity', 'product', 'address']
         read_only_fields = ['id']  # Prevent modification of ID
 
     def get_product(self, obj):
