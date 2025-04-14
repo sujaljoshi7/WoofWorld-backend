@@ -207,6 +207,10 @@ const UserProfile = () => {
     }
   };
 
+  const delete_user = async () => {
+    console.log("delete");
+  };
+
   // Helper functions to get status text and color
   const getStatus = (order_status) => {
     switch (order_status) {
@@ -364,7 +368,12 @@ const UserProfile = () => {
                   Logout
                 </button>
 
-                <button className="btn btn-danger rounded-pill">
+                <button
+                  className="btn btn-danger rounded-pill"
+                  onClick={() => {
+                    delete_user(); // Redirects to the homepage
+                  }}
+                >
                   <i className="fas fa-trash-alt me-2"></i>
                   Delete Account
                 </button>
