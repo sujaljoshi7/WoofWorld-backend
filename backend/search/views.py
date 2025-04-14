@@ -1,6 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -23,7 +21,7 @@ class GlobalSearchView(APIView):
         )[:5]
 
         events = Event.objects.filter(
-            Q(title__icontains=query) | 
+            Q(name__icontains=query) | 
             Q(description__icontains=query),
             status=True
         )[:5]
@@ -55,4 +53,4 @@ class GlobalSearchView(APIView):
             } for d in dogs]
         }
 
-        return Response(results) 
+        return Response(results)
