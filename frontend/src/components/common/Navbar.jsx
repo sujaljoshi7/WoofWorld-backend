@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo/logo1.png";
 import cart from "../../assets/images/icons/cart.png";
@@ -6,6 +6,7 @@ import { ACCESS_TOKEN } from "../../constants";
 import profileIcon from "../../assets/images/icons/user.png";
 import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import api from "../../api";
+import "../../styles/Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -14,6 +15,10 @@ const Navbar = () => {
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const searchTimeoutRef = useRef(null);
+  const searchResultsRef = useRef(null);
 
   const placeholderTexts = [
     "dog food...",
@@ -66,6 +71,69 @@ const Navbar = () => {
     return () => clearTimeout(interval);
   }, [charIndex, index, isDeleting]);
 
+  const handleSearch = async (query) => {
+    if (!query.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    try {
+      const response = await api.get(
+        `/api/search/?q=${encodeURIComponent(query)}`
+      );
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error("Search error:", error);
+    }
+  };
+
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch(query);
+    }, 300);
+  };
+
+  const handleResultClick = (type, item) => {
+    setSearchResults(null);
+    setSearchQuery("");
+
+    switch (type) {
+      case "dogs":
+        navigate(`/adoption/dog/${item.id}`);
+        break;
+      case "events":
+        navigate(`/events/${item.id}`);
+        break;
+      case "products":
+        navigate(`/shop/product/${item.id}`);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Close search results when clicking outside
+  React.useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        searchResultsRef.current &&
+        !searchResultsRef.current.contains(event.target)
+      ) {
+        setSearchResults(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg container">
@@ -99,6 +167,8 @@ const Navbar = () => {
                     className="form-control rounded-start"
                     placeholder={`Search for ${placeholder}`}
                     style={{ height: "45px" }}
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
                   />
                   <span
                     className="input-group-text rounded-end"
@@ -243,6 +313,38 @@ const Navbar = () => {
           </ul>
         </div>
       </nav>
+
+      {searchResults && (
+        <div className="search-results-container" ref={searchResultsRef}>
+          <div className="search-results">
+            {Object.entries(searchResults).map(
+              ([type, items]) =>
+                items.length > 0 && (
+                  <div key={type} className="search-category">
+                    <h4>{type.charAt(0).toUpperCase() + type.slice(1)}</h4>
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="search-item"
+                        onClick={() => handleResultClick(type, item)}
+                      >
+                        <img src={item.image} alt={item.name || item.title} />
+                        <div className="search-item-info">
+                          <h5>{item.name || item.title}</h5>
+                          {item.price && <p>₹{item.price}</p>}
+                          {item.date && (
+                            <p>{new Date(item.date).toLocaleDateString()}</p>
+                          )}
+                          {item.breed && <p>{item.breed}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

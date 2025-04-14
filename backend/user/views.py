@@ -19,6 +19,10 @@ from otp.utils import generate_otp, send_email_to_client
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Address
 from rest_framework.views import APIView
+from django.contrib.auth.forms import PasswordResetForm
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
 
 
 def check_email(request, email):
@@ -65,19 +69,6 @@ def get_specific_user_data(request, user_id):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])  # Ensures the user is logged in
-# def get_logged_in_user_data(request):
-#     user = request.user  # Get the currently authenticated user
-#     data = {
-#         "id": user.id,
-#         "first_name": user.first_name,
-#         "last_name": user.last_name,
-#         "email": user.email,
-#         "last_login": user.last_login,
-        
-#         "member_since": user.date_joined,
-#     }
-#     return Response(data)
-
 def get_logged_in_user_data(request):
     user = request.user  # Get the currently authenticated user
 
@@ -194,32 +185,6 @@ class CreateUserView(generics.CreateAPIView):
 
 
 
-
-# class create_user_view(generics.CreateAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#     permission_classes = [AllowAny]
-
-#     @api_view(['POST'])
-#     def register_user(request):
-#         if request.method == "POST":
-#             # Get data from the request
-#             first_name = request.data.get('first_name')
-#             last_name = request.data.get('last_name')
-#             email = request.data.get('email')
-#             password = request.data.get('password')
-#             otp = OTPModel.generate_otp()
-#             try:
-#                 # Create a new user
-#                 user = User.objects.create_user(username=email,  # Use email as username
-#                                                 first_name=first_name,
-#                                                 last_name=last_name,
-#                                                 email=email,
-#                                                 password=password)
-#                 user.save()
-#                 return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
-#             except Exception as e:
-#                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users
@@ -262,6 +227,27 @@ def reset_password(request):
     except Exception as e:
         return Response({'message': 'Something went wrong', 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+def send_password_reset_email(request):
+    email = request.data.get('email')
+
+    if not email:
+        return Response({'message': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not User.objects.filter(email=email).exists():
+        return Response({'message': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    form = PasswordResetForm(data={'email': email})
+    if form.is_valid():
+        form.save(
+            request=request,
+            use_https=request.is_secure(),
+            email_template_name='registration/password_reset_email.html',
+        )
+        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'Invalid email'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -294,4 +280,32 @@ def delete_user(request, user_id):
         return Response({"message": "User deleted successfully."}, status=status.HTTP_200_OK)
     except User.DoesNotExist:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+def send_password_reset_email(email, reset_token):
+    """Send password reset email with token"""
+    try:
+        # Create the context for the email template
+        context = {
+            'reset_link': f"{settings.FRONTEND_URL}/reset-password/{reset_token}",
+            'site_name': 'WoofWorld',
+            'valid_hours': 24  # Token validity period
+        }
+
+        # Render HTML email template
+        html_message = render_to_string('user/password_reset_email.html', context)
+        plain_message = strip_tags(html_message)  # Create plain text version
+
+        # Send email
+        send_mail(
+            subject='Reset Your WoofWorld Password',
+            message=plain_message,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending password reset email: {str(e)}")
+        return False
 

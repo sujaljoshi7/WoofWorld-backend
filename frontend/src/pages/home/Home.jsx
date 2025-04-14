@@ -44,6 +44,11 @@ function Home() {
     adoptedDogs: 30,
   };
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const searchTimeoutRef = useRef(null);
+  const searchResultsRef = useRef(null);
+
   // Generic fetch function to reduce code duplication
   const fetchData = async (endpoint, filterFn, stateKey) => {
     setLoading((prev) => ({ ...prev, [stateKey]: true }));
@@ -216,6 +221,73 @@ function Home() {
 
   // Check if all data is still loading
   const isLoading = Object.values(loading).some((status) => status);
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        searchResultsRef.current &&
+        !searchResultsRef.current.contains(event.target)
+      ) {
+        setSearchResults(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearch = async (query) => {
+    if (!query.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.get(
+        `/api/search/?q=${encodeURIComponent(query)}`
+      );
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Debounce search to avoid too many API calls
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch(query);
+    }, 300);
+  };
+
+  const handleResultClick = (type, item) => {
+    setSearchResults(null);
+    setSearchQuery("");
+
+    switch (type) {
+      case "dogs":
+        navigate(`/adoption/dog/${item.id}`);
+        break;
+      case "events":
+        navigate(`/events/${item.id}`);
+        break;
+      case "products":
+        navigate(`/shop/product/${item.id}`);
+        break;
+      default:
+        break;
+    }
+  };
 
   if (isLoading) return <LoadingScreen />;
 
@@ -751,6 +823,134 @@ function Home() {
         </section>
 
         <Footer />
+      </div>
+
+      <div className="position-relative">
+        <div className="search-container">
+          <input
+            type="text"
+            className="form-control search-input"
+            placeholder="Search for adoption, events, or products..."
+            value={searchQuery}
+            onChange={handleSearchInputChange}
+          />
+          {loading && (
+            <div
+              className="spinner-border spinner-border-sm text-primary position-absolute"
+              style={{
+                right: "15px",
+                top: "50%",
+                transform: "translateY(-50%)",
+              }}
+              role="status"
+            >
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          )}
+        </div>
+
+        {searchResults &&
+          Object.values(searchResults).some((arr) => arr.length > 0) && (
+            <div
+              ref={searchResultsRef}
+              className="search-results-container position-absolute w-100 bg-white rounded-bottom shadow-lg"
+              style={{
+                top: "100%",
+                zIndex: 1000,
+                maxHeight: "400px",
+                overflowY: "auto",
+              }}
+            >
+              {searchResults.dogs.length > 0 && (
+                <div className="p-3">
+                  <h6 className="text-muted mb-2">Dogs for Adoption</h6>
+                  {searchResults.dogs.map((dog) => (
+                    <div
+                      key={dog.id}
+                      className="search-result-item d-flex align-items-center p-2 rounded cursor-pointer hover-bg-light"
+                      onClick={() => handleResultClick("dogs", dog)}
+                    >
+                      <img
+                        src={dog.image}
+                        alt={dog.name}
+                        className="rounded-circle me-2"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div>
+                        <div className="fw-bold">{dog.name}</div>
+                        <small className="text-muted">
+                          {dog.breed__name} • {dog.age} years • {dog.gender}
+                        </small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {searchResults.events.length > 0 && (
+                <div className="p-3 border-top">
+                  <h6 className="text-muted mb-2">Events</h6>
+                  {searchResults.events.map((event) => (
+                    <div
+                      key={event.id}
+                      className="search-result-item d-flex align-items-center p-2 rounded cursor-pointer hover-bg-light"
+                      onClick={() => handleResultClick("events", event)}
+                    >
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="rounded me-2"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div>
+                        <div className="fw-bold">{event.title}</div>
+                        <small className="text-muted">
+                          {new Date(event.date).toLocaleDateString()} •{" "}
+                          {event.location}
+                        </small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {searchResults.products.length > 0 && (
+                <div className="p-3 border-top">
+                  <h6 className="text-muted mb-2">Products</h6>
+                  {searchResults.products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="search-result-item d-flex align-items-center p-2 rounded cursor-pointer hover-bg-light"
+                      onClick={() => handleResultClick("products", product)}
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="rounded me-2"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div>
+                        <div className="fw-bold">{product.name}</div>
+                        <small className="text-muted">₹{product.price}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
       </div>
     </div>
   );

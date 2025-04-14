@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'payments',
     'cart',
     'order',
+    'search',
     'rest_framework',
     'corsheaders',
     'cloudinary',
