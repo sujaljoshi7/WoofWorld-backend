@@ -9,6 +9,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import logo from "../../assets/images/logo/logo1.png";
 import LoadingScreen from "../../components/LoadingScreen";
 import OrderDetails from "../../components/profile/OrderDetails";
+import { FaTrash, FaExclamationTriangle } from "react-icons/fa";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const UserProfile = () => {
   const [fadeOut, setFadeOut] = useState(false);
   const BASE_URL = import.meta.env.VITE_API_URL;
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Mock user data - in a real app, this would come from props or a context
   const userData = {
     name: user.first_name + " " + user.last_name,
@@ -208,7 +210,17 @@ const UserProfile = () => {
   };
 
   const delete_user = async () => {
-    console.log("delete");
+    try {
+      const response = await api.delete(`api/user/${user.id}/delete/`);
+      console.log("User deleted successfully:", response.data);
+      // Optional: redirect or log the user out after deletion
+    } catch (error) {
+      console.error(
+        "Error deleting user:",
+        error.response?.data || error.message
+      );
+      // Optional: show toast or message
+    }
   };
 
   // Helper functions to get status text and color
@@ -282,6 +294,16 @@ const UserProfile = () => {
       }, 3000);
     }
   }, [loading]);
+
+  const handleDeleteAccount = async () => {
+    try {
+      await api.delete(`api/user/${user.id}/delete/`);
+      localStorage.clear();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
+  };
 
   if (showLoading) return <LoadingScreen fadeOut={fadeOut} />;
   return (
@@ -370,9 +392,7 @@ const UserProfile = () => {
 
                 <button
                   className="btn btn-danger rounded-pill"
-                  onClick={() => {
-                    delete_user(); // Redirects to the homepage
-                  }}
+                  onClick={() => setShowDeleteModal(true)}
                 >
                   <i className="fas fa-trash-alt me-2"></i>
                   Delete Account
@@ -459,7 +479,9 @@ const UserProfile = () => {
                               <label className="text-muted small">
                                 Last Login
                               </label>
-                              <p className="mb-0 fs-5">{userData.lastLogin}</p>
+                              <p className="mb-0 fs-5">
+                                {userData.lastLogin ? userData.lastLogin : "--"}
+                              </p>
                             </div>
                             <div className="mb-3">
                               <label className="text-muted small">
@@ -763,6 +785,82 @@ const UserProfile = () => {
               orderId={selectedOrderId}
               onClose={() => setSelectedOrderId(null)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="container">
+          <div
+            className="modal-dialog modal-dialog-centered fade show"
+            style={{ zIndex: 1050 }}
+          >
+            <div
+              className="modal fade show d-block"
+              tabIndex="-1"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.5)",
+                zIndex: 1051,
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div className="modal-dialog modal-dialog-centered">
+                <div
+                  className="modal-content"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #f8d7da, #f5c6cb, #f1aeb5)",
+                    border: "none",
+                    borderRadius: "10px",
+                    boxShadow: "0 15px 30px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  <div className="modal-header border-0">
+                    <h5 className="modal-title text-danger">
+                      <FaExclamationTriangle className="me-2" />
+                      Delete Account
+                    </h5>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      onClick={() => setShowDeleteModal(false)}
+                    ></button>
+                  </div>
+                  <div className="modal-body text-center py-4">
+                    <h4 className="mb-3 text-dark">Are you sure?</h4>
+                    <p className="text-dark opacity-75">
+                      This action cannot be undone. All your data will be
+                      permanently deleted.
+                    </p>
+                  </div>
+                  <div className="modal-footer border-0 justify-content-center">
+                    <button
+                      type="button"
+                      className="btn btn-light px-4 py-2"
+                      onClick={() => setShowDeleteModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger px-4 py-2"
+                      onClick={handleDeleteAccount}
+                    >
+                      Yes, Delete Account
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -249,9 +249,7 @@ function Register() {
                       <div className="form-floating mb-3 position-relative">
                         <input
                           type={showPassword ? "text" : "password"}
-                          className={`form-control ${
-                            passwordError ? "is-invalid" : ""
-                          }`}
+                          className="form-control pe-5"
                           id="password"
                           value={password}
                           placeholder="Password"
@@ -261,9 +259,18 @@ function Register() {
                         <label htmlFor="password">Password</label>
                         <button
                           type="button"
-                          className="btn btn-link position-absolute end-0 top-50 translate-middle-y me-2"
+                          className="btn btn-link position-absolute end-0 d-flex align-items-center justify-content-center"
                           onClick={togglePasswordVisibility}
-                          style={{ zIndex: 10, color: "#6c757d" }}
+                          style={{
+                            width: "40px",
+                            color: "#6c757d",
+                            padding: "0",
+                            border: "none",
+                            background: "none",
+                            zIndex: 10,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                          }}
                         >
                           {showPassword ? (
                             <FaEyeSlash size={18} />
@@ -271,47 +278,6 @@ function Register() {
                             <FaEye size={18} />
                           )}
                         </button>
-                        {passwordError && (
-                          <div className="invalid-feedback">
-                            {passwordError}
-                          </div>
-                        )}
-                        <div className="form-text">
-                          Password must contain:
-                          <ul className="mb-0">
-                            <li
-                              className={
-                                password.length >= 8 ? "text-success" : ""
-                              }
-                            >
-                              At least 8 characters
-                            </li>
-                            <li
-                              className={
-                                /[A-Z]/.test(password) ? "text-success" : ""
-                              }
-                            >
-                              At least one capital letter
-                            </li>
-                            <li
-                              className={
-                                /[0-9]/.test(password) ? "text-success" : ""
-                              }
-                            >
-                              At least one number
-                            </li>
-                            <li
-                              className={
-                                /[!@#$%^&*(),.?":{}|<>]/.test(password)
-                                  ? "text-success"
-                                  : ""
-                              }
-                            >
-                              At least one special character (!@#$%^&*(),.?":{}
-                              |&lt;&gt;)
-                            </li>
-                          </ul>
-                        </div>
                       </div>
                     </div>
                     <div className="col-12">

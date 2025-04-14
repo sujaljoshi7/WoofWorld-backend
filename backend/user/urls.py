@@ -16,5 +16,5 @@ urlpatterns = [
     path('address/', AddressView.as_view(), name='user-address'),
     # path('resend-otp/', CreateUserView.as_view(), name='get_user_data'),
     path('reset-password/', reset_password, name='reset_password'),
-    path('<int:user_id>/delete/', delete_user, name='delete_user'),
+    path('<int:user_id>/delete-user/', delete_user, name='delete_user'),
 ]
