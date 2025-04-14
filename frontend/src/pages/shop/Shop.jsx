@@ -242,7 +242,7 @@ function Shop() {
   if (showLoader) return <LoadingScreen fadeOut={fadeOut} />;
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100">
       <Navbar />
       {/* Hero Section */}
       <div className="yellow-bg text-dark py-5">

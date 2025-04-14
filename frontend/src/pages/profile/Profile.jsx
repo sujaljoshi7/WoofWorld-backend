@@ -297,7 +297,7 @@ const UserProfile = () => {
 
   const handleDeleteAccount = async () => {
     try {
-      await api.delete(`api/user/${user.id}/delete/`);
+      await api.delete(`api/user/${user.id}/delete-user/`);
       localStorage.clear();
       navigate("/login");
     } catch (error) {
@@ -674,7 +674,7 @@ const UserProfile = () => {
                                   className="card-img-top"
                                   alt={ticket.event.name}
                                   style={{
-                                    height: "180px",
+                                    height: "250px",
                                     objectFit: "cover",
                                   }}
                                 />

@@ -16,6 +16,10 @@ function Login() {
   const [message, setMessage] = useState(false);
   const route = "/api/token/";
 
+  const forgot_password = async (e) => {
+    navigate("/forgot-password");
+  };
+
   const handleSubmit = async (e) => {
     const redirectUrl = localStorage.getItem("redirectAfterLogin") || "/";
     localStorage.removeItem("redirectAfterLogin"); // Clean up
@@ -230,7 +234,16 @@ function Login() {
                 <div className="row">
                   <div className="col-12">
                     <div className="d-flex gap-2 gap-md-4 flex-column flex-md-row justify-content-md-end mt-4">
-                      <a href="#!">Forgot password</a>
+                      <button
+                        onClick={forgot_password}
+                        className="btn btn-link p-0"
+                        style={{
+                          color: "#0d6efd",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        Forgot password?
+                      </button>
                     </div>
                   </div>
                 </div>

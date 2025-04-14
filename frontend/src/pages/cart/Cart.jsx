@@ -107,6 +107,7 @@ const Cart = () => {
         },
         data: { item_id: id }, // Send item_id properly
       });
+      navigate(0);
     } catch (error) {
       console.error("Failed to remove item from server:", error);
     }

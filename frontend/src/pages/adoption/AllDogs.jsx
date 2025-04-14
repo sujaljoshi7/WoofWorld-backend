@@ -315,7 +315,7 @@ const AllDogs = () => {
   if (isLoading) return <LoadingScreen fadeOut={fadeOut} />;
 
   return (
-    <div className="bg-light min-vh-100">
+    <div className="min-vh-100">
       {/* Navbar */}
       <Navbar />
       {/* Hero Section */}

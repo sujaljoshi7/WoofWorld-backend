@@ -68,7 +68,7 @@ const OrderDetails = ({ orderId, onClose }) => {
     const tax = subtotal * 0.18;
 
     // Shipping is free for orders over ₹500, otherwise ₹50
-    const shipping = subtotal > 500 ? 0 : 50;
+    const shipping = 0;
 
     // Calculate total
     const total = subtotal + tax + shipping;
@@ -165,7 +165,7 @@ const OrderDetails = ({ orderId, onClose }) => {
                   <span>₹{priceBreakdown.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
-                  <span>Tax (10%):</span>
+                  <span>Tax (18%):</span>
                   <span>₹{priceBreakdown.tax.toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">

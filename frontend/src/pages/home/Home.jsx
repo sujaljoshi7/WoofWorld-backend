@@ -257,6 +257,7 @@ function Home() {
                       <div className="black-overlay"></div>
                       <img
                         src={hero.image}
+                        style={{ objectFit: "cover" }}
                         alt={`Hero ${index + 1}`}
                         className="hero-image"
                       />

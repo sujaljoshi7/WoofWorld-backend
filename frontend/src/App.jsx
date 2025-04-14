@@ -23,6 +23,7 @@ import Shop from "./pages/shop/Shop";
 import BlogDetail from "./pages/blogs/BlogDetail";
 import ProductDetail from "./pages/shop/ProductDetail";
 import Checkout from "./pages/checkout/Checkout";
+import ForgotPassword from "./pages/auth/forgot-password/ForgotPassword";
 
 function Logout() {
   localStorage.clear();
@@ -73,9 +74,7 @@ function App() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/shop/product/:id" element={<ProductDetail />} />
         <Route path="/about" element={<AboutUs />} />
-        {/* <Route path="/login" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} /> */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<ComingSoon />}></Route>
       </Routes>
     </BrowserRouter>
