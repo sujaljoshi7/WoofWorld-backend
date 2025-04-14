@@ -287,20 +287,20 @@ const AllDogs = () => {
 
   const handleViewDetails = async (dog) => {
     setActiveDog(dog);
-    try {
-      // Increment views when viewing details
-      await api.post(`/api/adoption/dog/${dog.id}/increment-views/`);
-      // Refresh the dog data to get updated view count
-      const response = await api.get(`/api/adoption/${dog.id}/`);
-      const updatedDog = response.data;
-      setActiveDog(updatedDog);
-      // Update the dog in the list
-      setDogs((prevDogs) =>
-        prevDogs.map((d) => (d.id === updatedDog.id ? updatedDog : d))
-      );
-    } catch (error) {
-      console.error("Error incrementing views:", error);
-    }
+    // try {
+    //   // Increment views when viewing details
+    await api.post(`/api/adoption/dog/${dog.id}/increment-views/`);
+    //   // Refresh the dog data to get updated view count
+    //   const response = await api.get(`/api/adoption/${dog.id}/`);
+    //   const updatedDog = response.data;
+    //   setActiveDog(updatedDog);
+    //   // Update the dog in the list
+    //   setDogs((prevDogs) =>
+    //     prevDogs.map((d) => (d.id === updatedDog.id ? updatedDog : id))
+    //   );
+    // } catch (error) {
+    //   console.error("Error incrementing views:", error);
+    // }
   };
 
   useEffect(() => {

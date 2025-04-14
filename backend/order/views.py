@@ -59,11 +59,12 @@ class OrderCheckoutView(APIView):
 
         # Create Order
         order = Order.objects.create(
+            
             user_id=user,
             total=request.data.get("total_price"),
             payment_id=request.data.get("payment_id"),
             payment_status=request.data.get("payment_status"),
-            order_id=request.data.get("order_id")
+            order_id=request.data.get("order_id"),
         )
 
         # Move cart items to order items

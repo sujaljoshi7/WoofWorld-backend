@@ -274,3 +274,24 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             print("❌ Tokens not generated!")
 
         return response
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+
+        # Prevent deleting staff/admin accounts
+        if user.is_staff:
+            return Response({"error": "Cannot delete an admin account."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Optional: Only allow user to delete themselves or allow if staff
+        if request.user != user and not request.user.is_staff:
+            return Response({"error": "You do not have permission to delete this user."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        user.delete()
+        return Response({"message": "User deleted successfully."}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+

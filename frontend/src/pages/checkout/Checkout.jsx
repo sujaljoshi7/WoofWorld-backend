@@ -141,6 +141,7 @@ const Checkout = () => {
               payment_id: payment_id,
               payment_status: payment_status,
               order_id: order_id,
+              subtotal: getSubtotal(),
               total_price: getTotal(),
             });
 

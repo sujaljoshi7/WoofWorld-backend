@@ -458,22 +458,22 @@ const AboutUs = () => {
           </div>
 
           <div className="col-6 col-md-3 text-center mb-4">
-            <div className="display-4 fw-bold text-warning mb-1">10K+</div>
+            <div className="display-4 fw-bold text-warning mb-1">1K+</div>
             <p className="fs-5">Dogs Adopted</p>
           </div>
 
           <div className="col-6 col-md-3 text-center mb-4">
-            <div className="display-4 fw-bold text-warning mb-1">500K+</div>
+            <div className="display-4 fw-bold text-warning mb-1">4K+</div>
             <p className="fs-5">Community Members</p>
           </div>
 
           <div className="col-6 col-md-3 text-center mb-4">
-            <div className="display-4 fw-bold text-warning mb-1">50+</div>
+            <div className="display-4 fw-bold text-warning mb-1">10+</div>
             <p className="fs-5">Partner Shelters</p>
           </div>
 
           <div className="col-6 col-md-3 text-center mb-4">
-            <div className="display-4 fw-bold text-warning mb-1">$2M+</div>
+            <div className="display-4 fw-bold text-warning mb-1">₹500K+</div>
             <p className="fs-5">Donated to Causes</p>
           </div>
         </div>

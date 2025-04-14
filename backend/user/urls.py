@@ -1,5 +1,5 @@
 from django.urls import path, re_path
-from .views import get_user_data,get_all_users,get_specific_user_data,CreateUserView, deactivate_user, activate_user, check_email, reset_password, get_logged_in_user_data, AddressView
+from .views import get_user_data,get_all_users,get_specific_user_data,CreateUserView, deactivate_user, activate_user, check_email, reset_password, get_logged_in_user_data, AddressView, delete_user
 
   
 urlpatterns = [
@@ -16,4 +16,5 @@ urlpatterns = [
     path('address/', AddressView.as_view(), name='user-address'),
     # path('resend-otp/', CreateUserView.as_view(), name='get_user_data'),
     path('reset-password/', reset_password, name='reset_password'),
+    path('<int:user_id>/delete/', delete_user, name='delete_user'),
 ]

@@ -159,7 +159,8 @@ function OrderDetails() {
         itemName = item.product.name;
         itemPrice = item.product.price;
       } else if (item.type === 2) {
-        itemName = "Event Ticket";
+        itemName = item.event_details.name;
+        itemPrice = item.event_details.price;
       }
 
       const itemTotal = itemPrice * item.quantity;
@@ -426,7 +427,8 @@ function OrderDetails() {
                             itemName = item.product.name;
                             itemPrice = item.product.price;
                           } else if (item.type === 2) {
-                            itemName = "Event Ticket";
+                            itemName = item.event_details.title;
+                            itemPrice = item.event_details.price;
                           }
 
                           const itemTotal = itemPrice * item.quantity;
@@ -474,6 +476,48 @@ function OrderDetails() {
                         })}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Price Breakdown */}
+                  <div className="mt-4">
+                    <h6 className="text-muted mb-3">Price Breakdown</h6>
+                    <div className="card">
+                      <div className="card-body">
+                        <div className="row">
+                          <div className="col-md-6 offset-md-3">
+                            <div className="d-flex justify-content-between mb-2">
+                              <span className="text-muted">Subtotal</span>
+                              <span className="fw-medium">
+                                ₹{((order.order.total / 118) * 100).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span className="text-muted">Shipping</span>
+                              <span className="fw-medium">
+                                ₹{order.shipping_charge || 0}
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2">
+                              <span className="text-muted">Tax</span>
+                              <span className="fw-medium">
+                                ₹
+                                {(
+                                  order.order.total -
+                                  (order.order.total / 118) * 100
+                                ).toFixed(2)}
+                              </span>
+                            </div>
+                            <hr />
+                            <div className="d-flex justify-content-between">
+                              <span className="fw-bold">Total Amount</span>
+                              <span className="fw-bold">
+                                ₹{order.order.total.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

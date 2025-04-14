@@ -5,6 +5,7 @@ from django.utils.timezone import now
 class Order(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_user')
     total = models.FloatField()
+    subtotal = models.FloatField(blank=True, null=True)
     payment_status = models.IntegerField()
     payment_id = models.CharField(max_length=255, blank=True, null=True)
     order_status = models.IntegerField(default=1)
