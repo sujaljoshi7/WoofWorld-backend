@@ -15,6 +15,7 @@ from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from django.contrib.auth.models import User
 from decimal import Decimal
+from django.utils.timezone import now
 
 
 class OrderCheckoutView(APIView):
@@ -194,24 +195,43 @@ class DashboardStatsView(APIView):
 
     def get(self, request):
         try:
+            current_date = now()
+            current_year = current_date.year
+            current_month = current_date.month
             # Get total orders count
-            total_orders = Order.objects.count()
+            orders = Order.objects.filter(created_at__year=current_year, created_at__month=current_month)
+            total_orders = orders.objects.count()
             
             # Get total revenue and format it in Indian currency
             total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
             
             # Format revenue in Indian number format
             def format_indian_currency(amount):
+                # amount_str = f"{amount:,.2f}"
+                # parts = amount_str.split('.')
+                # integer_part = parts[0]
+                # decimal_part = parts[1] if len(parts) > 1 else '00'
+                
                 amount_str = f"{amount:,.2f}"
                 parts = amount_str.split('.')
-                integer_part = parts[0]
-                decimal_part = parts[1] if len(parts) > 1 else '00'
-                
+                integer_part = parts[0].replace(',', '')
+                decimal_part = parts[1]
+
                 # Format integer part with Indian number system
+                # if len(integer_part) > 3:
+                #     last_three = integer_part[-3:]
+                #     other_numbers = integer_part[:-3]
+                #     formatted = f"{other_numbers},{last_three}"
+                # else:
+                #     formatted = integer_part
+
+                # Format using Indian number system
                 if len(integer_part) > 3:
                     last_three = integer_part[-3:]
-                    other_numbers = integer_part[:-3]
-                    formatted = f"{other_numbers},{last_three}"
+                    rest = integer_part[:-3]
+                    rest = list(reversed(rest))
+                    groups = [rest[i:i+2] for i in range(0, len(rest), 2)]
+                    formatted = ','.join([''.join(reversed(group)) for group in groups[::-1]]) + ',' + last_three
                 else:
                     formatted = integer_part
                 

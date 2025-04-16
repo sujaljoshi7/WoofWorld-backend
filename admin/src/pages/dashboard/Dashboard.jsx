@@ -72,7 +72,7 @@ function Dashboard() {
     },
     {
       title: "Total Revenue",
-      value: `₹${dashboardData?.stats?.total_revenue?.toLocaleString() || 0}`,
+      value: `${dashboardData?.stats?.total_revenue || 0}`,
       icon: "fas fa-rupee-sign",
       color: "success",
     },
