@@ -200,6 +200,8 @@ class DashboardStatsView(APIView):
             current_month = current_date.month
             # Get total orders count
             monthly_orders  = Order.objects.filter(created_at__year=current_year, created_at__month=current_month)
+            print(current_month)
+            print(monthly_orders)
             total_orders = monthly_orders.count()
             
             # Get total revenue and format it in Indian currency
@@ -250,7 +252,7 @@ class DashboardStatsView(APIView):
             
             # Map order status numbers to readable names
             status_map = {
-                1: 'Pending',
+                1: 'Placed',
                 2: 'Processing',
                 3: 'Shipped',
                 4: 'Delivered',
