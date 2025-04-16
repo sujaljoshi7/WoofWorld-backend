@@ -233,12 +233,12 @@ function ViewOrders() {
               <div className="row mb-4">
                 <div className="col-md-6">
                   <div className="input-group">
-                    <span className="input-group-text bg-light border-0">
+                    <span className="input-group-text border-0">
                       <i className="fa fa-search"></i>
                     </span>
                     <input
                       type="text"
-                      className="form-control bg-light text-dark border-0 custom-placeholder-dark"
+                      className="form-control  custom-placeholder-dark"
                       placeholder="Search orders..."
                       value={searchTerm}
                       onChange={handleSearch}
@@ -297,7 +297,7 @@ function ViewOrders() {
 
               <div className="table-responsive">
                 <table className="table table-hover align-middle">
-                  <thead className="table-light">
+                  <thead className="table">
                     <tr>
                       <th>Order ID</th>
                       <th>Type</th>

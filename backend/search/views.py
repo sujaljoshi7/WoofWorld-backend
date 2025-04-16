@@ -28,7 +28,7 @@ class GlobalSearchView(APIView):
 
         dogs = Dogs.objects.filter(
             Q(name__icontains=query) | 
-            Q(breed__icontains=query),
+            Q(breed__name__icontains=query),
             status=True
         )[:5]
 
@@ -48,7 +48,7 @@ class GlobalSearchView(APIView):
             'dogs': [{
                 'id': d.id,
                 'name': d.name,
-                'breed': d.breed,
+                'breed': d.breed.name if d.breed else None,
                 'image': d.image.url if d.image else None
             } for d in dogs]
         }
