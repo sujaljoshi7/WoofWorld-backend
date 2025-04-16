@@ -5,9 +5,16 @@ from rest_framework import status
 from django.db.models import Q
 from products.models import Product
 from events.models import Event
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
+from rest_framework.decorators import api_view, permission_classes
 from adoption.models import Dogs
 
 class GlobalSearchView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
     def get(self, request):
         query = request.GET.get('q', '').strip()
         if not query:

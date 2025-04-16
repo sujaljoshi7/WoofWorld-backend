@@ -22,9 +22,10 @@ const Navbar = () => {
 
   const placeholderTexts = [
     "dog food...",
-    "adoption centers...",
-    "grooming services...",
+    "dog breeds...",
+    "events...",
     "training tips...",
+    "adoption centers...",
   ];
 
   const [cartItemCount, setCartItemCount] = useState(0);
@@ -71,33 +72,12 @@ const Navbar = () => {
     return () => clearTimeout(interval);
   }, [charIndex, index, isDeleting]);
 
-  const handleSearch = async (query) => {
-    if (!query.trim()) {
-      setSearchResults(null);
-      return;
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
     }
-
-    try {
-      const response = await api.get(
-        `/api/search/?q=${encodeURIComponent(query)}`
-      );
-      setSearchResults(response.data);
-    } catch (error) {
-      console.error("Search error:", error);
-    }
-  };
-
-  const handleSearchInputChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    searchTimeoutRef.current = setTimeout(() => {
-      handleSearch(query);
-    }, 300);
   };
 
   const handleResultClick = (type, item) => {
@@ -161,22 +141,23 @@ const Navbar = () => {
           >
             <div className="d-flex flex-column flex-lg-row align-items-center w-100">
               <div className="search-container w-100 mb-3 mb-lg-0 px-2 px-lg-0">
-                <div className="input-group">
+                <form onSubmit={handleSearch} className="input-group">
                   <input
                     type="text"
                     className="form-control rounded-start"
-                    placeholder={`Search for ${placeholder}`}
-                    style={{ height: "45px" }}
+                    placeholder="Search products, events, or dogs..."
                     value={searchQuery}
-                    onChange={handleSearchInputChange}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ height: "45px" }}
                   />
-                  <span
+                  <button
+                    type="submit"
                     className="input-group-text rounded-end"
                     style={{ backgroundColor: "#ffec00" }}
                   >
                     <i className="fa-solid fa-magnifying-glass bg-yellow"></i>
-                  </span>
-                </div>
+                  </button>
+                </form>
               </div>
 
               <div className="d-flex align-items-center ms-lg-3 gap-3">
