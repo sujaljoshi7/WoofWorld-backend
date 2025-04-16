@@ -41,7 +41,7 @@ class GlobalSearchView(APIView):
             } for p in products],
             'events': [{
                 'id': e.id,
-                'title': e.title,
+                'title': e.name,
                 'date': e.date,
                 'image': e.image.url if e.image else None
             } for e in events],
