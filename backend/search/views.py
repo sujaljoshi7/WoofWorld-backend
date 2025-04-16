@@ -36,20 +36,20 @@ class GlobalSearchView(APIView):
             'products': [{
                 'id': p.id,
                 'name': p.name,
-                'image': p.image.url if p.image else None,
+                'image': p.image if p.image else None,
                 'price': str(p.price)
             } for p in products],
             'events': [{
                 'id': e.id,
                 'title': e.name,
                 'date': e.date,
-                'image': e.image.url if e.image else None
+                'image': e.image if e.image else None
             } for e in events],
             'dogs': [{
                 'id': d.id,
                 'name': d.name,
                 'breed': d.breed.name if d.breed else None,
-                'image': d.image.url if d.image else None
+                'image': d.image if d.image else None
             } for d in dogs]
         }
 
