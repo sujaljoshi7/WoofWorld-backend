@@ -200,7 +200,7 @@ class DashboardStatsView(APIView):
             current_month = current_date.month
             # Get total orders count
             monthly_orders  = Order.objects.filter(created_at__year=current_year, created_at__month=current_month)
-            total_orders = monthly_orders.objects.count()
+            total_orders = monthly_orders.count()
             
             # Get total revenue and format it in Indian currency
             total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
