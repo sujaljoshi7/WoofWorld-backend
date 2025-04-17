@@ -280,10 +280,15 @@ const ModifyService = ({ method }) => {
                   </div>
                 </div>
                 <div className="mb-4">
-                  <JoditEditor
-                    config={config}
+                  <label className="form-label" htmlFor="description">
+                    Description
+                  </label>
+                  <textarea
+                    className="form-control"
+                    id="description"
                     value={content}
-                    onBlur={(newContent) => setContent(newContent)}
+                    onChange={(e) => setContent(e.target.value)}
+                    required
                   />
                 </div>
                 <div className="d-flex justify-content-center">

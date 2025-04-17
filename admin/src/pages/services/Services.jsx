@@ -232,10 +232,10 @@ function ViewServices() {
               className="btn btn-primary"
               onClick={() => navigate("/services/add")}
             >
-              Add New Service
+              <i className="fas fa-plus me-2"></i>Add Service
             </button>
-            <button className="btn btn-success" onClick={handleExport}>
-              Export to CSV
+            <button className="btn btn-outline-success" onClick={handleExport}>
+              <i className="fas fa-download me-2"></i>Export
             </button>
           </div>
         </div>

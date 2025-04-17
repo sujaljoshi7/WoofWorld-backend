@@ -30,8 +30,9 @@ class ServiceCategory(APIView):
 class ServiceView(APIView):
 
     def get_permissions(self):
-        
-        return [AllowAny()]
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request):
         events = Service.objects.select_related("created_by").all()
