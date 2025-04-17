@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Service
+from .models import Category, Service, ServicePackage, PackageInclusion
 from django.utils import timezone
 from user.serializers import UserSerializer
 from django.contrib.auth.models import User
@@ -16,16 +16,25 @@ class ServiceCategorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Name already exists. Please use a different name.")
         return value
 
-class ServiceSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only=True)
-    category = ServiceCategorySerializer(source="service_category_id", read_only=True)  # Fetch full category details
-    service_category_id = serializers.PrimaryKeyRelatedField(  # Ensure correct field name
-        queryset=Category.objects.all(), write_only=True
-    )
+class PackageInclusionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackageInclusion
+        fields = ['id', 'name', 'description']
 
+class ServicePackageSerializer(serializers.ModelSerializer):
+    inclusions = PackageInclusionSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ServicePackage
+        fields = ['id', 'name', 'price', 'duration', 'status', 'inclusions']
+
+class ServiceSerializer(serializers.ModelSerializer):
+    packages = ServicePackageSerializer(many=True, read_only=True)
+    created_by = serializers.ReadOnlyField(source='created_by.username')
+    
     class Meta:
         model = Service
-        fields = '__all__'
+        fields = ['id', 'name', 'description', 'image', 'status', 'packages', 'created_by', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         request = self.context.get("request")

@@ -1,7 +1,7 @@
-import ModifyService from "../../components/ModifyService";
+import ServiceForm from "../../components/ServiceForm";
 
 function AddService() {
-  return <ModifyService method="add" />;
+  return <ServiceForm method="add" />;
 }
 
 export default AddService;

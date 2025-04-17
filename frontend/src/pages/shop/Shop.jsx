@@ -253,18 +253,6 @@ function Shop() {
               <p className="lead mb-4">
                 Find everything your furry friend needs
               </p>
-              <form onSubmit={handleSearch} className="d-flex mb-3">
-                <input
-                  type="text"
-                  className="form-control me-2"
-                  placeholder="Search by name, breed, or traits..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button type="submit" className="btn btn-dark">
-                  <i className="bi bi-search me-1"></i> Search
-                </button>
-              </form>
             </div>
           </div>
         </div>

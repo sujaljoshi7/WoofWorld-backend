@@ -8,14 +8,14 @@ import { handleTokenRefresh } from "../../hooks/tokenRefresh";
 import api from "../../api";
 import "../../styles/Navbar.css";
 
-const Navbar = () => {
+const Navbar = ({ initialSearchQuery = "" }) => {
   const navigate = useNavigate();
   const [placeholder, setPlaceholder] = useState("");
   const [index, setIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [searchResults, setSearchResults] = useState(null);
   const searchTimeoutRef = useRef(null);
   const searchResultsRef = useRef(null);
@@ -76,7 +76,6 @@ const Navbar = () => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
     }
   };
 
@@ -145,7 +144,7 @@ const Navbar = () => {
                   <input
                     type="text"
                     className="form-control rounded-start"
-                    placeholder="Search products, events, or dogs..."
+                    placeholder={`Search for ${placeholder}`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{ height: "45px" }}

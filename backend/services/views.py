@@ -3,11 +3,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
-from .models import Category, Service
-from .serializers import ServiceCategorySerializer, ServiceSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from .models import Category, Service, ServicePackage, PackageInclusion
+from .serializers import ServiceCategorySerializer, ServiceSerializer, ServicePackageSerializer, PackageInclusionSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
 class ServiceCategory(APIView):
     def get_permissions(self):
@@ -115,3 +117,45 @@ def get_specific_service_data(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     serializer = ServiceSerializer(service)  # Use your serializer directly
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ServiceViewSet(viewsets.ModelViewSet):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def add_package(self, request, pk=None):
+        service = self.get_object()
+        package_data = request.data
+        package_data['service'] = service.id
+        serializer = ServicePackageSerializer(data=package_data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ServicePackageViewSet(viewsets.ModelViewSet):
+    queryset = ServicePackage.objects.all()
+    serializer_class = ServicePackageSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    @action(detail=True, methods=['post'])
+    def add_inclusion(self, request, pk=None):
+        package = self.get_object()
+        inclusion_data = request.data
+        inclusion_data['package'] = package.id
+        serializer = PackageInclusionSerializer(data=inclusion_data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PackageInclusionViewSet(viewsets.ModelViewSet):
+    queryset = PackageInclusion.objects.all()
+    serializer_class = PackageInclusionSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]

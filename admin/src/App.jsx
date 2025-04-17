@@ -50,6 +50,7 @@ import AddNavbarItems from "./pages/homepage/navbar/AddNavbarItem";
 import EditNavbarItems from "./pages/homepage/navbar/EditNavbarItem";
 import ViewOrders from "./pages/orders/orders";
 import OrderDetails from "./pages/orders/order-details";
+import ServiceForm from "./components/ServiceForm";
 
 function Logout() {
   localStorage.clear();
