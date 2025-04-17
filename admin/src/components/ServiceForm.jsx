@@ -234,7 +234,7 @@ const ServiceForm = ({ method, serviceId }) => {
                 </button>
 
                 {pkg.inclusions.map((inclusion, incIndex) => (
-                  <div key={incIndex} className="inclusion-item bg-dark">
+                  <div key={incIndex} className="inclusion-item">
                     <input
                       type="text"
                       placeholder="Inclusion name"
