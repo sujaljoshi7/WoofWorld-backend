@@ -37,8 +37,16 @@ class ServiceSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'image', 'status', 'packages', 'created_by', 'created_at', 'updated_at']
 
     def create(self, validated_data):
-        request = self.context.get("request")
-        category_instance = validated_data.pop("service_category_id", None)  # Use correct field name
-        validated_data["service_category_id"] = category_instance  # Assign to correct field
-        validated_data["created_by"] = request.user  # Ensure created_by is set
-        return super().create(validated_data)
+        # Get the user from the request context
+        user = self.context['request'].user
+        
+        # Create the service with the user
+        service = Service.objects.create(
+            name=validated_data.get('name'),
+            description=validated_data.get('description'),
+            image=validated_data.get('image'),
+            status=validated_data.get('status', True),
+            created_by=user
+        )
+        
+        return service

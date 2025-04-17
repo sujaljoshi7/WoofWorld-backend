@@ -173,7 +173,7 @@ const ServiceForm = ({ method, serviceId }) => {
           </label>
         </div>
 
-        <div className="packages-section">
+        <div className="packages-section bg-dark">
           <h3>Packages</h3>
           <button
             type="button"
@@ -184,7 +184,7 @@ const ServiceForm = ({ method, serviceId }) => {
           </button>
 
           {packages.map((pkg, pkgIndex) => (
-            <div key={pkgIndex} className="package-card">
+            <div key={pkgIndex} className="package-card bg-dark">
               <h4>Package {pkgIndex + 1}</h4>
 
               <div className="form-group">
@@ -223,7 +223,7 @@ const ServiceForm = ({ method, serviceId }) => {
                 />
               </div>
 
-              <div className="inclusions-section">
+              <div className="inclusions-section bg-dark">
                 <h5>Inclusions</h5>
                 <button
                   type="button"
@@ -234,7 +234,7 @@ const ServiceForm = ({ method, serviceId }) => {
                 </button>
 
                 {pkg.inclusions.map((inclusion, incIndex) => (
-                  <div key={incIndex} className="inclusion-item">
+                  <div key={incIndex} className="inclusion-item bg-dark">
                     <input
                       type="text"
                       placeholder="Inclusion name"
