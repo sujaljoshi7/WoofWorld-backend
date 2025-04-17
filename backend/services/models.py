@@ -18,7 +18,7 @@ class Service(models.Model):
     service_category_id = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='service_cat')
     name = models.CharField(max_length=100)
     content = models.TextField()
-    image = models.URLField(validators=[validate_image_size])
+    image = models.URLField()
     status = models.IntegerField()
     show_on_homepage = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=datetime.now(), editable=False)
