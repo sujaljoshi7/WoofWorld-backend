@@ -111,7 +111,7 @@ def deactivate_service(request, service_id):
         return Response({"error": "Service not found!"}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def get_specific_service_data(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     serializer = ServiceSerializer(service)  # Use your serializer directly
