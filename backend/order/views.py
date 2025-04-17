@@ -205,7 +205,7 @@ class DashboardStatsView(APIView):
             total_orders = monthly_orders.count()
             
             # Get total revenue and format it in Indian currency
-            total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
+            total_revenue = monthly_orders.aggregate(total=Sum('total'))['total'] or 0
             
             # Format revenue in Indian number format
             def format_indian_currency(amount):
