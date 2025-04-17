@@ -281,7 +281,7 @@ const Navbar = ({ initialSearchQuery = "" }) => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link active" to="/dog">
+              <Link className="nav-link active" to="/services">
                 Services
               </Link>
             </li>
