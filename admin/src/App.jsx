@@ -52,7 +52,7 @@ import ViewOrders from "./pages/orders/orders";
 import OrderDetails from "./pages/orders/order-details";
 import ServiceForm from "./components/ServiceForm";
 import EventDashboard from "./pages/events/EventDashboard";
-import PastEventImages from "./pages/events/PastEventImages";
+import AddPastEventImages from "./pages/events/AddPastEventsImages";
 
 function Logout() {
   localStorage.clear();
@@ -125,7 +125,7 @@ function App() {
           path="/events/past"
           element={
             <ProtectedRoute>
-              <PastEventImages />
+              <AddPastEventImages />
             </ProtectedRoute>
           }
         />

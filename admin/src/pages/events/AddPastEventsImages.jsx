@@ -1,6 +1,6 @@
 import PastEventImages from "../../components/PastEventImages";
-function PastEventImages() {
-  return <Form route="/api/events/category/" method="add" />;
+function AddPastEventImages() {
+  return <PastEventImages route="/api/events/category/" method="add" />;
 }
 
-export default AddEventCategory;
+export default AddPastEventImages;
