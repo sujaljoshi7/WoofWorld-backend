@@ -31,3 +31,7 @@ class Event(models.Model):
     contact_number = models.CharField(max_length=12)
     status = models.IntegerField()
     created_at = models.DateTimeField(default=now, editable=False)
+
+class PastEventImages(models.Model):
+    event_id = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='past_event_image')
+    image = models.URLField(max_length=500)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Event
+from .models import Category, Event, PastEventImages
 from django.utils import timezone
 from user.serializers import UserSerializer
 from django.contrib.auth.models import User
@@ -15,6 +15,11 @@ class EventCategorySerializer(serializers.ModelSerializer):
         if Category.objects.filter(name__iexact=value).exists():  # Case-insensitive check
             raise serializers.ValidationError("Name already exists. Please use a different name.")
         return value
+    
+class PastEventImagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PastEventImages
+        fields = '__all__'
 
 class EventSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only = True)

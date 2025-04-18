@@ -52,6 +52,7 @@ import ViewOrders from "./pages/orders/orders";
 import OrderDetails from "./pages/orders/order-details";
 import ServiceForm from "./components/ServiceForm";
 import EventDashboard from "./pages/events/EventDashboard";
+import PastEventImages from "./pages/events/PastEventImages";
 
 function Logout() {
   localStorage.clear();
@@ -119,6 +120,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/events/past"
+          element={
+            <ProtectedRoute>
+              <PastEventImages />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/events/sales"
           element={

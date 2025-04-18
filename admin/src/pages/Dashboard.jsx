@@ -45,7 +45,6 @@ function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         const response = await api.get("/api/order/dashboard-stats/");
-        console.log("Raw Dashboard Data:", response.data);
         setDashboardData(response.data);
         setTotalRevenueCount(response.data.stats.total_revenue);
         setProductsCount(response.data.stats.total_products);
@@ -86,12 +85,12 @@ function Dashboard() {
 
   // Sample data in case API data is not available
   const sampleMonthlyData = [
-    { name: "Apr", orders: 30 },
-    { name: "Mar", orders: 22 },
-    { name: "Feb", orders: 25 },
-    { name: "Jan", orders: 18 },
-    { name: "Dec", orders: 20 },
-    { name: "Nov", orders: 15 },
+    { name: "Apr", orders: 0 },
+    { name: "Mar", orders: 0 },
+    { name: "Feb", orders: 0 },
+    { name: "Jan", orders: 0 },
+    { name: "Dec", orders: 0 },
+    { name: "Nov", orders: 0 },
   ];
 
   // Use actual data if available, otherwise use sample data

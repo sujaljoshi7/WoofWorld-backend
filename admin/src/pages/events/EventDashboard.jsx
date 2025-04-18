@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../../constants";
 import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
+import useUser from "../../hooks/useUser";
 import event_img from "../../assets/images/event.png";
 import { useNavigate } from "react-router-dom";
 import {
@@ -22,7 +23,8 @@ import {
 
 function EventDashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+
+  const { user, isLoading } = useUser();
   const [totalEvents, setTotalEvents] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalTickets, setTotalTickets] = useState(0);
@@ -39,72 +41,14 @@ function EventDashboard() {
     setIsSidebarCollapsed(collapsed);
   };
 
-  const fetchEventsOrders = async () => {
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    if (!token) {
-      console.error("No token found!");
-      setIsLoadingUser(false);
-      return;
-    }
-
-    try {
-      const userResponse = api.get("/api/user/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const allOrdersResponse = api.get("/api/order/all/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const [userData, allOrdersData] = await Promise.all([
-        userResponse,
-        allOrdersResponse,
-      ]);
-
-      setUser(userData.data);
-
-      // Process orders to determine type
-      const processedOrders = allOrdersData.data.map((order) => {
-        const hasProducts = order.order_items.some((item) => item.type === 1);
-        const hasTickets = order.order_items.some((item) => item.type === 2);
-
-        let orderType = "mixed";
-        if (hasProducts && !hasTickets) orderType = "product";
-        if (!hasProducts && hasTickets) orderType = "ticket";
-
-        return {
-          ...order,
-          order_type: orderType,
-        };
-      });
-
-      // Sort orders by created_at in ascending order
-      const sortedOrders = processedOrders.sort(
-        // (a, b) => new Date(a.order.created_at) - new Date(b.order.created_at)
-        (a, b) => new Date(b.order.created_at) - new Date(a.order.created_at)
-      );
-
-      setAllOrders(sortedOrders);
-      setFilteredData(sortedOrders);
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        console.warn("Access token expired, attempting to refresh...");
-        await handleTokenRefresh();
-      } else {
-        console.error("Failed to fetch data:", error);
-      }
-    } finally {
-      setIsLoadingUser(false);
-    }
-  };
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         // Fetch event statistics
-        const [eventsRes, ordersRes] = await Promise.all([
+        const [eventsRes, ordersRes, monthlyOrdersRes] = await Promise.all([
           api.get("/api/events/event/"),
           api.get("/api/order/all/"),
+          api.get("/api/order/dashboard-stats/"),
         ]);
 
         const events = eventsRes.data;
@@ -117,7 +61,6 @@ function EventDashboard() {
 
         // Calculate revenue and tickets from orders
         const eventOrders = ordersRes.data || []; // Changed from ordersRes.data.orders_by_status
-        console.log("Orders data:", eventOrders);
 
         const totalTicketsCount = eventOrders.reduce((sum, order) => {
           // Filter for ticket items (type 2) and sum their quantities
@@ -126,14 +69,6 @@ function EventDashboard() {
           const ticketSum = ticketItems.reduce(
             (itemSum, item) => itemSum + item.quantity,
             0
-          );
-          console.log(
-            "Order ID:",
-            order.order.id,
-            "Ticket items:",
-            ticketItems,
-            "Sum:",
-            ticketSum
           );
           return sum + ticketSum;
         }, 0);
@@ -145,14 +80,12 @@ function EventDashboard() {
           return (
             sum +
             ticketItems.reduce(
-              (itemSum, item) => itemSum + (item.quantity * item.price || 0),
+              (itemSum, item) =>
+                itemSum + (item.quantity * item.event.price || 0),
               0
             )
           );
         }, 0);
-
-        console.log("Total tickets count:", totalTicketsCount);
-        console.log("Total revenue count:", totalRevenueCount);
 
         setTotalEvents(totalEventsCount);
         setUpcomingEvents(upcomingEventsCount);
@@ -161,7 +94,7 @@ function EventDashboard() {
         setDashboardData({
           events,
           orders: eventOrders,
-          monthly_data: ordersRes.data.monthly_orders || [],
+          monthly_data: monthlyOrdersRes.data.monthly_orders || [],
         });
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -173,12 +106,35 @@ function EventDashboard() {
     fetchDashboardData();
   }, []);
 
+  const monthlyTickets = Array(12).fill(0);
+  dashboardData?.orders.forEach((order) => {
+    const date = new Date(order.order.created_at);
+    const month = date.getMonth(); // 0 = Jan, 1 = Feb, ...
+
+    const ticketItems =
+      order.order_items?.filter((item) => item.type === 2) || [];
+    const totalTickets = ticketItems.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
+    monthlyTickets[month] += totalTickets;
+  });
+
+  const currentMonth = new Date().getMonth(); // 0-indexed: 0 = Jan
+  const monthlyChartData = monthlyTickets
+    .map((tickets, index) => ({
+      month: new Date(0, index).toLocaleString("default", {
+        month: "long",
+      }),
+      tickets,
+    }))
+    .slice(0, currentMonth + 1); // +1 to include the current month
+
   // Transform monthly data for line chart
-  const monthlyData =
-    dashboardData?.monthly_data?.map((item) => ({
-      name: item.month,
-      tickets: item.orders,
-    })) || [];
+  dashboardData?.monthly_data?.map((item) => ({
+    name: item.month,
+    tickets: item.orders,
+  })) || [];
 
   // Transform event status data for pie chart
   const eventStatusData = [
@@ -339,14 +295,18 @@ function EventDashboard() {
                   width="100%"
                   height={window.innerWidth < 576 ? 200 : 300}
                 >
-                  <LineChart data={monthlyData}>
+                  <LineChart data={monthlyChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                     <XAxis
-                      dataKey="name"
+                      dataKey="month" // was "name"
                       stroke="#6c757d"
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis stroke="#6c757d" tick={{ fontSize: 12 }} />
+                    <YAxis
+                      stroke="#6c757d"
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => Math.round(value)}
+                    />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -359,10 +319,10 @@ function EventDashboard() {
                     <Legend />
                     <Line
                       type="monotone"
-                      dataKey="tickets"
-                      stroke="#FF6B6B"
+                      dataKey="tickets" // was "orders"
+                      stroke="#4D96FF"
                       strokeWidth={2}
-                      dot={{ r: 4, fill: "#FF6B6B" }}
+                      dot={{ r: 4, fill: "#4D96FF" }}
                       activeDot={{ r: 6 }}
                       name="Tickets Sold"
                     />
@@ -447,11 +407,12 @@ function EventDashboard() {
                     </thead>
                     <tbody>
                       {dashboardData?.events
+                        ?.filter((event) => new Date(event.date) > new Date())
                         ?.sort((a, b) => new Date(a.date) - new Date(b.date))
-                        ?.slice(-5)
                         ?.map((event, index) => (
                           <tr key={index}>
                             <td>{event.name}</td>
+                            {console.log(event)}
                             <td>
                               {new Date(event.date).toLocaleDateString(
                                 "en-GB",
@@ -504,18 +465,22 @@ function EventDashboard() {
                         <th>Date</th>
                         <th>Tickets Sold</th>
                         <th>Revenue</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {ordersRes?.data
+                      {dashboardData?.events
                         ?.map((event) => {
-                          // Find orders for this event
-                          const eventOrders = ordersRes.data || [];
+                          const eventOrders =
+                            dashboardData.orders?.filter((order) =>
+                              order.order_items?.some(
+                                (item) =>
+                                  item.type === 2 && item.item === event.id
+                              )
+                            ) || [];
 
-                          // Calculate total tickets and revenue
                           const ticketsSold = eventOrders.reduce(
                             (sum, order) => {
-                              // Filter for ticket items (type 2) and sum their quantities
                               const ticketItems =
                                 order.order_items?.filter(
                                   (item) =>
@@ -531,19 +496,30 @@ function EventDashboard() {
                             },
                             0
                           );
+
                           const revenue = ticketsSold * event.price;
+
+                          const today = new Date().toISOString().split("T")[0];
+                          const eventDate = event.date;
+
+                          let status = "";
+                          if (eventDate < today) {
+                            status = "Past";
+                          } else if (eventDate === today) {
+                            status = "Ongoing";
+                          } else {
+                            status = "Upcoming";
+                          }
 
                           return {
                             ...event,
                             ticketsSold,
                             revenue,
+                            status,
                           };
                         })
-                        ?.filter(
-                          (event) =>
-                            event.date > new Date().toISOString().split("T")[0]
-                        )
-                        ?.sort((a, b) => new Date(a.date) - new Date(b.date))
+                        ?.filter((event) => event.ticketsSold > 0)
+                        ?.sort((a, b) => b.revenue - a.revenue)
                         ?.map((event, index) => (
                           <tr key={index}>
                             <td>{event.name}</td>
@@ -559,6 +535,20 @@ function EventDashboard() {
                             </td>
                             <td>{event.ticketsSold}</td>
                             <td>₹{event.revenue}</td>
+                            <td>
+                              <span
+                                className={`badge ${
+                                  event.status === "Past"
+                                    ? "bg-secondary"
+                                    : event.status === "Ongoing"
+                                    ? "bg-warning"
+                                    : "bg-success"
+                                }`}
+                              >
+                                {event.status}
+                              </span>
+                            </td>
+                            <td></td>
                           </tr>
                         ))}
                     </tbody>
