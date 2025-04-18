@@ -133,7 +133,7 @@ const Services = () => {
           </section>
 
           {/* Services Grid */}
-          <section className="services-section">
+          <section className="services-section mb-4">
             <h2>Available Services</h2>
             <div className="services-grid">
               {services.map((service) => (
@@ -161,6 +161,7 @@ const Services = () => {
           </section>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

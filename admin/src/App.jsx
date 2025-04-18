@@ -51,6 +51,7 @@ import EditNavbarItems from "./pages/homepage/navbar/EditNavbarItem";
 import ViewOrders from "./pages/orders/orders";
 import OrderDetails from "./pages/orders/order-details";
 import ServiceForm from "./components/ServiceForm";
+import EventDashboard from "./pages/events/EventDashboard";
 
 function Logout() {
   localStorage.clear();
@@ -115,6 +116,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ViewEvents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/sales"
+          element={
+            <ProtectedRoute>
+              <EventDashboard />
             </ProtectedRoute>
           }
         />

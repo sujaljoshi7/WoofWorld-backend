@@ -209,23 +209,11 @@ class DashboardStatsView(APIView):
             
             # Format revenue in Indian number format
             def format_indian_currency(amount):
-                # amount_str = f"{amount:,.2f}"
-                # parts = amount_str.split('.')
-                # integer_part = parts[0]
-                # decimal_part = parts[1] if len(parts) > 1 else '00'
-                
+            
                 amount_str = f"{amount:,.2f}"
                 parts = amount_str.split('.')
                 integer_part = parts[0].replace(',', '')
                 decimal_part = parts[1]
-
-                # Format integer part with Indian number system
-                # if len(integer_part) > 3:
-                #     last_three = integer_part[-3:]
-                #     other_numbers = integer_part[:-3]
-                #     formatted = f"{other_numbers},{last_three}"
-                # else:
-                #     formatted = integer_part
 
                 # Format using Indian number system
                 if len(integer_part) > 3:

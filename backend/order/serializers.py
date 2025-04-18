@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Order, OrderItems
 from products.serializers import ProductSerializer
 from products.models import Product
+from events.models import Event
 from user.models import Address
 from user.serializers import AddressSerializer
 from events.models import Event
@@ -16,10 +17,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderItemsSerializer(serializers.ModelSerializer):
     product = serializers.SerializerMethodField()
+    event = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItems
-        fields = ['id', 'user_id', 'order_id', 'item', 'type', 'quantity', 'product']
+        fields = ['id', 'user_id', 'order_id', 'item', 'type', 'quantity', 'product', 'event']
         read_only_fields = ['id']  # Prevent modification of ID
 
     def get_product(self, obj):
@@ -28,6 +30,12 @@ class OrderItemsSerializer(serializers.ModelSerializer):
                 product = Product.objects.get(id=obj.item)
                 return ProductSerializer(product).data
             except Product.DoesNotExist:
+                return None
+        if obj.type == 2:
+            try:
+                event = Event.objects.get(id=obj.item)
+                return EventSerializer(event).data
+            except Event.DoesNotExist:
                 return None
         return None
 

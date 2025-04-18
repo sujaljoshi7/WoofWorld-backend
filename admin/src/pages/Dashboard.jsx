@@ -14,23 +14,26 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
+  CartesianGrid,
 } from "recharts";
 
 function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userCount, setUserCount] = useState(0);
-  const [blogsCount, setBlogsCount] = useState(0);
-  const [eventsCount, setEventsCount] = useState(0);
-  const [webinarCount, setWebinarCount] = useState(0);
+  const [totalRevenueCount, setTotalRevenueCount] = useState(0);
+  const [productsCount, setProductsCount] = useState(0);
+  const [totalOrdersCount, setTotalOrdersCount] = useState(0);
   const [location, setLocation] = useState({ country: "", city: "" });
   const [currentTime, setCurrentTime] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const [dashboardData, setDashboardData] = useState(null);
 
   const handleSidebarCollapse = (collapsed) => {
     setIsSidebarCollapsed(collapsed);
@@ -38,20 +41,70 @@ function Dashboard() {
 
   const updateTime = () => setCurrentTime(new Date().toLocaleTimeString());
 
-  const data = [
-    { name: "Users", value: userCount },
-    { name: "Blogs", value: blogsCount },
-    { name: "Events", value: eventsCount },
-    { name: "Adoptions", value: webinarCount },
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await api.get("/api/order/dashboard-stats/");
+        console.log("Raw Dashboard Data:", response.data);
+        setDashboardData(response.data);
+        setTotalRevenueCount(response.data.stats.total_revenue);
+        setProductsCount(response.data.stats.total_products);
+        setUserCount(response.data.stats.total_users);
+        setTotalOrdersCount(response.data.stats.total_orders);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Transform orders_by_status data for pie chart
+  const pieChartData =
+    dashboardData?.orders_by_status?.map((item) => {
+      return {
+        name: item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1),
+        value: item.count,
+      };
+    }) || [];
+
+  // Transform monthly orders data for line chart
+  const monthlyOrdersData =
+    dashboardData?.monthly_orders
+      ?.map((item) => ({
+        name: item.month,
+        orders: item.orders,
+        date: new Date(item.date), // Add date for sorting
+      }))
+      ?.sort((a, b) => b.date - a.date) // Sort in descending order
+      ?.map((item) => ({
+        name: item.name,
+        orders: item.orders,
+      })) || [];
+
+  // Sample data in case API data is not available
+  const sampleMonthlyData = [
+    { name: "Apr", orders: 30 },
+    { name: "Mar", orders: 22 },
+    { name: "Feb", orders: 25 },
+    { name: "Jan", orders: 18 },
+    { name: "Dec", orders: 20 },
+    { name: "Nov", orders: 15 },
   ];
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  // Use actual data if available, otherwise use sample data
+  const displayOrdersData =
+    monthlyOrdersData.length > 0 ? monthlyOrdersData : sampleMonthlyData;
+
+  const COLORS = ["#4D96FF", "#FF9F1C", "#FF5C5C", "#FFC107", "#28A745"];
 
   const barData = [
     { name: "Users", count: userCount },
-    { name: "Blogs", count: blogsCount },
-    { name: "Events", count: eventsCount },
-    { name: "Adoptioons", count: webinarCount },
+    { name: "Blogs", count: totalRevenueCount },
+    { name: "Events", count: productsCount },
+    { name: "Adoptioons", count: totalOrdersCount },
   ];
 
   const fetchLocation = async () => {
@@ -94,12 +147,7 @@ function Dashboard() {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
-
       setUser(userRes.data);
-      setUserCount(usersRes.data.length);
-      setBlogsCount(blogsRes.data.length);
-      setEventsCount(eventsRes.data.length);
-      setWebinarCount(webinarRes.data.length);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -161,38 +209,49 @@ function Dashboard() {
   return (
     <div className="d-flex">
       <Sidebar user={user} onCollapse={handleSidebarCollapse} />
-      <div 
-        className="main-content flex-grow-1" 
-        style={{ 
-          marginLeft: isSidebarCollapsed ? '80px' : '280px',
+      <div
+        className="main-content flex-grow-1"
+        style={{
+          marginLeft: isSidebarCollapsed ? "80px" : "280px",
           padding: window.innerWidth < 768 ? "1rem" : "2.5rem",
           transition: "all 0.3s ease-in-out",
-          width: isSidebarCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 280px)'
+          width: isSidebarCollapsed
+            ? "calc(100% - 80px)"
+            : "calc(100% - 280px)",
         }}
       >
         <div className="dashboard-header mb-4 mb-md-5">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
             <div className="mb-3 mb-md-0">
-              <h1 className="fw-bold text-primary mb-2" style={{ 
-                fontSize: window.innerWidth < 576 ? "1.75rem" : "2.5rem" 
-              }}>
+              <h1
+                className="fw-bold text-primary mb-2"
+                style={{
+                  fontSize: window.innerWidth < 576 ? "1.75rem" : "2.5rem",
+                }}
+              >
                 Welcome back, {user?.first_name}!
               </h1>
-              <p className="text-muted" style={{ 
-                fontSize: window.innerWidth < 576 ? "0.9rem" : "1.25rem" 
-              }}>
+              <p
+                className="text-muted"
+                style={{
+                  fontSize: window.innerWidth < 576 ? "0.9rem" : "1.25rem",
+                }}
+              >
                 Here's what's happening with your platform today
               </p>
             </div>
             <div className="bg-primary bg-opacity-10 rounded-pill px-3 px-md-4 py-2">
-              <span className="text-primary fw-medium" style={{ 
-                fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem" 
-              }}>
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: window.innerWidth < 576 ? 'short' : 'long', 
-                  year: 'numeric', 
-                  month: window.innerWidth < 576 ? 'short' : 'long', 
-                  day: 'numeric' 
+              <span
+                className="text-primary fw-medium"
+                style={{
+                  fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem",
+                }}
+              >
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: window.innerWidth < 576 ? "short" : "long",
+                  year: "numeric",
+                  month: window.innerWidth < 576 ? "short" : "long",
+                  day: "numeric",
                 })}
               </span>
             </div>
@@ -201,33 +260,34 @@ function Dashboard() {
 
         <div className="row g-3 g-md-4 mb-4 mb-md-5">
           <DashboardCard
-            title="Users"
-            count={userCount}
-            image={user_img}
+            title="Total Orders"
+            count={totalOrdersCount}
+            image={webinar_img}
             onClick={handleRowClick}
             color="#4e73df"
             iconBg="#e3e6f0"
           />
+
           <DashboardCard
-            title="Blogs"
-            count={blogsCount}
+            title="Total Revenue"
+            count={totalRevenueCount}
             image={blog_img}
             onClick={handleRowClick}
             color="#1cc88a"
             iconBg="#e3f8f0"
           />
           <DashboardCard
-            title="Events"
-            count={eventsCount}
+            title="Total Products"
+            count={productsCount}
             image={event_img}
             onClick={handleRowClick}
             color="#36b9cc"
             iconBg="#e3f6f8"
           />
           <DashboardCard
-            title="Adoption"
-            count={webinarCount}
-            image={webinar_img}
+            title="Total Users"
+            count={userCount}
+            image={user_img}
             onClick={handleRowClick}
             color="#f6c23e"
             iconBg="#f8f0e3"
@@ -239,103 +299,192 @@ function Dashboard() {
             <div className="card shadow-sm h-100 border-0">
               <div className="card-header bg-white py-2 py-md-3 border-0">
                 <div className="d-flex justify-content-between align-items-center">
-                  <h5 className="card-title mb-0 text-primary fw-bold" style={{ 
-                    fontSize: window.innerWidth < 576 ? "1rem" : "1.25rem" 
-                  }}>
-                    Revenue Analysis
+                  <h5
+                    className="card-title mb-0 text-primary fw-bold"
+                    style={{
+                      fontSize: window.innerWidth < 576 ? "1rem" : "1.25rem",
+                    }}
+                  >
+                    Monthly Orders
                   </h5>
                   <div className="dropdown">
-                    <button className="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                    <button
+                      className="btn btn-link text-muted p-0"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                    >
                       <i className="fas fa-ellipsis-v"></i>
                     </button>
                     <ul className="dropdown-menu">
-                      <li><a className="dropdown-item" href="#">View Details</a></li>
-                      <li><a className="dropdown-item" href="#">Export Data</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          View Details
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Export Data
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </div>
               </div>
               <div className="card-body p-2 p-md-3">
-                <ResponsiveContainer width="100%" height={window.innerWidth < 576 ? 200 : 300}>
-                  <BarChart data={barData}>
-                    <XAxis dataKey="name" stroke="#6c757d" />
-                    <YAxis stroke="#6c757d" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: 'none',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        padding: '12px'
+                <ResponsiveContainer
+                  width="100%"
+                  height={window.innerWidth < 576 ? 200 : 300}
+                >
+                  <LineChart data={displayOrdersData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#6c757d"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis
+                      stroke="#6c757d"
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => Math.round(value)}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        border: "none",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                        padding: "12px",
                       }}
                     />
                     <Legend />
-                    <Bar 
-                      dataKey="count" 
-                      fill="#4e73df" 
-                      barSize={window.innerWidth < 576 ? 30 : 40}
-                      radius={[8, 8, 0, 0]}
+                    <Line
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#4D96FF"
+                      strokeWidth={2}
+                      dot={{ r: 4, fill: "#4D96FF" }}
+                      activeDot={{ r: 6 }}
+                      name="Orders"
                     />
-                  </BarChart>
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
-          
+
           <div className="col-12 col-lg-6">
             <div className="card shadow-sm h-100 border-0">
               <div className="card-header bg-white py-2 py-md-3 border-0">
                 <div className="d-flex justify-content-between align-items-center">
-                  <h5 className="card-title mb-0 text-primary fw-bold" style={{ 
-                    fontSize: window.innerWidth < 576 ? "1rem" : "1.25rem" 
-                  }}>
+                  <h5
+                    className="card-title mb-0 text-primary fw-bold"
+                    style={{
+                      fontSize: window.innerWidth < 576 ? "1rem" : "1.25rem",
+                    }}
+                  >
                     Order Analysis
                   </h5>
                   <div className="dropdown">
-                    <button className="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                    <button
+                      className="btn btn-link text-muted p-0"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                    >
                       <i className="fas fa-ellipsis-v"></i>
                     </button>
                     <ul className="dropdown-menu">
-                      <li><a className="dropdown-item" href="#">View Details</a></li>
-                      <li><a className="dropdown-item" href="#">Export Data</a></li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          View Details
+                        </a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">
+                          Export Data
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </div>
               </div>
               <div className="card-body p-2 p-md-3">
-                <ResponsiveContainer width="100%" height={window.innerWidth < 576 ? 200 : 300}>
+                <ResponsiveContainer
+                  width="100%"
+                  height={window.innerWidth < 576 ? 200 : 300}
+                >
                   <PieChart>
                     <Pie
-                      data={data}
+                      data={pieChartData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
                       label={({ name, percent }) =>
-                        `${name} ${(percent * 100).toFixed(0)}%`
+                        `${name} (${(percent * 100).toFixed(0)}%)`
                       }
                       outerRadius={window.innerWidth < 576 ? 80 : 100}
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {data.map((entry, index) => (
+                      {pieChartData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
                         />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: 'none',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        padding: '12px'
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        border: "none",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                        padding: "12px",
                       }}
                     />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="row mt-4">
+          <div className="col-md-12">
+            <div className="card border-0 shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title text-primary mb-4">
+                  Top Selling Products
+                </h5>
+                <div className="table-responsive">
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Image</th>
+                        <th>Quantity Sold</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboardData?.top_products?.map((product, index) => (
+                        <tr key={index}>
+                          <td>{product.name}</td>
+                          <td>
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              style={{
+                                width: "50px",
+                                height: "50px",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </td>
+                          <td>{product.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -349,11 +498,11 @@ const DashboardCard = ({ title, count, image, onClick, color, iconBg }) => (
   <div className="col-6 col-md-6 col-lg-3">
     <div
       className="card shadow-sm h-100 border-0"
-      style={{ 
+      style={{
         cursor: "pointer",
         transition: "all 0.3s ease-in-out",
         background: `linear-gradient(135deg, ${color} 0%, ${color}40 100%)`,
-        borderRadius: "12px"
+        borderRadius: "12px",
       }}
       onClick={() => onClick(title.toLowerCase())}
       onMouseEnter={(e) => {
@@ -368,38 +517,44 @@ const DashboardCard = ({ title, count, image, onClick, color, iconBg }) => (
       <div className="card-body p-2 p-md-4">
         <div className="d-flex justify-content-between align-items-center">
           <div>
-            <h6 className="text-white mb-1 mb-md-2" style={{ 
-              opacity: 0.9,
-              fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem"
-            }}>
+            <h6
+              className="text-white mb-1 mb-md-2"
+              style={{
+                opacity: 0.9,
+                fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem",
+              }}
+            >
               {title}
             </h6>
-            <h2 className="text-white mb-0" style={{ 
-              fontSize: window.innerWidth < 576 ? "1.5rem" : "2rem"
-            }}>
+            <h2
+              className="text-white mb-0"
+              style={{
+                fontSize: window.innerWidth < 576 ? "1.5rem" : "2rem",
+              }}
+            >
               {count}
             </h2>
           </div>
-          <div 
+          <div
             className="rounded-circle"
-            style={{ 
+            style={{
               backgroundColor: iconBg,
               width: window.innerWidth < 576 ? "40px" : "60px",
               height: window.innerWidth < 576 ? "40px" : "60px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: window.innerWidth < 576 ? "0.5rem" : "1rem"
+              padding: window.innerWidth < 576 ? "0.5rem" : "1rem",
             }}
           >
-            <img 
-              src={image} 
-              alt={title} 
-              style={{ 
+            <img
+              src={image}
+              alt={title}
+              style={{
                 width: window.innerWidth < 576 ? "20px" : "30px",
                 height: window.innerWidth < 576 ? "20px" : "30px",
-                filter: "none"
-              }} 
+                filter: "none",
+              }}
             />
           </div>
         </div>

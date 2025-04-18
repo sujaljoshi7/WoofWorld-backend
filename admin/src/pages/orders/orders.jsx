@@ -91,11 +91,13 @@ function ViewOrders() {
 
       // Sort orders by created_at in ascending order
       const sortedOrders = processedOrders.sort(
-        (a, b) => new Date(a.order.created_at) - new Date(b.order.created_at)
+        // (a, b) => new Date(a.order.created_at) - new Date(b.order.created_at)
+        (a, b) => new Date(b.order.created_at) - new Date(a.order.created_at)
       );
 
       setAllOrders(sortedOrders);
       setFilteredData(sortedOrders);
+      console.log(sortedOrders);
     } catch (error) {
       if (error.response && error.response.status === 401) {
         console.warn("Access token expired, attempting to refresh...");
@@ -301,7 +303,6 @@ function ViewOrders() {
                     <tr>
                       <th>Order ID</th>
                       <th>Type</th>
-                      <th>Payment ID</th>
                       <th>Payment Status</th>
                       <th>Order Status</th>
                       <th>Total Amount</th>
@@ -329,7 +330,6 @@ function ViewOrders() {
                                 item.order_type.slice(1)}
                             </span>
                           </td>
-                          <td>{item.order.payment_id}</td>
                           <td>
                             <span
                               className={`badge ${
