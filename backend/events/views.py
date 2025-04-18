@@ -32,8 +32,8 @@ class EventCategoryView(APIView):
 class PastEventImageView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
-            return [AllowAny]
-        return [IsAuthenticated]
+            return [AllowAny()]
+        return [IsAuthenticated()]
     
     def get(self, request):
         images = PastEventImages.objects.all()

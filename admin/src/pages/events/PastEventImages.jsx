@@ -7,6 +7,10 @@ const PastEventImages = () => {
   const [images, setImages] = useState([]);
   const [events, setEvents] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState("");
+
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -54,32 +58,58 @@ const PastEventImages = () => {
       return;
     }
 
+    const apiKey = "54d95fbd813692cc07c224648c068916";
+    const uploadedImageUrls = [];
+
+    const toBase64 = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64String = reader.result.split(",")[1];
+          resolve(base64String);
+        };
+        reader.onerror = (error) => reject(error);
+      });
+
     try {
-      // Upload each image to ImgBB
-      const uploadedImageUrls = [];
-      for (let img of images) {
-        const url = await uploadToImgBB(img);
-        if (!url) {
-          setError("One or more image uploads failed");
+      for (let file of images) {
+        if (!(file instanceof Blob)) {
+          throw new Error("Invalid file type");
+        }
+
+        const base64Image = await toBase64(file);
+
+        const form = new FormData();
+        form.append("image", base64Image);
+
+        const res = await fetch(
+          `https://api.imgbb.com/1/upload?key=${apiKey}`,
+          {
+            method: "POST",
+            body: form,
+          }
+        );
+
+        const data = await res.json();
+
+        if (data.success) {
+          uploadedImageUrls.push(data.data.url);
+        } else {
+          console.error("ImgBB upload failed:", data);
+          setError("Image upload failed");
           setLoading(false);
           return;
         }
-        uploadedImageUrls.push(url);
       }
 
-      // Prepare payload
-      const payload = {
+      await api.post("/api/events/past-event-images/", {
         event_id: selectedEvent,
-        images: uploadedImageUrls, // Array of URLs
-      };
-
-      // Send to backend
-      await api.post("/api/events/past-event-images/", payload);
+        images: uploadedImageUrls,
+      });
 
       setLoading(false);
-      setError("");
       alert("Images uploaded successfully!");
-      // Reset form if needed
     } catch (error) {
       console.error("Upload error:", error);
       setError("Something went wrong");
@@ -110,10 +140,13 @@ const PastEventImages = () => {
           <label htmlFor="images">Upload Images:</label>
           <input
             type="file"
-            id="images"
             multiple
             accept="image/*"
-            onChange={handleImageChange}
+            onChange={(e) => {
+              const files = Array.from(e.target.files);
+              console.log("Selected files:", files);
+              setImages(files);
+            }}
           />
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
@@ -155,6 +188,9 @@ const PastEventImages = () => {
             </div>
           ))}
         </div>
+        <button type="submit" className="btn btn-warning w-100">
+          Save Event
+        </button>
       </form>
     </div>
   );
