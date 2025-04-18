@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import api from "../../api"; // Adjust the import path as necessary
-import uploadToImgBB from "../../utils/image-upload";
+import api from "../api"; // Adjust the import path as necessary
+import uploadToImgBB from "../utils/image-upload";
 
-const PastEventImages = () => {
+const PastEventImages = ({ route, method }) => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [images, setImages] = useState([]);
   const [events, setEvents] = useState([]);
@@ -13,7 +13,31 @@ const PastEventImages = () => {
 
   useEffect(() => {
     fetchEvents();
+    if (method === "edit" && id) {
+      fetchPastEventDetails();
+    }
   }, []);
+
+  const fetchPastEventDetails = async () => {
+    try {
+      const res = await api.get(`/api/events/past-event-images/`);
+      const data = res.data;
+      setEventName(data.name);
+      setEventDescription(data.description);
+      const duration = data.duration; // Example: "2 Hours 30 Minutes"
+      if (duration) {
+        const match = duration.match(/(\d+)\s*hours/);
+        if (match) {
+          if (match[1]) {
+            setHours(Number(match[1])); // 2 Hours
+          }
+        }
+      }
+      setPreviewImage(data.image); // Show existing image
+    } catch (err) {
+      console.error("Failed to fetch event details:", err);
+    }
+  };
 
   const fetchEvents = async () => {
     try {

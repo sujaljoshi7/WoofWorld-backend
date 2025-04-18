@@ -56,7 +56,18 @@ class PastEventImageView(APIView):
             created_images.append(PastEventImagesSerializer(instance).data)
 
         return Response({'message': 'Images uploaded successfully.', 'data': created_images}, status=status.HTTP_201_CREATED)
-
+    
+class GetSpecificPastEventImageView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+    
+    def get(self, request, event_id):
+        event = get_object_or_404(Event, id=event_id)
+        serializer = PastEventImagesSerializer(event)  # Use your serializer directly
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 class EventView(APIView):
 
     def get_permissions(self):

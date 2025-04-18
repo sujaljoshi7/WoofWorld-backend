@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import EventCategoryView,EventView, activate_category, deactivate_category, activate_event, deactivate_event, get_specific_event_data,PastEventImageView
+from .views import EventCategoryView,EventView, activate_category, deactivate_category, activate_event, deactivate_event, get_specific_event_data,PastEventImageView, GetSpecificPastEventImageView
 
 urlpatterns = [
    path("category/", EventCategoryView.as_view(), name="save-event-category"),
@@ -11,4 +11,5 @@ urlpatterns = [
     path("category/<int:category_id>/activate/", activate_category, name="activate_category"),
     path("category/<int:category_id>/deactivate/", deactivate_category, name="deactivate_category"),
     path("past-event-images/", PastEventImageView.as_view(), name="PastEventImageView"),
+    path("past-event-images/<int:event_id>/", GetSpecificPastEventImageView.as_view(), name="GetSpecificPastEventImageView"),
 ]
