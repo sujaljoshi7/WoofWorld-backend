@@ -122,7 +122,7 @@ function App() {
         />
 
         <Route
-          path="/events/past"
+          path="/events/past/:id"
           element={
             <ProtectedRoute>
               <AddPastEventImages />

@@ -22,6 +22,7 @@ function ViewEvents() {
   const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [homePageToggle, setHomePageToggle] = useState();
+  const [filterType, setFilterType] = useState("all"); // "all", "upcoming", or "past"
   const itemsPerPage = 5;
 
   const handleSearch = (event) => {
@@ -34,7 +35,7 @@ function ViewEvents() {
           .toLowerCase()
           .includes(value)
       );
-      setFilteredData(filtered);
+      applyDateFilter(filtered, filterType);
     }
   };
 
@@ -47,12 +48,32 @@ function ViewEvents() {
     second: "2-digit",
   };
 
+  const applyDateFilter = (events, filterType) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+
+    let filtered = events;
+
+    if (filterType === "upcoming") {
+      filtered = events.filter((event) => new Date(event.date) >= today);
+    } else if (filterType === "past") {
+      filtered = events.filter((event) => new Date(event.date) < today);
+    }
+
+    setFilteredData(filtered);
+  };
+
+  const handleFilterChange = (type) => {
+    setFilterType(type);
+    applyDateFilter(allEvents, type);
+  };
+
   const fetchEvents = async () => {
     setIsLoadingEvents(true);
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
-      setIsLoadingUser(false);
+      setIsLoadingEvents(false);
       return;
     }
     try {
@@ -65,7 +86,7 @@ function ViewEvents() {
       );
 
       setAllEvents(sortedEvents);
-      setFilteredData(sortedEvents);
+      applyDateFilter(sortedEvents, filterType);
     } catch (error) {
       if (error.response?.status === 401) {
         console.warn("Access token expired, refreshing...");
@@ -96,13 +117,12 @@ function ViewEvents() {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [message]);
+  }, [message, filterType]);
 
   const handleDeactivate = async (event_id) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (!token) {
       console.error("No token found!");
-      setIsLoadingUser(false);
       return;
     }
     try {
@@ -193,6 +213,12 @@ function ViewEvents() {
     setCurrentPage(selected);
   };
 
+  const isPastEvent = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(date) < today;
+  };
+
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -235,8 +261,8 @@ function ViewEvents() {
 
         <div className="card shadow-sm">
           <div className="card-body">
-            <div className="table-responsive">
-              <div className="mb-3">
+            <div className="mb-3 d-flex gap-2 flex-column flex-md-row">
+              <div className="flex-grow-1">
                 <input
                   type="text"
                   className="form-control"
@@ -245,6 +271,39 @@ function ViewEvents() {
                   onChange={handleSearch}
                 />
               </div>
+              <div className="btn-group">
+                <button
+                  className={`btn ${
+                    filterType === "all" ? "btn-primary" : "btn-outline-primary"
+                  }`}
+                  onClick={() => handleFilterChange("all")}
+                >
+                  All Events
+                </button>
+                <button
+                  className={`btn ${
+                    filterType === "upcoming"
+                      ? "btn-primary"
+                      : "btn-outline-primary"
+                  }`}
+                  onClick={() => handleFilterChange("upcoming")}
+                >
+                  Upcoming Events
+                </button>
+                <button
+                  className={`btn ${
+                    filterType === "past"
+                      ? "btn-primary"
+                      : "btn-outline-primary"
+                  }`}
+                  onClick={() => handleFilterChange("past")}
+                >
+                  Past Events
+                </button>
+              </div>
+            </div>
+
+            <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -259,67 +318,103 @@ function ViewEvents() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((event) => (
-                    <tr
-                      key={event.id}
-                      onClick={() => handleRowClick(event.id)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <td>
-                        <img
-                          src={event.image}
-                          alt={event.name}
-                          style={{
-                            width: "50px",
-                            height: "50px",
-                            objectFit: "cover",
-                            borderRadius: "4px",
-                          }}
-                        />
-                      </td>
-                      <td>{event.name}</td>
-                      <td>
-                        {new Date(event.date).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </td>
-                      <td>{event.time}</td>
-                      <td>{event.address_line_1}</td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            event.status ? "bg-success" : "bg-danger"
-                          }`}
+                  {isLoadingEvents ? (
+                    <tr>
+                      <td colSpan="8" className="text-center">
+                        <div
+                          className="spinner-border text-primary"
+                          role="status"
                         >
-                          {event.status ? "Active" : "Inactive"}
-                        </span>
-                      </td>
-                      <td>
-                        {event.created_by
-                          ? `${event.created_by.first_name} ${event.created_by.last_name}`
-                          : "N/A"}
-                      </td>
-                      <td>
-                        <div className="btn-group">
-                          <button
-                            className={`btn btn-sm ${
-                              event.status ? "btn-danger" : "btn-success"
-                            }`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              event.status
-                                ? handleDeactivate(event.id)
-                                : handleActivate(event.id);
-                            }}
-                          >
-                            {event.status ? "Deactivate" : "Activate"}
-                          </button>
+                          <span className="visually-hidden">Loading...</span>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : paginatedData.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="text-center">
+                        No events found
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedData.map((event) => {
+                      const isEventPast = isPastEvent(event.date);
+
+                      return (
+                        <tr
+                          key={event.id}
+                          onClick={() => handleRowClick(event.id)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td>
+                            <img
+                              src={event.image}
+                              alt={event.name}
+                              style={{
+                                width: "50px",
+                                height: "50px",
+                                objectFit: "cover",
+                                borderRadius: "4px",
+                              }}
+                            />
+                          </td>
+                          <td>{event.name}</td>
+                          <td>
+                            {new Date(event.date).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </td>
+                          <td>{event.time}</td>
+                          <td>{event.address_line_1}</td>
+                          <td>
+                            <span
+                              className={`badge ${
+                                event.status ? "bg-success" : "bg-danger"
+                              }`}
+                            >
+                              {event.status ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            {event.created_by
+                              ? `${event.created_by.first_name} ${event.created_by.last_name}`
+                              : "N/A"}
+                          </td>
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <div className="btn-group">
+                              {!isEventPast && (
+                                <button
+                                  className={`btn btn-sm ${
+                                    event.status ? "btn-danger" : "btn-success"
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    event.status
+                                      ? handleDeactivate(event.id)
+                                      : handleActivate(event.id);
+                                  }}
+                                >
+                                  {event.status ? "Deactivate" : "Activate"}
+                                </button>
+                              )}
+                              {isEventPast && (
+                                <button
+                                  className={`btn btn-sm btn-warning`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/events/past/${event.id}`);
+                                  }}
+                                >
+                                  Add Photos
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
