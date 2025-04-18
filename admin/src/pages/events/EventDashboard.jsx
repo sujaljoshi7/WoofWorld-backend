@@ -507,13 +507,10 @@ function EventDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {dashboardData?.events
+                      {ordersRes?.data
                         ?.map((event) => {
                           // Find orders for this event
-                          const eventOrders =
-                            dashboardData.orders?.filter(
-                              (order) => order.event_id === event.id
-                            ) || [];
+                          const eventOrders = ordersRes.data || [];
 
                           // Calculate total tickets and revenue
                           const ticketsSold = eventOrders.reduce(

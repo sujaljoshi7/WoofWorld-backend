@@ -31,6 +31,10 @@ class OrderItemsSerializer(serializers.ModelSerializer):
                 return ProductSerializer(product).data
             except Product.DoesNotExist:
                 return None
+        
+        return None
+    
+    def get_event(self, obj):
         if obj.type == 2:
             try:
                 event = Event.objects.get(id=obj.item)
