@@ -65,8 +65,8 @@ class GetSpecificPastEventImageView(APIView):
     
     def get(self, request, event_id):
         try:
-            event = get_object_or_404(Event, event_id=event_id)
-            serializer = PastEventImagesSerializer(event, many=True)  # Use your serializer directly
+            images = PastEventImages.objects.filter(event_id=event_id)
+            serializer = PastEventImagesSerializer(images, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
