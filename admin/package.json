@@ -14,6 +14,7 @@
     "@tiptap/starter-kit": "^2.11.5",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
+    "date-fns": "^4.1.0",
     "jodit-react": "^5.2.15",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

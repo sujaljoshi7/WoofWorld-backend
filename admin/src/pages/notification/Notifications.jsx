@@ -4,6 +4,7 @@ import api from "../../api";
 import Sidebar from "../../layout/Sidebar";
 import { useNavigate } from "react-router-dom";
 import useUser from "../../hooks/useUser";
+import { format, formatDistanceToNow, isToday, parseISO } from "date-fns";
 
 function Notifications() {
   const navigate = useNavigate();
@@ -243,12 +244,9 @@ function Notifications() {
 
       // Sort products by created_at and id in ascending order
       const sortedProducts = services.data.sort((a, b) => {
-        // First sort by creation date
-        const dateComparison = new Date(a.created_at) - new Date(b.created_at);
+        const dateComparison = new Date(b.timestamp) - new Date(a.timestamp); // Descending
         if (dateComparison !== 0) return dateComparison;
-
-        // If dates are equal, sort by ID
-        return a.id - b.id;
+        return b.id - a.id; // Descending by ID if same timestamp
       });
 
       // Update state
@@ -582,6 +580,9 @@ function Notifications() {
                     !notification.isRead ? "text-light" : ""
                   }`}
                   onClick={() => markAsRead(notification.id)}
+                  style={{
+                    cursor: "pointer",
+                  }}
                 >
                   <div className="d-flex align-items-start w-100">
                     <button
@@ -611,7 +612,14 @@ function Notifications() {
                           {notification.category}
                         </span>
                         <small className="text-muted">
-                          {notification.timestamp}
+                          {(() => {
+                            const parsedDate = parseISO(notification.timestamp);
+                            return isToday(parsedDate)
+                              ? `${formatDistanceToNow(parsedDate, {
+                                  addSuffix: true,
+                                })}`
+                              : format(parsedDate, "MMM d, yyyy 'at' h:mm a");
+                          })()}
                         </small>
                       </div>
                       <p

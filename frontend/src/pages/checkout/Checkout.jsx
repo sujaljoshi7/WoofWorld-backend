@@ -147,8 +147,15 @@ const Checkout = () => {
 
             if (paymentSuccessResponse.status === 201) {
               localStorage.setItem("order_id", order_id);
-              navigate("/orderplaced");
-              // Optionally, navigate to order confirmation page or clear cart
+              try {
+                const res = await api.post(`/api/notifications/`, {
+                  message: `You have received a new order ${order_id} and is waiting for confirmation`,
+                  category: "Orders",
+                });
+                navigate("/orderplaced");
+              } catch (error) {
+                navigate("/orderplaced");
+              }
             } else {
               alert("Failed to place order after payment.");
             }
