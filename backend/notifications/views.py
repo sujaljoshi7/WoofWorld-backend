@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 
 
-class ProductView(APIView):
+class NotificationView(APIView):
 
     def get_permissions(self):
         if self.request.method == 'GET':
