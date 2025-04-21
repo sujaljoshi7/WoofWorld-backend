@@ -15,214 +15,260 @@ function Notifications() {
   const [currentPage, setCurrentPage] = useState(1);
   const [notificationsPerPage] = useState(10);
   const [dashboardData, setDashboardData] = useState(null);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   // Sample notifications data with categories - expanded to more than 10 for pagination testing
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message:
-        "We're pleased to inform you that a new customer has registered! Please follow up promptly by contacting.",
-      timestamp: "Just Now",
-      isStarred: false,
-      category: "Adoption",
-      isRead: false,
-    },
-    {
-      id: 2,
-      message:
-        "Hello Sales Marketing Team, we have a special offer for our customers! Enjoy a 20% discount on selected items.",
-      timestamp: "30 min ago",
-      isStarred: true,
-      category: "Event",
-      isRead: true,
-    },
-    {
-      id: 3,
-      message:
-        "Reminder to achieve this month's sales target. Currently, we've reached 70% of our goal.",
-      timestamp: "2 days ago",
-      isStarred: false,
-      category: "Service",
-      isRead: true,
-    },
-    {
-      id: 4,
-      message: "New order #5782 has been placed and is pending approval.",
-      timestamp: "3 hours ago",
-      isStarred: false,
-      category: "Orders",
-      isRead: false,
-    },
-    {
-      id: 5,
-      message: "Customer support request #2891 requires immediate attention.",
-      timestamp: "1 day ago",
-      isStarred: false,
-      category: "Contact",
-      isRead: false,
-    },
-    {
-      id: 6,
-      message:
-        "Quarterly performance review meeting scheduled for next Monday at 10 AM.",
-      timestamp: "4 days ago",
-      isStarred: true,
-      category: "Event",
-      isRead: true,
-    },
-    {
-      id: 7,
-      message:
-        "System maintenance scheduled for tonight at 2 AM. Services will be temporarily unavailable.",
-      timestamp: "5 hours ago",
-      isStarred: false,
-      category: "Service",
-      isRead: false,
-    },
-    {
-      id: 8,
-      message:
-        "Product inventory for SKU-2367 is running low. Consider restocking soon.",
-      timestamp: "2 days ago",
-      isStarred: false,
-      category: "Orders",
-      isRead: true,
-    },
-    {
-      id: 9,
-      message:
-        "New feature launch: Customer feedback portal is now live. Share with your clients!",
-      timestamp: "3 days ago",
-      isStarred: true,
-      category: "Adoption",
-      isRead: false,
-    },
-    {
-      id: 10,
-      message:
-        "Team meeting rescheduled to Thursday at 2 PM. Please adjust your calendars accordingly.",
-      timestamp: "1 day ago",
-      isStarred: false,
-      category: "Event",
-      isRead: true,
-    },
-    {
-      id: 11,
-      message:
-        "Customer John Doe has submitted a complaint about recent order #6721.",
-      timestamp: "4 hours ago",
-      isStarred: false,
-      category: "Contact",
-      isRead: false,
-    },
-    {
-      id: 12,
-      message:
-        "API integration with third-party service is now complete. Documentation available in the developer portal.",
-      timestamp: "2 days ago",
-      isStarred: false,
-      category: "Service",
-      isRead: true,
-    },
-    {
-      id: 13,
-      message:
-        "New user registration from marketing campaign has increased by 25% this week.",
-      timestamp: "12 hours ago",
-      isStarred: false,
-      category: "Adoption",
-      isRead: true,
-    },
-    {
-      id: 14,
-      message:
-        "Bulk order #7823 requires verification before processing. Value exceeds $5,000.",
-      timestamp: "6 hours ago",
-      isStarred: true,
-      category: "Orders",
-      isRead: false,
-    },
-    {
-      id: 15,
-      message:
-        "Platform security audit scheduled for next week. Please ensure all documentation is up to date.",
-      timestamp: "2 days ago",
-      isStarred: false,
-      category: "Service",
-      isRead: true,
-    },
-    {
-      id: 16,
-      message:
-        "VIP customer Sarah Williams has requested a product demo. Please schedule within 48 hours.",
-      timestamp: "1 day ago",
-      isStarred: true,
-      category: "Contact",
-      isRead: false,
-    },
-    {
-      id: 17,
-      message:
-        "Monthly revenue report is ready for review. Sales exceeded targets by 12%.",
-      timestamp: "5 hours ago",
-      isStarred: false,
-      category: "Event",
-      isRead: true,
-    },
-    {
-      id: 18,
-      message:
-        "New onboarding materials published. Share with recent customers.",
-      timestamp: "3 days ago",
-      isStarred: false,
-      category: "Adoption",
-      isRead: true,
-    },
-    {
-      id: 19,
-      message:
-        "Shipping partner has reported delays. Some orders may be affected.",
-      timestamp: "8 hours ago",
-      isStarred: false,
-      category: "Orders",
-      isRead: false,
-    },
-    {
-      id: 20,
-      message: "Product training webinar scheduled for next Tuesday at 1 PM.",
-      timestamp: "4 days ago",
-      isStarred: false,
-      category: "Event",
-      isRead: true,
-    },
-    {
-      id: 21,
-      message:
-        "Customer feedback survey results are now available for Q1 2025.",
-      timestamp: "1 day ago",
-      isStarred: false,
-      category: "Service",
-      isRead: true,
-    },
-    {
-      id: 22,
-      message:
-        "Emergency maintenance required on server cluster B. Scheduled for tonight.",
-      timestamp: "2 hours ago",
-      isStarred: true,
-      category: "Service",
-      isRead: false,
-    },
-    {
-      id: 23,
-      message:
-        "New product catalog has been published. Update your sales materials.",
-      timestamp: "2 days ago",
-      isStarred: false,
-      category: "Adoption",
-      isRead: true,
-    },
-  ]);
+  // const [notifications, setNotifications] = useState([
+  //   {
+  //     id: 1,
+  //     message:
+  //       "We're pleased to inform you that a new customer has registered! Please follow up promptly by contacting.",
+  //     timestamp: "Just Now",
+  //     isStarred: false,
+  //     category: "Adoption",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     message:
+  //       "Hello Sales Marketing Team, we have a special offer for our customers! Enjoy a 20% discount on selected items.",
+  //     timestamp: "30 min ago",
+  //     isStarred: true,
+  //     category: "Event",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 3,
+  //     message:
+  //       "Reminder to achieve this month's sales target. Currently, we've reached 70% of our goal.",
+  //     timestamp: "2 days ago",
+  //     isStarred: false,
+  //     category: "Service",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 4,
+  //     message: "New order #5782 has been placed and is pending approval.",
+  //     timestamp: "3 hours ago",
+  //     isStarred: false,
+  //     category: "Orders",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 5,
+  //     message: "Customer support request #2891 requires immediate attention.",
+  //     timestamp: "1 day ago",
+  //     isStarred: false,
+  //     category: "Contact",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 6,
+  //     message:
+  //       "Quarterly performance review meeting scheduled for next Monday at 10 AM.",
+  //     timestamp: "4 days ago",
+  //     isStarred: true,
+  //     category: "Event",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 7,
+  //     message:
+  //       "System maintenance scheduled for tonight at 2 AM. Services will be temporarily unavailable.",
+  //     timestamp: "5 hours ago",
+  //     isStarred: false,
+  //     category: "Service",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 8,
+  //     message:
+  //       "Product inventory for SKU-2367 is running low. Consider restocking soon.",
+  //     timestamp: "2 days ago",
+  //     isStarred: false,
+  //     category: "Orders",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 9,
+  //     message:
+  //       "New feature launch: Customer feedback portal is now live. Share with your clients!",
+  //     timestamp: "3 days ago",
+  //     isStarred: true,
+  //     category: "Adoption",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 10,
+  //     message:
+  //       "Team meeting rescheduled to Thursday at 2 PM. Please adjust your calendars accordingly.",
+  //     timestamp: "1 day ago",
+  //     isStarred: false,
+  //     category: "Event",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 11,
+  //     message:
+  //       "Customer John Doe has submitted a complaint about recent order #6721.",
+  //     timestamp: "4 hours ago",
+  //     isStarred: false,
+  //     category: "Contact",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 12,
+  //     message:
+  //       "API integration with third-party service is now complete. Documentation available in the developer portal.",
+  //     timestamp: "2 days ago",
+  //     isStarred: false,
+  //     category: "Service",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 13,
+  //     message:
+  //       "New user registration from marketing campaign has increased by 25% this week.",
+  //     timestamp: "12 hours ago",
+  //     isStarred: false,
+  //     category: "Adoption",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 14,
+  //     message:
+  //       "Bulk order #7823 requires verification before processing. Value exceeds $5,000.",
+  //     timestamp: "6 hours ago",
+  //     isStarred: true,
+  //     category: "Orders",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 15,
+  //     message:
+  //       "Platform security audit scheduled for next week. Please ensure all documentation is up to date.",
+  //     timestamp: "2 days ago",
+  //     isStarred: false,
+  //     category: "Service",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 16,
+  //     message:
+  //       "VIP customer Sarah Williams has requested a product demo. Please schedule within 48 hours.",
+  //     timestamp: "1 day ago",
+  //     isStarred: true,
+  //     category: "Contact",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 17,
+  //     message:
+  //       "Monthly revenue report is ready for review. Sales exceeded targets by 12%.",
+  //     timestamp: "5 hours ago",
+  //     isStarred: false,
+  //     category: "Event",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 18,
+  //     message:
+  //       "New onboarding materials published. Share with recent customers.",
+  //     timestamp: "3 days ago",
+  //     isStarred: false,
+  //     category: "Adoption",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 19,
+  //     message:
+  //       "Shipping partner has reported delays. Some orders may be affected.",
+  //     timestamp: "8 hours ago",
+  //     isStarred: false,
+  //     category: "Orders",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 20,
+  //     message: "Product training webinar scheduled for next Tuesday at 1 PM.",
+  //     timestamp: "4 days ago",
+  //     isStarred: false,
+  //     category: "Event",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 21,
+  //     message:
+  //       "Customer feedback survey results are now available for Q1 2025.",
+  //     timestamp: "1 day ago",
+  //     isStarred: false,
+  //     category: "Service",
+  //     isRead: true,
+  //   },
+  //   {
+  //     id: 22,
+  //     message:
+  //       "Emergency maintenance required on server cluster B. Scheduled for tonight.",
+  //     timestamp: "2 hours ago",
+  //     isStarred: true,
+  //     category: "Service",
+  //     isRead: false,
+  //   },
+  //   {
+  //     id: 23,
+  //     message:
+  //       "New product catalog has been published. Update your sales materials.",
+  //     timestamp: "2 days ago",
+  //     isStarred: false,
+  //     category: "Adoption",
+  //     isRead: true,
+  //   },
+  // ]);
+  const [notifications, setNotifications] = useState([]);
+
+  const fetchProducts = async () => {
+    setIsLoadingProducts(true);
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      console.error("No token found!");
+      setIsLoadingUser(false);
+      return;
+    }
+    try {
+      // Fetch user details independently
+      const servicesRes = api.get("/api/notifications/");
+
+      // Wait for both requests to complete independently
+      const [services] = await Promise.all([servicesRes]);
+
+      // Sort products by created_at and id in ascending order
+      const sortedProducts = services.data.sort((a, b) => {
+        // First sort by creation date
+        const dateComparison = new Date(a.created_at) - new Date(b.created_at);
+        if (dateComparison !== 0) return dateComparison;
+
+        // If dates are equal, sort by ID
+        return a.id - b.id;
+      });
+
+      // Update state
+      setNotifications(sortedProducts);
+      setFilteredData(sortedProducts);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        console.warn("Access token expired, refreshing...");
+
+        const refreshed = await handleTokenRefresh();
+        if (refreshed) {
+          return fetchProducts(); // Retry after refreshing
+        }
+      } else {
+        console.error("Failed to fetch user data:", error);
+      }
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
 
   const handleSidebarCollapse = (collapsed) => {
     setIsSidebarCollapsed(collapsed);
@@ -303,6 +349,10 @@ function Notifications() {
     Event: notifications.filter((n) => n.category === "Event").length,
     Service: notifications.filter((n) => n.category === "Service").length,
   };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleTokenRefresh = async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN);

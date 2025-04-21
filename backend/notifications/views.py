@@ -30,4 +30,21 @@ class NotificationView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def patch(self, request, **kwargs):
+        id = kwargs.get("id")
+        try:
+            notification = Notification.objects.get(id=id)
+            data = request.data.copy()
+            data['is_read'] = True
+
+            serializer = NotificationSerializer(notification, data=data, partial=True, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Notification.DoesNotExist:
+            return Response({"error": "Notification not found not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+    
 
