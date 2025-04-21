@@ -222,7 +222,7 @@ const PastEventImages = ({ route, method }) => {
         }
       }
 
-      await api.post("/api/events/past-event-images/", {
+      await api.patch("/api/events/past-event-images/", {
         event_id: selectedEvent,
         images: uploadedImageUrls,
       });

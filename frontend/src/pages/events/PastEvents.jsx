@@ -129,15 +129,15 @@ function PastEvents() {
             {allEvents.length > 0 ? (
               allEvents.map((event) => (
                 <div
-                  className={`p-0 mt-2 event-card ${
-                    new Date(event.date) < new Date() ? "grayscale" : ""
-                  }`}
+                  className={`p-0 mt-2 event-card`}
                   key={event.id}
+                  onClick={() => navigate("/events/past/" + event.id)}
+                  style={{
+                    cursor: "pointer",
+                    filter: "grayscale(100%)",
+                  }}
                 >
-                  <div
-                    className="card border-0 position-relative"
-                    style={{ filter: "grayscale(100%)" }}
-                  >
+                  <div className="card border-0 position-relative event-card-inner">
                     <img
                       src={event.image}
                       className="card-img-top"

@@ -27,6 +27,7 @@ import ForgotPassword from "./pages/auth/forgot-password/ForgotPassword";
 import SearchResults from "./pages/search/SearchResults";
 import Services from "./pages/services/Services";
 import ServiceDetails from "./pages/services/ServiceDetails";
+import PastEventDetails from "./pages/events/PastEventDetails";
 
 function Logout() {
   localStorage.clear();
@@ -75,6 +76,7 @@ function App() {
         <Route path="/pass" element={<EventPass />} />
         <Route path="/events/upcoming" element={<UpcomingEvents />} />
         <Route path="/events/past" element={<PastEvents />} />
+        <Route path="/events/past/:id" element={<PastEventDetails />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/adoption" element={<AllDogs />} />
         <Route path="/shop" element={<Shop />} />

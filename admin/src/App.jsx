@@ -53,6 +53,7 @@ import OrderDetails from "./pages/orders/order-details";
 import ServiceForm from "./components/ServiceForm";
 import EventDashboard from "./pages/events/EventDashboard";
 import AddPastEventImages from "./pages/events/AddPastEventsImages";
+import Notifications from "./pages/notification/Notifications";
 
 function Logout() {
   localStorage.clear();
@@ -68,6 +69,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route
+          path="/notification"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/"
           element={

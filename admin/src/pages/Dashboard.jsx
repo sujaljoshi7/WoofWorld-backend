@@ -5,7 +5,10 @@ import Sidebar from "../layout/Sidebar";
 import user_img from "../assets/images/user.png";
 import blog_img from "../assets/images/blog.png";
 import event_img from "../assets/images/event.png";
-import webinar_img from "../assets/images/puppy.png";
+import order from "../assets/images/order.png";
+import notification from "../assets/images/notification.png";
+import sales from "../assets/images/sales.png";
+import box from "../assets/images/box.png";
 import { useNavigate } from "react-router-dom";
 import {
   PieChart,
@@ -221,6 +224,7 @@ function Dashboard() {
       >
         <div className="dashboard-header mb-4 mb-md-5">
           <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            {/* Left Section: Welcome Message */}
             <div className="mb-3 mb-md-0">
               <h1
                 className="fw-bold text-primary mb-2"
@@ -239,20 +243,36 @@ function Dashboard() {
                 Here's what's happening with your platform today
               </p>
             </div>
-            <div className="bg-primary bg-opacity-10 rounded-pill px-3 px-md-4 py-2">
-              <span
-                className="text-primary fw-medium"
-                style={{
-                  fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem",
-                }}
-              >
-                {new Date().toLocaleDateString("en-US", {
-                  weekday: window.innerWidth < 576 ? "short" : "long",
-                  year: "numeric",
-                  month: window.innerWidth < 576 ? "short" : "long",
-                  day: "numeric",
-                })}
-              </span>
+
+            {/* Right Section: Notification Above Date */}
+            <div className="d-flex flex-column align-items-end gap-2">
+              {/* Notification Bell */}
+              <div className="position-relative">
+                <img src={notification} alt="Notifications" height={30} />
+                <span
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style={{ fontSize: "0.6rem" }}
+                >
+                  3 {/* You can make this dynamic */}
+                </span>
+              </div>
+
+              {/* Date Display */}
+              <div className="bg-primary bg-opacity-10 rounded-pill px-3 px-md-4 py-2">
+                <span
+                  className="text-primary fw-medium"
+                  style={{
+                    fontSize: window.innerWidth < 576 ? "0.8rem" : "1rem",
+                  }}
+                >
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: window.innerWidth < 576 ? "short" : "long",
+                    year: "numeric",
+                    month: window.innerWidth < 576 ? "short" : "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -261,27 +281,27 @@ function Dashboard() {
           <DashboardCard
             title="Total Orders"
             count={totalOrdersCount}
-            image={webinar_img}
+            image={order}
             onClick={handleRowClick}
             color="#4e73df"
-            iconBg="#e3e6f0"
+            iconBg="#4e73df"
           />
 
           <DashboardCard
             title="Total Revenue"
             count={totalRevenueCount}
-            image={blog_img}
+            image={sales}
             onClick={handleRowClick}
             color="#1cc88a"
-            iconBg="#e3f8f0"
+            iconBg="#1cc88a"
           />
           <DashboardCard
             title="Total Products"
             count={productsCount}
-            image={event_img}
+            image={box}
             onClick={handleRowClick}
             color="#36b9cc"
-            iconBg="#e3f6f8"
+            iconBg="#36b9cc"
           />
           <DashboardCard
             title="Total Users"
@@ -289,7 +309,7 @@ function Dashboard() {
             image={user_img}
             onClick={handleRowClick}
             color="#f6c23e"
-            iconBg="#f8f0e3"
+            iconBg="#f6c23e"
           />
         </div>
 
