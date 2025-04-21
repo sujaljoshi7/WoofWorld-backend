@@ -18,7 +18,7 @@ class NotificationView(APIView):
         return [IsAuthenticated()]
 
     def get(self, request):
-        notifications = Notification.objects.select_related("timestamp").all()
+        notifications = Notification.objects.all()
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
