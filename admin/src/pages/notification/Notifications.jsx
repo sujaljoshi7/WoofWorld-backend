@@ -27,7 +27,7 @@ function Notifications() {
   //     timestamp: "Just Now",
   //     isStarred: false,
   //     category: "Adoption",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 2,
@@ -36,7 +36,7 @@ function Notifications() {
   //     timestamp: "30 min ago",
   //     isStarred: true,
   //     category: "Event",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 3,
@@ -45,7 +45,7 @@ function Notifications() {
   //     timestamp: "2 days ago",
   //     isStarred: false,
   //     category: "Service",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 4,
@@ -53,7 +53,7 @@ function Notifications() {
   //     timestamp: "3 hours ago",
   //     isStarred: false,
   //     category: "Orders",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 5,
@@ -61,7 +61,7 @@ function Notifications() {
   //     timestamp: "1 day ago",
   //     isStarred: false,
   //     category: "Contact",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 6,
@@ -70,7 +70,7 @@ function Notifications() {
   //     timestamp: "4 days ago",
   //     isStarred: true,
   //     category: "Event",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 7,
@@ -79,7 +79,7 @@ function Notifications() {
   //     timestamp: "5 hours ago",
   //     isStarred: false,
   //     category: "Service",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 8,
@@ -88,7 +88,7 @@ function Notifications() {
   //     timestamp: "2 days ago",
   //     isStarred: false,
   //     category: "Orders",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 9,
@@ -97,7 +97,7 @@ function Notifications() {
   //     timestamp: "3 days ago",
   //     isStarred: true,
   //     category: "Adoption",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 10,
@@ -106,7 +106,7 @@ function Notifications() {
   //     timestamp: "1 day ago",
   //     isStarred: false,
   //     category: "Event",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 11,
@@ -115,7 +115,7 @@ function Notifications() {
   //     timestamp: "4 hours ago",
   //     isStarred: false,
   //     category: "Contact",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 12,
@@ -124,7 +124,7 @@ function Notifications() {
   //     timestamp: "2 days ago",
   //     isStarred: false,
   //     category: "Service",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 13,
@@ -133,7 +133,7 @@ function Notifications() {
   //     timestamp: "12 hours ago",
   //     isStarred: false,
   //     category: "Adoption",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 14,
@@ -142,7 +142,7 @@ function Notifications() {
   //     timestamp: "6 hours ago",
   //     isStarred: true,
   //     category: "Orders",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 15,
@@ -151,7 +151,7 @@ function Notifications() {
   //     timestamp: "2 days ago",
   //     isStarred: false,
   //     category: "Service",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 16,
@@ -160,7 +160,7 @@ function Notifications() {
   //     timestamp: "1 day ago",
   //     isStarred: true,
   //     category: "Contact",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 17,
@@ -169,7 +169,7 @@ function Notifications() {
   //     timestamp: "5 hours ago",
   //     isStarred: false,
   //     category: "Event",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 18,
@@ -178,7 +178,7 @@ function Notifications() {
   //     timestamp: "3 days ago",
   //     isStarred: false,
   //     category: "Adoption",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 19,
@@ -187,7 +187,7 @@ function Notifications() {
   //     timestamp: "8 hours ago",
   //     isStarred: false,
   //     category: "Orders",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 20,
@@ -195,7 +195,7 @@ function Notifications() {
   //     timestamp: "4 days ago",
   //     isStarred: false,
   //     category: "Event",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 21,
@@ -204,7 +204,7 @@ function Notifications() {
   //     timestamp: "1 day ago",
   //     isStarred: false,
   //     category: "Service",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   //   {
   //     id: 22,
@@ -213,7 +213,7 @@ function Notifications() {
   //     timestamp: "2 hours ago",
   //     isStarred: true,
   //     category: "Service",
-  //     isRead: false,
+  //     is_read: false,
   //   },
   //   {
   //     id: 23,
@@ -222,7 +222,7 @@ function Notifications() {
   //     timestamp: "2 days ago",
   //     isStarred: false,
   //     category: "Adoption",
-  //     isRead: true,
+  //     is_read: true,
   //   },
   // ]);
   const [notifications, setNotifications] = useState([]);
@@ -286,10 +286,14 @@ function Notifications() {
     setNotifications(
       notifications.map((notification) =>
         notification.id === id
-          ? { ...notification, isRead: true }
+          ? { ...notification, is_read: true }
           : notification
       )
     );
+
+    api.patch(`/api/notifications/${id}/`, { is_read: true }).catch((error) => {
+      console.error("Failed to mark notification as read:", error);
+    });
   };
 
   const handleSearchChange = (e) => {
@@ -311,7 +315,7 @@ function Notifications() {
     if (activeCategory === "All") {
       return matchesSearch;
     } else if (activeCategory === "Unread") {
-      return matchesSearch && !notification.isRead;
+      return matchesSearch && !notification.is_read;
     } else if (activeCategory === "Starred") {
       return matchesSearch && notification.isStarred;
     } else {
@@ -340,7 +344,7 @@ function Notifications() {
   const counts = {
     All: notifications.length,
     Starred: notifications.filter((n) => n.isStarred).length,
-    Unread: notifications.filter((n) => !n.isRead).length,
+    Unread: notifications.filter((n) => !n.is_read).length,
     Orders: notifications.filter((n) => n.category === "Orders").length,
     Adoption: notifications.filter((n) => n.category === "Adoption").length,
     Contact: notifications.filter((n) => n.category === "Contact").length,
@@ -375,7 +379,7 @@ function Notifications() {
 
   const handleMarkAllAsRead = () => {
     setNotifications(
-      notifications.map((notification) => ({ ...notification, isRead: true }))
+      notifications.map((notification) => ({ ...notification, is_read: true }))
     );
   };
 
@@ -577,7 +581,7 @@ function Notifications() {
                 <div
                   key={notification.id}
                   className={`list-group-item list-group-item-action d-flex align-items-start p-3 ${
-                    !notification.isRead ? "text-light" : ""
+                    !notification.is_read ? "text-light" : ""
                   }`}
                   onClick={() => markAsRead(notification.id)}
                   style={{
@@ -624,7 +628,7 @@ function Notifications() {
                       </div>
                       <p
                         className={`mb-0 ${
-                          !notification.isRead ? "fw-semibold" : ""
+                          !notification.is_read ? "fw-semibold" : ""
                         }`}
                       >
                         {notification.message}

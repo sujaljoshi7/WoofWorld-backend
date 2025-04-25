@@ -33,6 +33,7 @@ function Dashboard() {
   const [totalOrdersCount, setTotalOrdersCount] = useState(0);
   const [location, setLocation] = useState({ country: "", city: "" });
   const [currentTime, setCurrentTime] = useState("");
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -61,6 +62,7 @@ function Dashboard() {
     };
 
     fetchDashboardData();
+    countUnreadNotifications();
   }, []);
 
   // Transform orders_by_status data for pie chart
@@ -162,6 +164,18 @@ function Dashboard() {
     }
   };
 
+  const countUnreadNotifications = async () => {
+    try {
+      const response = await api.get("/api/notifications/");
+      const unreadNotifications = response.data.filter(
+        (notification) => notification.is_read === false
+      );
+      setUnreadNotificationCount(unreadNotifications.length);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
   const handleTokenRefresh = async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN);
     if (!refreshToken) {
@@ -246,17 +260,19 @@ function Dashboard() {
 
             {/* Right Section: Notification Above Date */}
             <div className="d-flex flex-column align-items-end gap-2">
-              {/* Notification Bell */}
-              <div className="position-relative">
+              <div
+                className="position-relative"
+                onClick={() => navigate("/notification")}
+                style={{ cursor: "pointer" }}
+              >
                 <img src={notification} alt="Notifications" height={30} />
                 <span
                   className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                   style={{ fontSize: "0.6rem" }}
                 >
-                  3 {/* You can make this dynamic */}
+                  {unreadNotificationCount || 0}
                 </span>
               </div>
-
               {/* Date Display */}
               <div className="bg-primary bg-opacity-10 rounded-pill px-3 px-md-4 py-2">
                 <span
