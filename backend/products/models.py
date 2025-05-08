@@ -30,3 +30,7 @@ class Product(models.Model):
     show_on_homepage = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=datetime.now(), editable=False)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='product_user', default="")
+
+class ProductImages(models.Model):
+    Product_id = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='prroduct_images', default="")
+    image = models.URLField(max_length=500)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Product
+from .models import Category, Product, ProductImages
 from django.utils import timezone
 from user.serializers import UserSerializer
 from django.contrib.auth.models import User
@@ -17,6 +17,11 @@ class ProductCategorySerializer(serializers.ModelSerializer):
         if Category.objects.filter(name__iexact=value).exists():  # Case-insensitive check
             raise serializers.ValidationError("Name already exists. Please use a different name.")
         return value
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImages
+        fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only = True)

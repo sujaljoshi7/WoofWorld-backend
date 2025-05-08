@@ -66,6 +66,7 @@ function Dashboard() {
   }, []);
 
   // Transform orders_by_status data for pie chart
+  console.log(dashboardData?.orders_by_status);
   const pieChartData =
     dashboardData?.orders_by_status?.map((item) => {
       return {
@@ -198,7 +199,8 @@ function Dashboard() {
   };
 
   const handleRowClick = (name) => {
-    navigate(`/${name}`);
+    // navigate(`/${name}`);
+    console.log(name);
   };
 
   useEffect(() => {

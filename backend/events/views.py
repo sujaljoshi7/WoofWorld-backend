@@ -39,23 +39,6 @@ class PastEventImageView(APIView):
         images = PastEventImages.objects.all()
         serializer = PastEventImagesSerializer(images, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    # def post(self, request):
-    #     event_id = request.data.get('event_id')
-    #     images = request.data.get('images')  # Should be a list of URLs
-
-    #     if not event_id or not images:
-    #         return Response({'error': 'event_id and images are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     if not isinstance(images, list):
-    #         return Response({'error': 'images should be a list of image URLs.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     created_images = []
-    #     for image_url in images:
-    #         instance = PastEventImages.objects.create(event_id_id=event_id, image=image_url)
-    #         created_images.append(PastEventImagesSerializer(instance).data)
-
-    #     return Response({'message': 'Images uploaded successfully.', 'data': created_images}, status=status.HTTP_201_CREATED)
 
     def patch(self, request):
         event_id = request.data.get("event_id")

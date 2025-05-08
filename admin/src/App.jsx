@@ -70,6 +70,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route
+          path="/invoice/:id"
+          element={
+            <ProtectedRoute>
+              <ViewUser />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/notification"
           element={
             <ProtectedRoute>

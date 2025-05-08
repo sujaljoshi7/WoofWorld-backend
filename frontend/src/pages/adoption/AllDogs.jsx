@@ -10,6 +10,9 @@ const AllDogs = () => {
   const BASE_URL = import.meta.env.VITE_API_URL;
   const [fadeOut, setFadeOut] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [dogName, setDogName] = useState("");
   const [selectedBreeds, setSelectedBreeds] = useState([]);
   const [selectedAges, setSelectedAges] = useState([]);
   const [selectedSizes, setSelectedSizes] = useState([]);
@@ -29,6 +32,55 @@ const AllDogs = () => {
   const [dogs, setDogs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    petInterest: "",
+    housing: "house",
+    experience: "",
+    otherPets: "",
+    agreeTerms: false,
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleToggleForm = (name) => {
+    setDogName(name);
+    // Close the modal using Bootstrap's modal API
+    setActiveDog(null);
+    setShowForm(!showForm);
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+    setSubmitted(true);
+    setTimeout(() => {
+      setShowForm(false);
+      setSubmitted(false);
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        petInterest: "",
+        housing: "house",
+        experience: "",
+        otherPets: "",
+        agreeTerms: false,
+      });
+    }, 3000);
+  };
 
   // Fetch dogs data
   useEffect(() => {
@@ -286,6 +338,7 @@ const AllDogs = () => {
   };
 
   const handleViewDetails = async (dog) => {
+    setShowForm(false);
     setActiveDog(dog);
     // try {
     //   // Increment views when viewing details
@@ -967,11 +1020,155 @@ const AllDogs = () => {
                   >
                     Close
                   </button>
-                  <button type="button" className="btn btn-dark">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleForm(activeDog.name)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#formModal"
+                    className="btn btn-dark"
+                  >
                     Apply to Adopt
                   </button>
                 </div>
               </>
+            )}
+          </div>
+        </div>
+      </div>
+      <div
+        className="modal fade"
+        id="formModal"
+        tabIndex="-1"
+        aria-labelledby="dogModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            {showForm && (
+              <div
+                className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  className="bg-white shadow-xl p-6 w-full max-w-2xl max-h-screen overflow-y-auto rounded-lg"
+                  onClick={(e) => e.stopPropagation()} // Prevent event bubbling to parent
+                >
+                  {submitted ? (
+                    <div className="text-center py-8">
+                      <h2 className="text-2xl font-bold text-green-600 mb-4">
+                        Application Submitted!
+                      </h2>
+                      <p className="text-gray-700">
+                        Thank you for your interest in adoption. We'll review
+                        your application and contact you soon.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="p-4">
+                        <div className="flex justify-between items-center mb-6">
+                          <h2 className="text-2xl font-bold text-gray-800">
+                            Dog Adoption Application
+                          </h2>
+                        </div>
+                        <hr className="mb-6" />
+
+                        <form>
+                          <div className="row">
+                            <div className="col-6">
+                              <div className="mb-3">
+                                <label
+                                  htmlFor="fullname"
+                                  className="form-label"
+                                >
+                                  Full Name
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  id="fullname"
+                                />
+                              </div>
+                            </div>
+                            <div className="col-6">
+                              <div className="mb-3">
+                                <label htmlFor="email" className="form-label">
+                                  Email address
+                                </label>
+                                <input
+                                  type="email"
+                                  className="form-control"
+                                  id="email"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="col-6">
+                              <div className="mb-3">
+                                <label htmlFor="phone" className="form-label">
+                                  Phone
+                                </label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  id="phone"
+                                />
+                              </div>
+                            </div>
+                            <div className="col-6">
+                              <div className="mb-3">
+                                <label htmlFor="dog" className="form-label">
+                                  Dog Name
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={dogName}
+                                  id="dog"
+                                  readOnly
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="col-6">
+                              <div className="mb-3">
+                                <label htmlFor="city" className="form-label">
+                                  City
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  id="city"
+                                />
+                              </div>
+                            </div>
+                            <div className="col-6">
+                              <div className="mb-3">
+                                <label htmlFor="state" className="form-label">
+                                  State
+                                </label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  id="state"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            className="mt-3 btn btn-dark w-100 p-2"
+                          >
+                            Submit
+                          </button>
+                        </form>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>

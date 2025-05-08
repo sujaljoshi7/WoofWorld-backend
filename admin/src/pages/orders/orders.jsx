@@ -182,8 +182,9 @@ function ViewOrders() {
       1: { class: "bg-warning", text: "Pending" },
       2: { class: "bg-info", text: "Processing" },
       3: { class: "bg-primary", text: "Shipped" },
-      4: { class: "bg-success", text: "Delivered" },
-      5: { class: "bg-danger", text: "Cancelled" },
+      4: { class: "bg-success", text: "Out for Delivery" },
+      5: { class: "bg-success", text: "Delivered" },
+      6: { class: "bg-danger", text: "Cancelled" },
     };
     return statusMap[status] || { class: "bg-secondary", text: "Unknown" };
   };
@@ -360,8 +361,9 @@ function ViewOrders() {
                                 <option value={1}>Pending</option>
                                 <option value={2}>Processing</option>
                                 <option value={3}>Shipped</option>
-                                <option value={4}>Delivered</option>
-                                <option value={5}>Cancelled</option>
+                                <option value={4}>Out for Delivery</option>
+                                <option value={5}>Delivered</option>
+                                <option value={6}>Cancelled</option>
                               </select>
                               {updatingOrderId === item.order.id && (
                                 <div className="position-absolute top-50 start-50 translate-middle">

@@ -64,6 +64,7 @@ def get_specific_user_data(request, user_id):
         "last_name": user.last_name,
         "email": user.email,
         "last_login": user.last_login,
+        "is_staff": user.is_staff,
     }
     return Response(data)
 
@@ -102,6 +103,17 @@ def get_logged_in_user_data(request):
     
     return Response(data)
 
+class SpecificAddressView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        """Retrieve the user's address."""
+        address = get_object_or_404(Address, user=id)
+        if address:
+            serializer = AddressSerializer(address)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"detail": "No address found"}, status=status.HTTP_404_NOT_FOUND)
+    
 
 class AddressView(APIView):
     permission_classes = [IsAuthenticated]
@@ -115,19 +127,15 @@ class AddressView(APIView):
         return Response({"detail": "No address found"}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
-        print("post")
         """Create an address only if the user doesn't have one."""
         user = request.user
         if Address.objects.filter(user=user).exists():
-            print("Here")
             return Response({"detail": "User already has an address. Please update it instead."}, 
                         status=status.HTTP_400_BAD_REQUEST)
 
         serializer = AddressSerializer(data=request.data)
-        print("YEs")
         if serializer.is_valid():
             # Use user instead of user_id
-            print("user")
             serializer.save(user=user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -137,7 +145,6 @@ class AddressView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request):
-        print("put")
         """Update the existing address if it exists."""
         user = request.user
         

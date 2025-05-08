@@ -142,13 +142,13 @@ DATABASES = {
      }
  }
 
-database_url = "postgresql://woofworld_user:WjeU3enY3DGWyO2Sp1OBL13LbVhy4g5j@dpg-cvnu8149c44c73fgmuug-a.oregon-postgres.render.com/woofworld"
+# database_url = "postgresql://woofworld_user:WjeU3enY3DGWyO2Sp1OBL13LbVhy4g5j@dpg-cvnu8149c44c73fgmuug-a.oregon-postgres.render.com/woofworld"
 # database_url = os.environ.get("DATABASE_URL")
-DATABASES = {
-    'default': dj_database_url.config(
-        default=(database_url)
-    )
-}
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=(database_url)
+#     )
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -178,7 +178,7 @@ TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

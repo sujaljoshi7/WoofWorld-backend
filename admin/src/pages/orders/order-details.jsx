@@ -110,97 +110,6 @@ function OrderDetails() {
     });
   };
 
-  const downloadInvoice = () => {
-    if (!order) return;
-
-    const doc = new jsPDF();
-    const orderItems = order.order_items || [];
-    const subtotal = order.order.total / 1.18;
-    const tax = order.order.total - subtotal;
-
-    // Add company logo and header
-    doc.setFontSize(20);
-    doc.text("WoofWorld", 20, 20);
-    doc.setFontSize(12);
-    doc.text("123 Pet Street, Bangalore, India", 20, 30);
-    doc.text("Phone: +91 9876543210 | Email: info@woofworld.com", 20, 37);
-
-    // Add invoice title
-    doc.setFontSize(16);
-    doc.text("INVOICE", 105, 50);
-
-    // Add order details
-    doc.setFontSize(12);
-    doc.text(`Invoice #: ${order.order.order_id}`, 20, 65);
-    doc.text(`Date: ${formatDate(order.order.created_at)}`, 20, 72);
-    doc.text(`Payment ID: ${order.order.payment_id}`, 20, 79);
-    doc.text(
-      `Payment Status: ${
-        order.order.payment_status === 1 ? "Paid" : "Pending"
-      }`,
-      20,
-      86
-    );
-
-    // Add customer details
-    doc.text("Bill To:", 120, 65);
-    doc.text(`User ID: ${order.order.user_id}`, 120, 72);
-
-    // Add table header
-    const tableColumn = ["Item", "Type", "Quantity", "Price", "Total"];
-    const tableRows = [];
-
-    // Add table rows
-    orderItems.forEach((item) => {
-      let itemName = "Unknown Item";
-      let itemPrice = 0;
-
-      if (item.type === 1 && item.product) {
-        itemName = item.product.name;
-        itemPrice = item.product.price;
-      } else if (item.type === 2) {
-        itemName = item.event_details.name;
-        itemPrice = item.event_details.price;
-      }
-
-      const itemTotal = itemPrice * item.quantity;
-      const itemType = item.type === 1 ? "Product" : "Ticket";
-
-      tableRows.push([
-        itemName,
-        itemType,
-        item.quantity,
-        `₹${itemPrice.toFixed(2)}`,
-        `₹${itemTotal.toFixed(2)}`,
-      ]);
-    });
-
-    // Generate table
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 100,
-      theme: "grid",
-      headStyles: { fillColor: [66, 139, 202] },
-      footStyles: { fillColor: [240, 240, 240] },
-      foot: [
-        ["", "", "", "Subtotal:", `₹${subtotal.toFixed(2)}`],
-        ["", "", "", "Tax (18%):", `₹${tax.toFixed(2)}`],
-        ["", "", "", "Delivery:", "Free"],
-        ["", "", "", "Total:", `₹${order.order.total.toFixed(2)}`],
-      ],
-    });
-
-    // Add footer
-    const pageHeight = doc.internal.pageSize.height;
-    doc.setFontSize(10);
-    doc.text("Thank you for your business!", 20, pageHeight - 30);
-    doc.text("WoofWorld - Your trusted pet care partner", 20, pageHeight - 25);
-
-    // Save the PDF
-    doc.save(`Invoice-${order.order.order_id}.pdf`);
-  };
-
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
@@ -319,7 +228,10 @@ function OrderDetails() {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h1 className="h3 mb-0">Order Details</h1>
           <div>
-            <button className="btn btn-success me-2" onClick={downloadInvoice}>
+            <button
+              className="btn btn-success me-2"
+              onClick={() => navigate(`/invoice/${orderId}`)}
+            >
               <i className="fas fa-file-download me-2"></i>Download Invoice
             </button>
             <button

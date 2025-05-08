@@ -45,7 +45,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ['id', 'address_line_1', 'address_line_2', 'city', 'state', 'country', 'postal_code', 'phone', 'name']
+        fields = "__all__"
 
     def validate(self, data):
         # You can add validation here if needed (e.g., making sure is_primary is unique for the user)

@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Category, Product
-from .serializers import ProductCategorySerializer, ProductSerializer
+from .models import Category, Product, ProductImages
+from .serializers import ProductCategorySerializer, ProductSerializer, ProductImageSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
@@ -68,6 +68,52 @@ class ProductView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Product.DoesNotExist:
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class ProductImageView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+    
+    def get(self, request):
+        images = ProductImages.objects.all()
+        serializer = ProductImageSerializer(images, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        product_id = request.data.get("product_id")
+        images = request.data.get("images")  # List of image URLs
+
+        if not product_id or not images:
+            return Response({'error': 'product_id and images are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not isinstance(images, list):
+            return Response({'error': 'images should be a list of image URLs.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete existing images for the event
+        ProductImages.objects.filter(product_id_id=product_id).delete()
+
+        # Add new images
+        created_images = []
+        for image_url in images:
+            instance = ProductImages.objects.create(product_id_id=product_id, image=image_url)
+            created_images.append(ProductImageSerializer(instance).data)
+
+        return Response({'message': 'Images updated successfully.', 'data': created_images}, status=status.HTTP_200_OK)
+
+class GetSpecificProductImageView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+    
+    def get(self, request, product_id):
+        try:
+            images = ProductImages.objects.filter(product_id=product_id)
+            serializer = ProductImageSerializer(images, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])  # Only authenticated users can deactivate users

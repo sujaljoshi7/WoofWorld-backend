@@ -14,6 +14,7 @@ class Breed(models.Model):
     created_at = models.DateTimeField(default=now, editable=False)
 
 class Dogs(models.Model):
+    dog_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     breed = models.ForeignKey(Breed, on_delete=models.CASCADE, related_name='dogs_breed')
     name = models.CharField(max_length=100)
     age = models.FloatField()

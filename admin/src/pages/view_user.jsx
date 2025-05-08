@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api";
 import Sidebar from "../layout/Sidebar";
@@ -10,9 +10,14 @@ import userImage from "../assets/images/user.png";
 
 function ViewUser() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user, isLoading } = useUser();
   const [viewUser, setViewUser] = useState(null);
+  const [userAddress, setUserAddress] = useState(null);
+  const [userOrders, setUserOrders] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [addressLoading, setAddressLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   const date_format = {
     year: "numeric",
@@ -21,6 +26,10 @@ function ViewUser() {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+  };
+
+  const handleRowClick = (orderId) => {
+    navigate(`/orders/${orderId}`);
   };
 
   useEffect(() => {
@@ -35,10 +44,39 @@ function ViewUser() {
       }
     };
 
+    const fetchUserAddresses = async () => {
+      try {
+        const response = await api.get(`api/user/address/${id}/`);
+        setUserAddress(response.data);
+      } catch (error) {
+        console.error("Error fetching user addresses:", error);
+      } finally {
+        setAddressLoading(false);
+      }
+    };
+
+    const fetchUserOrders = async () => {
+      try {
+        const response = await api.get(`api/order/all/`);
+        const filteredOrders = response.data
+          .filter((order) => order.order.user_id === 2)
+          .sort(
+            (a, b) =>
+              new Date(b.order.created_at) - new Date(a.order.created_at)
+          );
+        setUserOrders(filteredOrders);
+      } catch (error) {
+        console.error("Error fetching user orders:", error);
+      } finally {
+        setOrdersLoading(false);
+      }
+    };
     fetchUser();
+    fetchUserAddresses();
+    fetchUserOrders();
   }, [id]);
 
-  if (isLoading || loading) {
+  if (isLoading || loading || addressLoading || ordersLoading) {
     return (
       <div
         style={{
@@ -80,14 +118,32 @@ function ViewUser() {
                   className="avatar avatar-xl rounded-circle mx-auto position-relative"
                   style={{ marginTop: "-50px" }}
                 >
-                  <img
+                  {/* <img
                     className="avatar-img border border-white border-3"
                     src={userImage}
                     alt="Profile"
                     height={80}
                     width={80}
                     style={{ borderRadius: "50%" }}
-                  />
+                  /> */}
+                  <div
+                    className="avatar-img border border-white border-3"
+                    style={{
+                      borderRadius: "50%",
+                      height: "80px",
+                      width: "80px",
+                      backgroundColor: "#f8f9fa", // Light grey background for the avatar
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "32px", // optional for better visibility
+                      fontWeight: "bold", // optional
+                      color: "black", // optional for contrast
+                      userSelect: "none", // Prevent text selection
+                    }}
+                  >
+                    {viewUser.first_name.charAt(0).toUpperCase()}
+                  </div>
                 </div>
                 <div className="card-body text-center">
                   <h1 className="card-title fs-5">
@@ -111,55 +167,82 @@ function ViewUser() {
                     </li>
                     <li className="list-group-item d-flex align-items-center justify-content-between bg-body px-0">
                       <span className="text-body-secondary">Phone</span>
-                      <span>(202) 555-0126</span>
+                      <span>
+                        {userAddress.country === "IN" ? "+91" : ""}{" "}
+                        {userAddress.phone}
+                      </span>
                     </li>
                     <li className="list-group-item d-flex align-items-center justify-content-between bg-body px-0">
                       <span className="text-body-secondary">Location</span>
-                      <span>San Francisco, CA</span>
+                      <span>
+                        {userAddress.city}, {userAddress.state}
+                      </span>
                     </li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
-          <div className="col-12 col-lg-8">
-            <section class="mb-8">
-              <div class="d-flex align-items-center justify-content-between mb-5">
-                <h2 class="fs-5 mb-0">Recent orders</h2>
-                <div class="d-flex"></div>
-              </div>
+          {!viewUser.is_staff && (
+            <div className="col-12 col-lg-8">
+              <section className="mb-8">
+                <div className="d-flex align-items-center justify-content-between mb-5">
+                  <h2 className="fs-5 mb-0">Recent orders</h2>
+                  <div className="d-flex"></div>
+                </div>
 
-              <div class="table-responsive">
-                <table
-                  class="table table-hover mb-0 bg-transparent"
-                  style={{ backgroundColor: "transparent" }}
-                >
-                  <thead className="bg-transparent">
-                    <tr>
-                      <th className="p-3">ID</th>
-                      <th className="p-3">Product</th>
-                      <th className="p-3">Date</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="text-body-secondary p-3">#3456</td>
-                      <td className="p-3">Apple MacBook Pro</td>
-                      <td className="p-3">2021-08-12</td>
-                      <td className="p-3">
-                        <span className="badge bg-success-subtle text-success">
-                          Completed
-                        </span>
-                      </td>
-                      <td className="p-3">$2,499</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
+                <div className="table-responsive">
+                  <table
+                    className="table table-hover mb-0 bg-transparent"
+                    style={{ backgroundColor: "transparent" }}
+                  >
+                    <thead className="bg-transparent">
+                      <tr>
+                        <th className="p-3">ID</th>
+                        <th className="p-3">Total</th>
+                        <th className="p-3">Date</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userOrders.map((order) => (
+                        <tr
+                          key={order.order.id}
+                          onClick={() => handleRowClick(order.order.id)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td className="text-body-secondary p-3">
+                            {order.order.order_id}
+                          </td>
+                          <td className="p-3">₹ {order.order.total}</td>
+                          <td>
+                            {new Date(
+                              order.order.created_at
+                            ).toLocaleDateString(undefined, date_format)}
+                          </td>
+                          <td>
+                            {order.order.order_status === 1
+                              ? "Pending"
+                              : order.order.order_status === 2
+                              ? "Processing"
+                              : order.order.order_status === 3
+                              ? "Shipped"
+                              : order.order.order_status === 4
+                              ? "Out for Delivery"
+                              : order.order.order_status === 5
+                              ? "Delivered"
+                              : order.order.order_status === 6
+                              ? "Cancelled"
+                              : "Returned"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          )}
         </div>
       </div>
     </div>

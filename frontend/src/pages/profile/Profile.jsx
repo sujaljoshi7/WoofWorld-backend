@@ -325,13 +325,31 @@ const UserProfile = () => {
               <div className="row align-items-center">
                 <div className="col-md-6 d-flex align-items-center">
                   <div className="position-relative">
-                    <img
+                    {/* <img
                       src={man}
                       alt="Profile"
                       className="rounded-circle border border-3 border-white shadow"
                       width="100"
                       height="100"
-                    />
+                    /> */}
+                    <div
+                      className="rounded-circle border border-3 border-white shadow"
+                      style={{
+                        borderRadius: "50%",
+                        height: "80px",
+                        width: "80px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "32px", // optional for better visibility
+                        fontWeight: "bold", // optional
+                        color: "black", // optional for contrast
+                        backgroundColor: "#f8f9fa",
+                        userSelect: "none",
+                      }}
+                    >
+                      {user.first_name.charAt(0).toUpperCase()}
+                    </div>
                   </div>
                   <div className="ms-3">
                     <h4 className="mb-1 fw-bold">{userData.name}</h4>

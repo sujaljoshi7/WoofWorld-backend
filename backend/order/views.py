@@ -243,8 +243,9 @@ class DashboardStatsView(APIView):
                 1: 'Placed',
                 2: 'Processing',
                 3: 'Shipped',
-                4: 'Delivered',
-                5: 'Cancelled'
+                4: 'Out for Delivery',
+                5: 'Delivered',
+                6: 'Cancelled'
             }
             
             # Format orders by status with readable names
@@ -279,8 +280,7 @@ class DashboardStatsView(APIView):
             six_months_ago = timezone.now() - timezone.timedelta(days=180)
             monthly_orders = Order.objects.filter(
                 created_at__gte=six_months_ago
-            ).annotate(
-                month=TruncMonth('created_at')
+            ).annotate(month=TruncMonth('created_at')
             ).values('month').annotate(
                 count=Count('id')
             ).order_by('month')
